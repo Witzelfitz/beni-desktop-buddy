@@ -17,12 +17,12 @@
 
 ## Manuelle Desktopprüfung
 
-Alle Felder sind im vorbereiteten Stand **NOT_RUN**.
+Nativer Start, Transparenz und die sichtbare Bedienleiste wurden auf macOS geprüft. Automatisierte egui-UI-Tests stehen im Prüfbericht; die übrigen manuellen Abnahmen sind offen.
 
 | Prüfung | macOS | Windows | Linux X11 | Linux Wayland |
 | --- | --- | --- | --- | --- |
-| Start und sauberes Beenden | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |
-| Transparenz / kein Fensterhintergrund | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |
+| Nativer Start | PASS | NOT_RUN | NOT_RUN | NOT_RUN |
+| Transparenz / kein Fensterhintergrund | PASS | NOT_RUN | NOT_RUN | NOT_RUN |
 | Alle Animationen / PNG-Alpha | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |
 | Dragging / Klick-Begrüssung | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |
 | Pause / Tempo / reduzierte Bewegung | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |

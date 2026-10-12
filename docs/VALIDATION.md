@@ -1,25 +1,23 @@
 # Prüfbericht · 12. Oktober 2026
 
-Ausführungsumgebung: macOS auf Apple Silicon, Rust/Cargo 1.99.0. GitHub- und Crates.io-Netzwerkzugriff der Sitzung ist eingeschränkt.
+Ausführungsumgebung: macOS auf Apple Silicon, Rust/Cargo 1.99.0. GitHub- und Crates.io-Zugriff sind verfügbar. Beide Cargo-Workspaces enthalten committete Lockfiles.
 
 | Status | Prüfung | Ergebnis |
 | --- | --- | --- |
-| PASS | `cargo test --workspace --offline --locked` | 10 Kern- und 3 CLI-Prozesstests bestanden; darin 480 Referenzposen aus dem Original-SDK |
-| PASS | `cargo clippy --workspace --all-targets --offline --locked -- -D warnings` | Keine Warnungen |
-| PASS | `cargo fmt --all --check` | Root-Workspace formatiert |
-| PASS | `cargo fmt --manifest-path apps/desktop/Cargo.toml --check` | Desktop-Quellen formatiert; kein Typ-/Buildnachweis |
-| PASS | `cargo run --offline --locked -p buddy-cli -- validate-assets` | 44 Posen, 20 Animationen, 2048 × 1850 PNG-Atlas |
-| PASS | `cargo run --offline --locked -p buddy-cli -- sample wave 321` | JSON-Pose ausgegeben |
-| PASS | `python3 scripts/check-assets.py` | SHA-256 der vier übernommenen Dateien stimmen |
-| PASS | `bash -n scripts/check.sh scripts/publish-repo.sh scripts/package-macos.sh` | Shell-Syntax gültig |
-| BLOCKED | `cargo check --manifest-path apps/desktop/Cargo.toml --offline` | eframe ist im lokalen Cargo-Cache nicht vorhanden |
-| BLOCKED | `gh api user` und `gh api --method POST /user/repos ...` | Keine Verbindung zur GitHub-API; kein Remote bestätigt |
-| BLOCKED | Erweiterter GitHub-Zugriff | Automatische Freigabeprüfung lehnt erweiterten Zugriff ab; Sandbox-Freigaben sind in dieser Sitzung deaktiviert |
-| NOT_RUN | Desktop-Build, GUI-Start und manuelle Testmatrix | GUI-Abhängigkeiten fehlen; keine tatsächliche Desktop-Darstellung geprüft |
-| NOT_RUN | GitHub Actions und macOS-App-Bundle | Kein entferntes Repository und kein Desktop-Build vorhanden |
+| PASS | `./scripts/check.sh --desktop` | Kern-/CLI-Tests, Formatierung, Clippy, Asset-Hashes sowie Desktop-Test/Clippy/Debug-Build |
+| PASS | `cargo test --workspace --locked` | 10 Kern- und 3 CLI-Prozesstests; darin 480 Referenzposen des Original-SDK |
+| PASS | `cargo test --manifest-path apps/desktop/Cargo.toml --locked` | Vier egui-UI-Tests: Bedienelemente im Fenster, Menü/Nachricht/reduzierte Bewegung, Pause/Fortsetzen/Beenden und native Drag-Anforderung |
+| PASS | Clippy für beide Workspaces, alle Targets, `-D warnings` | Keine Warnungen |
+| PASS | `python3 scripts/check-assets.py` | SHA-256 der vier übernommenen Dateien stimmen; 44 Posen und 20 Animationen |
+| PASS | `./scripts/package-macos.sh` | Release-Binary und `dist/Beni Buddy.app` erstellt; Info.plist validiert |
+| PASS | Nativer macOS-Start | Transparentes 340 × 440-Punkte-Fenster mit Beni und sichtbarer Bedienleiste; CGWindow-Abfrage und gezielter Fenster-Screenshot |
+| PASS | PNG-Alpha der Fensteraufnahme | RGBA-Aufnahme; Hintergrundpixel ausserhalb der UI haben Alpha 0 |
+| PASS | GitHub-API | Privates Repository `Witzelfitz/beni-desktop-buddy` erstellt und per API bestätigt |
+| PENDING | GitHub Actions | Workflow vorbereitet; Resultate am Pull Request prüfen |
+| NOT_RUN | Vollständige manuelle Testmatrix | Windows/Linux-Desktop, Monitorwechsel, Langzeitlast und Installer-Abnahme sind offen |
 
-Bei der ersten Testausführung wurden zwei erwartete Asset-Zählwerte von 19/456 auf die tatsächlich vorhandenen 20 Animationen/480 Referenzen korrigiert. Danach bestehen sämtliche 13 Tests.
+Die Desktop-UI-Tests führen denselben `egui::Context::run_ui`-Pfad aus wie eframe und senden Pointer-Ereignisse. Sie prüfen UI-Aktionen und daraus entstehende native Fensterkommandos; sie ersetzen keine Prüfung des Betriebssystem-/Compositor-Verhaltens.
 
-## Nächster konkreter Schritt
+## Nächster Entwicklungsschritt
 
-Mit verbundenem GitHub-Zugang das vorbereitete private Repository veröffentlichen. Auf einem Rechner mit Crates.io-Zugriff den Desktop-Build ausführen, das dabei erzeugte `apps/desktop/Cargo.lock` committen und die macOS-Abnahme dokumentieren. Ein erfolgreich getesteter Animationskern ist kein Nachweis für eine laufende GUI.
+Tray und verlässliche Rückholmöglichkeit, Click-through, Grössen-/Monitorsteuerung sowie die vollständige Plattform-Abnahme. Das lokale macOS-Bundle ist ein Entwicklungsbundle ohne Notarisierung.

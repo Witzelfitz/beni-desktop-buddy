@@ -199,8 +199,8 @@ impl BuddyApp {
         self.menu_open = open;
     }
 }
-impl eframe::App for BuddyApp {
-    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+impl BuddyApp {
+    fn show_ui(&mut self, ui: &mut egui::Ui) {
         let ctx = ui.ctx().clone();
         let now = Instant::now();
         let delta = now.duration_since(self.last_tick).as_secs_f64() * 1000.0;
@@ -259,10 +259,221 @@ impl eframe::App for BuddyApp {
             ctx.request_repaint_after(Duration::from_millis(1000 / fps));
         }
     }
+}
+impl eframe::App for BuddyApp {
+    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+        self.show_ui(ui);
+    }
     fn clear_color(&self, _visuals: &egui::Visuals) -> [f32; 4] {
         [0.0; 4]
     }
     fn save(&mut self, storage: &mut dyn eframe::Storage) {
         eframe::set_value(storage, "buddy-settings", &self.settings);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    fn app(ctx: &egui::Context) -> BuddyApp {
+        let icon = eframe::icon_data::from_png_bytes(ATLAS_PNG).unwrap();
+        let image = egui::ColorImage::from_rgba_unmultiplied(
+            [icon.width as usize, icon.height as usize],
+            &icon.rgba,
+        );
+        BuddyApp {
+            engine: Engine::embedded().unwrap(),
+            player: Player::default(),
+            texture: ctx.load_texture("test-atlas", image, egui::TextureOptions::LINEAR),
+            settings: Settings::default(),
+            last_tick: Instant::now(),
+            message: "Hoi!".into(),
+            message_until: Instant::now() + Duration::from_secs(10),
+            menu_open: false,
+            speech_draft: "Hoi von den Tests!".into(),
+            error: None,
+        }
+    }
+    fn frame(
+        ctx: &egui::Context,
+        app: &mut BuddyApp,
+        time: f64,
+        events: Vec<egui::Event>,
+    ) -> egui::FullOutput {
+        ctx.run_ui(
+            egui::RawInput {
+                screen_rect: Some(Rect::from_min_size(
+                    egui::Pos2::ZERO,
+                    egui::vec2(340.0, 440.0),
+                )),
+                time: Some(time),
+                events,
+                ..Default::default()
+            },
+            |ui| app.show_ui(ui),
+        )
+    }
+    fn find_text(shape: &egui::Shape, needle: &str) -> Option<Rect> {
+        match shape {
+            egui::Shape::Text(text) if text.galley.job.text == needle => {
+                Some(text.galley.rect.translate(text.pos.to_vec2()))
+            }
+            egui::Shape::Vec(shapes) => shapes.iter().find_map(|s| find_text(s, needle)),
+            _ => None,
+        }
+    }
+    fn text_rect(output: &egui::FullOutput, needle: &str) -> Rect {
+        output
+            .shapes
+            .iter()
+            .find_map(|s| find_text(&s.shape, needle))
+            .unwrap_or_else(|| panic!("UI text missing: {needle}"))
+    }
+    fn click(
+        ctx: &egui::Context,
+        app: &mut BuddyApp,
+        pos: egui::Pos2,
+        time: f64,
+    ) -> egui::FullOutput {
+        frame(
+            ctx,
+            app,
+            time,
+            vec![
+                egui::Event::PointerMoved(pos),
+                egui::Event::PointerButton {
+                    pos,
+                    button: egui::PointerButton::Primary,
+                    pressed: true,
+                    modifiers: Default::default(),
+                },
+            ],
+        )
+        .drop_without_applying_deltas();
+        frame(
+            ctx,
+            app,
+            time + 0.01,
+            vec![egui::Event::PointerButton {
+                pos,
+                button: egui::PointerButton::Primary,
+                pressed: false,
+                modifiers: Default::default(),
+            }],
+        )
+    }
+    #[test]
+    fn controls_remain_inside_native_window_after_multiple_frames() {
+        let ctx = egui::Context::default();
+        let mut app = app(&ctx);
+        for i in 0..5 {
+            let output = frame(&ctx, &mut app, i as f64 * 0.1, vec![]);
+            for label in ["Hoi!", "Pause", "Menü", "Beenden"] {
+                let rect = text_rect(&output, label);
+                assert!(
+                    rect.min.x >= 0.0
+                        && rect.min.y >= 0.0
+                        && rect.max.x <= 340.0
+                        && rect.max.y <= 440.0,
+                    "{label}: {rect:?}"
+                );
+            }
+            output.drop_without_applying_deltas();
+        }
+        assert_eq!(
+            eframe::App::clear_color(&app, &egui::Visuals::dark()),
+            [0.0; 4]
+        );
+    }
+    #[test]
+    fn pointer_clicks_open_menu_change_motion_and_show_speech() {
+        let ctx = egui::Context::default();
+        let mut app = app(&ctx);
+        let output = frame(&ctx, &mut app, 0.0, vec![]);
+        let pos = text_rect(&output, "Menü").center();
+        output.drop_without_applying_deltas();
+        click(&ctx, &mut app, pos, 0.1).drop_without_applying_deltas();
+        assert!(app.menu_open);
+        let output = frame(&ctx, &mut app, 0.2, vec![]);
+        let reduced = text_rect(&output, "Weniger Bewegung").center();
+        output.drop_without_applying_deltas();
+        click(&ctx, &mut app, reduced, 0.3).drop_without_applying_deltas();
+        assert!(app.settings.reduced_motion);
+        let output = frame(&ctx, &mut app, 0.4, vec![]);
+        let send = text_rect(&output, "Beni zeigt die Nachricht").center();
+        output.drop_without_applying_deltas();
+        click(&ctx, &mut app, send, 0.5).drop_without_applying_deltas();
+        assert_eq!(app.player.state(), "reden");
+        assert_eq!(app.message, "Hoi von den Tests!");
+    }
+    #[test]
+    fn dragging_avatar_requests_a_native_window_drag() {
+        let ctx = egui::Context::default();
+        let mut app = app(&ctx);
+        let output = frame(&ctx, &mut app, 0.0, vec![]);
+        let points = output
+            .shapes
+            .iter()
+            .find_map(|s| match &s.shape {
+                egui::Shape::Mesh(mesh) if mesh.texture_id == app.texture.id() => {
+                    Some(mesh.vertices.iter().map(|v| v.pos).collect::<Vec<_>>())
+                }
+                _ => None,
+            })
+            .expect("avatar mesh");
+        let pos = Rect::from_points(&points).center();
+        output.drop_without_applying_deltas();
+        frame(
+            &ctx,
+            &mut app,
+            0.1,
+            vec![
+                egui::Event::PointerMoved(pos),
+                egui::Event::PointerButton {
+                    pos,
+                    button: egui::PointerButton::Primary,
+                    pressed: true,
+                    modifiers: Default::default(),
+                },
+            ],
+        )
+        .drop_without_applying_deltas();
+        let output = frame(
+            &ctx,
+            &mut app,
+            0.2,
+            vec![egui::Event::PointerMoved(pos + egui::vec2(30.0, 0.0))],
+        );
+        assert!(
+            output.viewport_output[&egui::ViewportId::ROOT]
+                .commands
+                .contains(&egui::ViewportCommand::StartDrag)
+        );
+        output.drop_without_applying_deltas();
+    }
+    #[test]
+    fn pause_resume_and_quit_work_through_real_egui_responses() {
+        let ctx = egui::Context::default();
+        let mut app = app(&ctx);
+        let output = frame(&ctx, &mut app, 0.0, vec![]);
+        let pos = text_rect(&output, "Pause").center();
+        output.drop_without_applying_deltas();
+        click(&ctx, &mut app, pos, 0.1).drop_without_applying_deltas();
+        assert!(app.player.paused);
+        let output = frame(&ctx, &mut app, 0.2, vec![]);
+        let pos = text_rect(&output, "Weiter").center();
+        output.drop_without_applying_deltas();
+        click(&ctx, &mut app, pos, 0.3).drop_without_applying_deltas();
+        assert!(!app.player.paused);
+        let output = frame(&ctx, &mut app, 0.4, vec![]);
+        let pos = text_rect(&output, "Beenden").center();
+        output.drop_without_applying_deltas();
+        let output = click(&ctx, &mut app, pos, 0.5);
+        assert!(
+            output.viewport_output[&egui::ViewportId::ROOT]
+                .commands
+                .contains(&egui::ViewportCommand::Close)
+        );
+        output.drop_without_applying_deltas();
     }
 }

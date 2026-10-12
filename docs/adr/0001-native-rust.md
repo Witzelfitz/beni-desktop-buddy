@@ -1,6 +1,6 @@
 # ADR 0001: Beni als native Rust-App
 
-Status: Für die vorbereitete Grundlage gewählt, Desktop-Abnahme noch offen.
+Status: Implementiert. Build, UI-Tests und nativer Start auf macOS geprüft; vollständige Plattform-Abnahme noch offen.
 
 ## Auftrag
 
@@ -16,7 +16,7 @@ Der Root-Workspace enthält Kern und CLI. Die GUI liegt in einem separaten Works
 
 - Kein Node-Server, WebView oder JavaScript zur Laufzeit.
 - Die Bewegung wird gegen berechnete Referenzposen des bisherigen SDK geprüft.
-- Die Desktopbibliothek ist exakt gepinnt; ihr Lockfile muss beim ersten verbundenen Build erzeugt und committed werden.
+- Die Desktopbibliothek ist exakt gepinnt; beide Workspaces enthalten committete Lockfiles.
 - Transparenz, Vordergrunddarstellung, Monitorwechsel und Dragging brauchen echte Plattformtests. Unter Wayland gelten Einschränkungen für die absolute Positionierung.
 - Tray, Click-through, Autostart und globale Hotkeys sind nachgelagerte Funktionen. Die MVP-Oberfläche bietet direkt eine sichtbare Beenden-Aktion.
 - Ein Kern-PASS ist kein Desktop-PASS.

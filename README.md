@@ -7,9 +7,9 @@ Dieses Repository startet mit einer Rust-Grundlage. Die erste Desktop-Abnahmepla
 ## Aktueller Stand
 
 - **Implementiert und getestet:** unabhängiger Rust-Animationskern, 44 Posen, 20 Animationen, SDK-kompatible Bewegung, Aliase, One-shot → Idle, Pause, Tempo, Spiegelung, reduzierte Bewegung und Asset-Validierung.
-- **Implementiert, Build/GUI noch offen:** Desktop-App mit egui/eframe, transparentem Fenster, Verschieben per Ziehen, Sprechblase, Animationsmenü, Einstellungen und lokalem Speichern der Einstellungen/Fensterposition.
-- **Vorbereitet:** CI für macOS, Windows und Linux; macOS-App-Bundle-Script; GitHub-Initialisierung über einen separaten PR; Roadmap und manuelle Abnahmeliste.
-- **Noch nicht erstellt:** entferntes GitHub-Repository. Der ausführenden Sitzung fehlen Netzwerk-/GitHub-Schreibzugriff.
+- **Auf macOS gebaut und gestartet:** Desktop-App mit egui/eframe, transparentem Fenster, Verschieben per Ziehen, Sprechblase, Animationsmenü, Einstellungen und lokalem Speichern der Einstellungen/Fensterposition.
+- **Vorbereitet:** CI mit Download-Artefakten für macOS, Windows und Linux; macOS-App-Bundle; Roadmap und manuelle Abnahmeliste.
+- **GitHub:** [Witzelfitz/beni-desktop-buddy](https://github.com/Witzelfitz/beni-desktop-buddy), privat.
 
 Kein WebView und kein JavaScript zur Laufzeit: Der bestehende Beni-Animationsansatz wird in Rust berechnet und aus dem originalen PNG-Atlas gezeichnet. Grafik und Daten sind im Binary eingebettet.
 
@@ -27,10 +27,10 @@ cargo run --locked -p buddy-cli -- states
 cargo run --locked -p buddy-cli -- sample wave 321
 
 # Desktop starten. Beim ersten Mal werden die GUI-Abhängigkeiten geladen.
-cargo run --manifest-path apps/desktop/Cargo.toml
+cargo run --manifest-path apps/desktop/Cargo.toml --locked
 ```
 
-Nach dem ersten erfolgreichen Desktop-Build `apps/desktop/Cargo.lock` auf dem Feature-Branch committen. Es konnte in der eingeschränkten Vorbereitungssitzung noch nicht erzeugt werden. Danach auch Desktop-Befehle mit `--locked` ausführen.
+Beide Cargo-Workspaces enthalten ein committedes Lockfile. Builds und Tests verwenden `--locked`, damit dieselben Abhängigkeiten geladen werden.
 
 Unter Debian/Ubuntu braucht die GUI beispielsweise:
 
@@ -40,7 +40,7 @@ sudo apt-get install libxkbcommon-dev libwayland-dev libx11-dev libxi-dev libxra
 
 Linux-Desktop-/Compositor-Verhalten muss separat abgenommen werden. Ein erfolgreicher Build belegt noch keine Transparenz oder Vordergrunddarstellung.
 
-## Bedienung der vorbereiteten Desktop-App
+## Bedienung
 
 | Aktion | Bedienung |
 | --- | --- |
@@ -54,6 +54,8 @@ Linux-Desktop-/Compositor-Verhalten muss separat abgenommen werden. Ein erfolgre
 | Vordergrunddarstellung | «Menü» → «Immer im Vordergrund» |
 | Menü schliessen | Escape |
 | Beenden | «Beenden» oder Alt/Option + Q bei fokussiertem Buddy-Fenster |
+
+Vier Desktop-UI-Tests prüfen die tatsächlichen egui-Ereignisse für Menü, Pause/Fortsetzen, Nachricht, reduzierte Bewegung, Dragging und Beenden. Fenster-/Compositor-Verhalten auf Windows/Linux sowie die vollständige manuelle Abnahme bleiben separat zu prüfen.
 
 Die Sprechblase zeigt Text, ohne Audioausgabe. Einzelaktionen kehren nach einem Durchlauf zu «warten» zurück. Einstellungen werden lokal gespeichert. Idle zeichnet mit bis zu 15 fps, aktive Gesten mit bis zu 30 fps; Pause und reduzierte Bewegung mit bis zu 4 fps.
 
@@ -69,7 +71,7 @@ Das MVP hat noch kein Tray-Menü, keine globalen Hotkeys, keinen Autostart und k
 
 Das macOS-Script erstellt nach erfolgreichem Build `dist/Beni Buddy.app`. Dieses Entwicklungsbundle ist noch nicht signiert/notarisiert. Es führt keinen Autostart oder OS-Installation aus.
 
-Der Kern liegt im Root-Workspace. Die Desktop-App bildet wegen ihrer eigenen GUI-Abhängigkeiten einen separaten Cargo-Workspace. Root-Tests bauen deshalb ausdrücklich **nicht** die Desktop-App. Der GitHub-Workflow enthält einen zusätzlichen Desktop-Job auf allen drei Betriebssystemen.
+Der Kern liegt im Root-Workspace. Die Desktop-App bildet wegen ihrer eigenen GUI-Abhängigkeiten einen separaten Cargo-Workspace. Root-Tests bauen deshalb ausdrücklich **nicht** die Desktop-App. Der GitHub-Workflow enthält einen zusätzlichen Desktop-Job auf allen drei Betriebssystemen. Erfolgreiche Builds stellen Download-Artefakte bereit: ein `.app`-Bundle für macOS und ausführbare Dateien für Windows/Linux, jeweils in einem `.tar.gz`-Archiv.
 
 ## Struktur
 

@@ -2,7 +2,6 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 if [[ "$(uname -s)" != "Darwin" ]]; then echo "Dieses Script benötigt macOS." >&2; exit 1; fi
-if [[ ! -f apps/desktop/Cargo.lock ]]; then cargo generate-lockfile --manifest-path apps/desktop/Cargo.toml; fi
 cargo build --manifest-path apps/desktop/Cargo.toml --release --locked
 app="dist/Beni Buddy.app"
 mkdir -p "$app/Contents/MacOS"
