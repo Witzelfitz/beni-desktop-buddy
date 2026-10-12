@@ -1,0 +1,7682 @@
+[
+  {
+    "state": "warten",
+    "time": -100,
+    "energy": 0,
+    "pose": {
+      "frame": "stehen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 2,
+      "progress": 0.9722222222222222
+    }
+  },
+  {
+    "state": "warten",
+    "time": -100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "stehen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.003309183443679,
+      "sy": 0.9940834549257768,
+      "index": 2,
+      "progress": 0.9722222222222222
+    }
+  },
+  {
+    "state": "warten",
+    "time": -100,
+    "energy": 1,
+    "pose": {
+      "frame": "stehen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.004728956326015,
+      "sy": 0.9915522253410354,
+      "index": 2,
+      "progress": 0.9722222222222222
+    }
+  },
+  {
+    "state": "warten",
+    "time": 0,
+    "energy": 0,
+    "pose": {
+      "frame": "stehen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "warten",
+    "time": 0,
+    "energy": 0.7,
+    "pose": {
+      "frame": "stehen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "warten",
+    "time": 0,
+    "energy": 1,
+    "pose": {
+      "frame": "stehen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "warten",
+    "time": 100,
+    "energy": 0,
+    "pose": {
+      "frame": "stehen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.027777777777777776
+    }
+  },
+  {
+    "state": "warten",
+    "time": 100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "stehen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9979,
+      "sy": 1.0042,
+      "index": 0,
+      "progress": 0.027777777777777776
+    }
+  },
+  {
+    "state": "warten",
+    "time": 100,
+    "energy": 1,
+    "pose": {
+      "frame": "stehen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.997,
+      "sy": 1.006,
+      "index": 0,
+      "progress": 0.027777777777777776
+    }
+  },
+  {
+    "state": "warten",
+    "time": 321,
+    "energy": 0,
+    "pose": {
+      "frame": "stehen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.08916666666666667
+    }
+  },
+  {
+    "state": "warten",
+    "time": 321,
+    "energy": 0.7,
+    "pose": {
+      "frame": "stehen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9958253639870882,
+      "sy": 1.0083492720258236,
+      "index": 0,
+      "progress": 0.08916666666666667
+    }
+  },
+  {
+    "state": "warten",
+    "time": 321,
+    "energy": 1,
+    "pose": {
+      "frame": "stehen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.994036234267269,
+      "sy": 1.011927531465462,
+      "index": 0,
+      "progress": 0.08916666666666667
+    }
+  },
+  {
+    "state": "warten",
+    "time": 1000,
+    "energy": 0,
+    "pose": {
+      "frame": "stehen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.2777777777777778
+    }
+  },
+  {
+    "state": "warten",
+    "time": 1000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "stehen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0036373066958946,
+      "sy": 0.9927253866082107,
+      "index": 0,
+      "progress": 0.2777777777777778
+    }
+  },
+  {
+    "state": "warten",
+    "time": 1000,
+    "energy": 1,
+    "pose": {
+      "frame": "stehen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0051961524227067,
+      "sy": 0.9896076951545867,
+      "index": 0,
+      "progress": 0.2777777777777778
+    }
+  },
+  {
+    "state": "warten",
+    "time": 5000,
+    "energy": 0,
+    "pose": {
+      "frame": "stehen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.3888888888888889
+    }
+  },
+  {
+    "state": "warten",
+    "time": 5000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "stehen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9963626933041053,
+      "sy": 1.0072746133917894,
+      "index": 0,
+      "progress": 0.3888888888888889
+    }
+  },
+  {
+    "state": "warten",
+    "time": 5000,
+    "energy": 1,
+    "pose": {
+      "frame": "stehen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9948038475772933,
+      "sy": 1.0103923048454133,
+      "index": 0,
+      "progress": 0.3888888888888889
+    }
+  },
+  {
+    "state": "warten",
+    "time": 3600,
+    "energy": 0,
+    "pose": {
+      "frame": "stehen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "warten",
+    "time": 3600,
+    "energy": 0.7,
+    "pose": {
+      "frame": "stehen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "warten",
+    "time": 3600,
+    "energy": 1,
+    "pose": {
+      "frame": "stehen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "warten",
+    "time": 3601,
+    "energy": 0,
+    "pose": {
+      "frame": "stehen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.0002777777777777778
+    }
+  },
+  {
+    "state": "warten",
+    "time": 3601,
+    "energy": 0.7,
+    "pose": {
+      "frame": "stehen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.999978008951908,
+      "sy": 1.000043982096184,
+      "index": 0,
+      "progress": 0.0002777777777777778
+    }
+  },
+  {
+    "state": "warten",
+    "time": 3601,
+    "energy": 1,
+    "pose": {
+      "frame": "stehen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9999685842170115,
+      "sy": 1.000062831565977,
+      "index": 0,
+      "progress": 0.0002777777777777778
+    }
+  },
+  {
+    "state": "hallo",
+    "time": -100,
+    "energy": 0,
+    "pose": {
+      "frame": "winken_o",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 7,
+      "progress": 0.9375
+    }
+  },
+  {
+    "state": "hallo",
+    "time": -100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "winken_o",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": -1.75,
+      "sx": 0.9971922529907702,
+      "sy": 1.0040110671560427,
+      "index": 7,
+      "progress": 0.9375
+    }
+  },
+  {
+    "state": "hallo",
+    "time": -100,
+    "energy": 1,
+    "pose": {
+      "frame": "winken_o",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": -2.5,
+      "sx": 0.9959889328439573,
+      "sy": 1.0057300959372037,
+      "index": 7,
+      "progress": 0.9375
+    }
+  },
+  {
+    "state": "hallo",
+    "time": 0,
+    "energy": 0,
+    "pose": {
+      "frame": "winken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "hallo",
+    "time": 0,
+    "energy": 0.7,
+    "pose": {
+      "frame": "winken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.01225,
+      "sy": 0.9825,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "hallo",
+    "time": 0,
+    "energy": 1,
+    "pose": {
+      "frame": "winken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0175,
+      "sy": 0.975,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "hallo",
+    "time": 100,
+    "energy": 0,
+    "pose": {
+      "frame": "winken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.0625
+    }
+  },
+  {
+    "state": "hallo",
+    "time": 100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "winken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 1.75,
+      "sx": 0.9964903162384626,
+      "sy": 1.0050138339450534,
+      "index": 0,
+      "progress": 0.0625
+    }
+  },
+  {
+    "state": "hallo",
+    "time": 100,
+    "energy": 1,
+    "pose": {
+      "frame": "winken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 2.5,
+      "sx": 0.9949861660549467,
+      "sy": 1.0071626199215047,
+      "index": 0,
+      "progress": 0.0625
+    }
+  },
+  {
+    "state": "hallo",
+    "time": 321,
+    "energy": 0,
+    "pose": {
+      "frame": "winken_o",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 1,
+      "progress": 0.200625
+    }
+  },
+  {
+    "state": "hallo",
+    "time": 321,
+    "energy": 0.7,
+    "pose": {
+      "frame": "winken_o",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": -1.6556493779482044,
+      "sx": 0.9982936505719481,
+      "sy": 1.002437642040074,
+      "index": 1,
+      "progress": 0.200625
+    }
+  },
+  {
+    "state": "hallo",
+    "time": 321,
+    "energy": 1,
+    "pose": {
+      "frame": "winken_o",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": -2.3652133970688634,
+      "sx": 0.9975623579599259,
+      "sy": 1.0034823457715345,
+      "index": 1,
+      "progress": 0.200625
+    }
+  },
+  {
+    "state": "hallo",
+    "time": 1000,
+    "energy": 0,
+    "pose": {
+      "frame": "winken_o",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 5,
+      "progress": 0.625
+    }
+  },
+  {
+    "state": "hallo",
+    "time": 1000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "winken_o",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 1.0715659492539341e-15,
+      "sx": 1.0098,
+      "sy": 0.986,
+      "index": 5,
+      "progress": 0.625
+    }
+  },
+  {
+    "state": "hallo",
+    "time": 1000,
+    "energy": 1,
+    "pose": {
+      "frame": "winken_o",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 1.5308084989341915e-15,
+      "sx": 1.014,
+      "sy": 0.98,
+      "index": 5,
+      "progress": 0.625
+    }
+  },
+  {
+    "state": "hallo",
+    "time": 5000,
+    "energy": 0,
+    "pose": {
+      "frame": "winken_o",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 1,
+      "progress": 0.125
+    }
+  },
+  {
+    "state": "hallo",
+    "time": 5000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "winken_o",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 2.143131898507868e-16,
+      "sx": 1.0098,
+      "sy": 0.986,
+      "index": 1,
+      "progress": 0.125
+    }
+  },
+  {
+    "state": "hallo",
+    "time": 5000,
+    "energy": 1,
+    "pose": {
+      "frame": "winken_o",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 3.061616997868383e-16,
+      "sx": 1.014,
+      "sy": 0.98,
+      "index": 1,
+      "progress": 0.125
+    }
+  },
+  {
+    "state": "hallo",
+    "time": 1600,
+    "energy": 0,
+    "pose": {
+      "frame": "winken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "hallo",
+    "time": 1600,
+    "energy": 0.7,
+    "pose": {
+      "frame": "winken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.01225,
+      "sy": 0.9825,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "hallo",
+    "time": 1600,
+    "energy": 1,
+    "pose": {
+      "frame": "winken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0175,
+      "sy": 0.975,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "hallo",
+    "time": 1601,
+    "energy": 0,
+    "pose": {
+      "frame": "winken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.000625
+    }
+  },
+  {
+    "state": "hallo",
+    "time": 1601,
+    "energy": 0.7,
+    "pose": {
+      "frame": "winken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0.02748780529568618,
+      "sx": 1.0120918585081986,
+      "sy": 0.9827259164168591,
+      "index": 0,
+      "progress": 0.000625
+    }
+  },
+  {
+    "state": "hallo",
+    "time": 1601,
+    "energy": 1,
+    "pose": {
+      "frame": "winken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0.03926829327955169,
+      "sx": 1.0172740835831409,
+      "sy": 0.9753227377383702,
+      "index": 0,
+      "progress": 0.000625
+    }
+  },
+  {
+    "state": "reden",
+    "time": -100,
+    "energy": 0,
+    "pose": {
+      "frame": "erklaeren",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 7,
+      "progress": 0.949238578680203
+    }
+  },
+  {
+    "state": "reden",
+    "time": -100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "erklaeren",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0014019118935336,
+      "sy": 0.9973715721942087,
+      "index": 7,
+      "progress": 0.949238578680203
+    }
+  },
+  {
+    "state": "reden",
+    "time": -100,
+    "energy": 1,
+    "pose": {
+      "frame": "erklaeren",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0020029356119566,
+      "sy": 0.9962456869502418,
+      "index": 7,
+      "progress": 0.949238578680203
+    }
+  },
+  {
+    "state": "reden",
+    "time": 0,
+    "energy": 0,
+    "pose": {
+      "frame": "finger_laecheln",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "reden",
+    "time": 0,
+    "energy": 0.7,
+    "pose": {
+      "frame": "finger_laecheln",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.00588,
+      "sy": 0.9916,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "reden",
+    "time": 0,
+    "energy": 1,
+    "pose": {
+      "frame": "finger_laecheln",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0084,
+      "sy": 0.988,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "reden",
+    "time": 100,
+    "energy": 0,
+    "pose": {
+      "frame": "finger_laecheln",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.050761421319796954
+    }
+  },
+  {
+    "state": "reden",
+    "time": 100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "finger_laecheln",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9972197286128219,
+      "sy": 1.0046068668063435,
+      "index": 0,
+      "progress": 0.050761421319796954
+    }
+  },
+  {
+    "state": "reden",
+    "time": 100,
+    "energy": 1,
+    "pose": {
+      "frame": "finger_laecheln",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9960293156842125,
+      "sy": 1.006584472442233,
+      "index": 0,
+      "progress": 0.050761421319796954
+    }
+  },
+  {
+    "state": "reden",
+    "time": 321,
+    "energy": 0,
+    "pose": {
+      "frame": "reden_daumen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 1,
+      "progress": 0.16294416243654822
+    }
+  },
+  {
+    "state": "reden",
+    "time": 321,
+    "energy": 0.7,
+    "pose": {
+      "frame": "reden_daumen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9953527382117426,
+      "sy": 1.0083684395486339,
+      "index": 1,
+      "progress": 0.16294416243654822
+    }
+  },
+  {
+    "state": "reden",
+    "time": 321,
+    "energy": 1,
+    "pose": {
+      "frame": "reden_daumen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9933640980341587,
+      "sy": 1.0119636092007764,
+      "index": 1,
+      "progress": 0.16294416243654822
+    }
+  },
+  {
+    "state": "reden",
+    "time": 1000,
+    "energy": 0,
+    "pose": {
+      "frame": "reden_haende",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 4,
+      "progress": 0.5076142131979695
+    }
+  },
+  {
+    "state": "reden",
+    "time": 1000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "reden_haende",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9984824512415861,
+      "sy": 1.002071071787972,
+      "index": 4,
+      "progress": 0.5076142131979695
+    }
+  },
+  {
+    "state": "reden",
+    "time": 1000,
+    "energy": 1,
+    "pose": {
+      "frame": "reden_haende",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9978319005621724,
+      "sy": 1.002958180725408,
+      "index": 4,
+      "progress": 0.5076142131979695
+    }
+  },
+  {
+    "state": "reden",
+    "time": 5000,
+    "energy": 0,
+    "pose": {
+      "frame": "reden_haende",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 4,
+      "progress": 0.5380710659898477
+    }
+  },
+  {
+    "state": "reden",
+    "time": 5000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "reden_haende",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0010753757236046,
+      "sy": 0.9979907572631678,
+      "index": 4,
+      "progress": 0.5380710659898477
+    }
+  },
+  {
+    "state": "reden",
+    "time": 5000,
+    "energy": 1,
+    "pose": {
+      "frame": "reden_haende",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0015363758839035,
+      "sy": 0.9971300099479043,
+      "index": 4,
+      "progress": 0.5380710659898477
+    }
+  },
+  {
+    "state": "reden",
+    "time": 1970,
+    "energy": 0,
+    "pose": {
+      "frame": "finger_laecheln",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "reden",
+    "time": 1970,
+    "energy": 0.7,
+    "pose": {
+      "frame": "finger_laecheln",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.00588,
+      "sy": 0.9916,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "reden",
+    "time": 1970,
+    "energy": 1,
+    "pose": {
+      "frame": "finger_laecheln",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0084,
+      "sy": 0.988,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "reden",
+    "time": 1971,
+    "energy": 0,
+    "pose": {
+      "frame": "finger_laecheln",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.0005076142131979696
+    }
+  },
+  {
+    "state": "reden",
+    "time": 1971,
+    "energy": 0.7,
+    "pose": {
+      "frame": "finger_laecheln",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0057928642921963,
+      "sy": 0.9917305807640209,
+      "index": 0,
+      "progress": 0.0005076142131979696
+    }
+  },
+  {
+    "state": "reden",
+    "time": 1971,
+    "energy": 1,
+    "pose": {
+      "frame": "finger_laecheln",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0082754807494128,
+      "sy": 0.9881864306114287,
+      "index": 0,
+      "progress": 0.0005076142131979696
+    }
+  },
+  {
+    "state": "erklaeren",
+    "time": -100,
+    "energy": 0,
+    "pose": {
+      "frame": "daumen_hoch",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 6,
+      "progress": 0.984375
+    }
+  },
+  {
+    "state": "erklaeren",
+    "time": -100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "daumen_hoch",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": -0.08233439787683082,
+      "sx": 1.0008176697397084,
+      "sy": 0.9983636776004012,
+      "index": 6,
+      "progress": 0.984375
+    }
+  },
+  {
+    "state": "erklaeren",
+    "time": -100,
+    "energy": 1,
+    "pose": {
+      "frame": "daumen_hoch",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": -0.11762056839547261,
+      "sx": 1.0011680987712115,
+      "sy": 0.9976623941235914,
+      "index": 6,
+      "progress": 0.984375
+    }
+  },
+  {
+    "state": "erklaeren",
+    "time": 0,
+    "energy": 0,
+    "pose": {
+      "frame": "erklaeren",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "erklaeren",
+    "time": 0,
+    "energy": 0.7,
+    "pose": {
+      "frame": "erklaeren",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.01078,
+      "sy": 0.9846,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "erklaeren",
+    "time": 0,
+    "energy": 1,
+    "pose": {
+      "frame": "erklaeren",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0154,
+      "sy": 0.978,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "erklaeren",
+    "time": 100,
+    "energy": 0,
+    "pose": {
+      "frame": "erklaeren",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.015625
+    }
+  },
+  {
+    "state": "erklaeren",
+    "time": 100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "erklaeren",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0.0823343978768309,
+      "sx": 0.9960946296082983,
+      "sy": 1.0060581630649224,
+      "index": 0,
+      "progress": 0.015625
+    }
+  },
+  {
+    "state": "erklaeren",
+    "time": 100,
+    "energy": 1,
+    "pose": {
+      "frame": "erklaeren",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0.11762056839547272,
+      "sx": 0.9944224488307848,
+      "sy": 1.0086589454937704,
+      "index": 0,
+      "progress": 0.015625
+    }
+  },
+  {
+    "state": "erklaeren",
+    "time": 321,
+    "energy": 0,
+    "pose": {
+      "frame": "erklaeren",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.05015625
+    }
+  },
+  {
+    "state": "erklaeren",
+    "time": 321,
+    "energy": 0.7,
+    "pose": {
+      "frame": "erklaeren",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0.26035845599967183,
+      "sx": 0.9973709441241941,
+      "sy": 1.0051719229022809,
+      "index": 0,
+      "progress": 0.05015625
+    }
+  },
+  {
+    "state": "erklaeren",
+    "time": 321,
+    "energy": 1,
+    "pose": {
+      "frame": "erklaeren",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0.37194065142810256,
+      "sx": 0.9962444393927746,
+      "sy": 1.0073891284348833,
+      "index": 0,
+      "progress": 0.05015625
+    }
+  },
+  {
+    "state": "erklaeren",
+    "time": 1000,
+    "energy": 0,
+    "pose": {
+      "frame": "arme_offen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 1,
+      "progress": 0.15625
+    }
+  },
+  {
+    "state": "erklaeren",
+    "time": 1000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "arme_offen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0.698434474334138,
+      "sx": 0.9961197059634526,
+      "sy": 1.0077605880730949,
+      "index": 1,
+      "progress": 0.15625
+    }
+  },
+  {
+    "state": "erklaeren",
+    "time": 1000,
+    "energy": 1,
+    "pose": {
+      "frame": "arme_offen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0.9977635347630542,
+      "sx": 0.9944567228049322,
+      "sy": 1.0110865543901355,
+      "index": 1,
+      "progress": 0.15625
+    }
+  },
+  {
+    "state": "erklaeren",
+    "time": 5000,
+    "energy": 0,
+    "pose": {
+      "frame": "faeuste_laecheln",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 5,
+      "progress": 0.78125
+    }
+  },
+  {
+    "state": "erklaeren",
+    "time": 5000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "faeuste_laecheln",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": -0.8238596355387136,
+      "sx": 1.0016072704159333,
+      "sy": 0.9967854591681332,
+      "index": 5,
+      "progress": 0.78125
+    }
+  },
+  {
+    "state": "erklaeren",
+    "time": 5000,
+    "energy": 1,
+    "pose": {
+      "frame": "faeuste_laecheln",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": -1.1769423364838765,
+      "sx": 1.0022961005941906,
+      "sy": 0.9954077988116189,
+      "index": 5,
+      "progress": 0.78125
+    }
+  },
+  {
+    "state": "erklaeren",
+    "time": 6400,
+    "energy": 0,
+    "pose": {
+      "frame": "erklaeren",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "erklaeren",
+    "time": 6400,
+    "energy": 0.7,
+    "pose": {
+      "frame": "erklaeren",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.01078,
+      "sy": 0.9846,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "erklaeren",
+    "time": 6400,
+    "energy": 1,
+    "pose": {
+      "frame": "erklaeren",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0154,
+      "sy": 0.978,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "erklaeren",
+    "time": 6401,
+    "energy": 0,
+    "pose": {
+      "frame": "erklaeren",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.00015625
+    }
+  },
+  {
+    "state": "erklaeren",
+    "time": 6401,
+    "energy": 0.7,
+    "pose": {
+      "frame": "erklaeren",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0.0008246679390942212,
+      "sx": 1.0106325010602815,
+      "sy": 0.9848150490790513,
+      "index": 0,
+      "progress": 0.00015625
+    }
+  },
+  {
+    "state": "erklaeren",
+    "time": 6401,
+    "energy": 1,
+    "pose": {
+      "frame": "erklaeren",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0.0011780970558488875,
+      "sx": 1.0151892335035555,
+      "sy": 0.9783070594688782,
+      "index": 0,
+      "progress": 0.00015625
+    }
+  },
+  {
+    "state": "nachdenken",
+    "time": -100,
+    "energy": 0,
+    "pose": {
+      "frame": "nachdenken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.9642857142857143
+    }
+  },
+  {
+    "state": "nachdenken",
+    "time": -100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "nachdenken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": -0.34268223829272454,
+      "sx": 1.0015185930869115,
+      "sy": 0.9969628138261771,
+      "index": 0,
+      "progress": 0.9642857142857143
+    }
+  },
+  {
+    "state": "nachdenken",
+    "time": -100,
+    "energy": 1,
+    "pose": {
+      "frame": "nachdenken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": -0.48954605470389223,
+      "sx": 1.0021694186955878,
+      "sy": 0.9956611626088244,
+      "index": 0,
+      "progress": 0.9642857142857143
+    }
+  },
+  {
+    "state": "nachdenken",
+    "time": 0,
+    "energy": 0,
+    "pose": {
+      "frame": "nachdenken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "nachdenken",
+    "time": 0,
+    "energy": 0.7,
+    "pose": {
+      "frame": "nachdenken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "nachdenken",
+    "time": 0,
+    "energy": 1,
+    "pose": {
+      "frame": "nachdenken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "nachdenken",
+    "time": 100,
+    "energy": 0,
+    "pose": {
+      "frame": "nachdenken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.03571428571428571
+    }
+  },
+  {
+    "state": "nachdenken",
+    "time": 100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "nachdenken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0.34268223829272415,
+      "sx": 0.9984814069130885,
+      "sy": 1.003037186173823,
+      "index": 0,
+      "progress": 0.03571428571428571
+    }
+  },
+  {
+    "state": "nachdenken",
+    "time": 100,
+    "energy": 1,
+    "pose": {
+      "frame": "nachdenken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0.48954605470389173,
+      "sx": 0.9978305813044122,
+      "sy": 1.0043388373911757,
+      "index": 0,
+      "progress": 0.03571428571428571
+    }
+  },
+  {
+    "state": "nachdenken",
+    "time": 321,
+    "energy": 0,
+    "pose": {
+      "frame": "nachdenken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.11464285714285714
+    }
+  },
+  {
+    "state": "nachdenken",
+    "time": 321,
+    "energy": 0.7,
+    "pose": {
+      "frame": "nachdenken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 1.0158255128727256,
+      "sx": 0.9965296022392022,
+      "sy": 1.0069407955215957,
+      "index": 0,
+      "progress": 0.11464285714285714
+    }
+  },
+  {
+    "state": "nachdenken",
+    "time": 321,
+    "energy": 1,
+    "pose": {
+      "frame": "nachdenken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 1.4511793041038938,
+      "sx": 0.995042288913146,
+      "sy": 1.009915422173708,
+      "index": 0,
+      "progress": 0.11464285714285714
+    }
+  },
+  {
+    "state": "nachdenken",
+    "time": 1000,
+    "energy": 0,
+    "pose": {
+      "frame": "nachdenken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.35714285714285715
+    }
+  },
+  {
+    "state": "nachdenken",
+    "time": 1000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "nachdenken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 1.2040204830007661,
+      "sx": 1.0034122476926364,
+      "sy": 0.9931755046147273,
+      "index": 0,
+      "progress": 0.35714285714285715
+    }
+  },
+  {
+    "state": "nachdenken",
+    "time": 1000,
+    "energy": 1,
+    "pose": {
+      "frame": "nachdenken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 1.720029261429666,
+      "sx": 1.0048746395609092,
+      "sy": 0.9902507208781818,
+      "index": 0,
+      "progress": 0.35714285714285715
+    }
+  },
+  {
+    "state": "nachdenken",
+    "time": 5000,
+    "energy": 0,
+    "pose": {
+      "frame": "nachdenken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.7857142857142857
+    }
+  },
+  {
+    "state": "nachdenken",
+    "time": 5000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "nachdenken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": -1.5013889847600084,
+      "sx": 1.0015185930869115,
+      "sy": 0.9969628138261771,
+      "index": 0,
+      "progress": 0.7857142857142857
+    }
+  },
+  {
+    "state": "nachdenken",
+    "time": 5000,
+    "energy": 1,
+    "pose": {
+      "frame": "nachdenken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": -2.1448414068000123,
+      "sx": 1.0021694186955878,
+      "sy": 0.9956611626088244,
+      "index": 0,
+      "progress": 0.7857142857142857
+    }
+  },
+  {
+    "state": "nachdenken",
+    "time": 2800,
+    "energy": 0,
+    "pose": {
+      "frame": "nachdenken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "nachdenken",
+    "time": 2800,
+    "energy": 0.7,
+    "pose": {
+      "frame": "nachdenken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "nachdenken",
+    "time": 2800,
+    "energy": 1,
+    "pose": {
+      "frame": "nachdenken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "nachdenken",
+    "time": 2801,
+    "energy": 0,
+    "pose": {
+      "frame": "nachdenken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.00035714285714285714
+    }
+  },
+  {
+    "state": "nachdenken",
+    "time": 2801,
+    "energy": 0.7,
+    "pose": {
+      "frame": "nachdenken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0.003455749018702534,
+      "sx": 0.9999842920894637,
+      "sy": 1.0000314158210726,
+      "index": 0,
+      "progress": 0.00035714285714285714
+    }
+  },
+  {
+    "state": "nachdenken",
+    "time": 2801,
+    "energy": 1,
+    "pose": {
+      "frame": "nachdenken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0.004936784312432192,
+      "sx": 0.9999775601278054,
+      "sy": 1.0000448797443893,
+      "index": 0,
+      "progress": 0.00035714285714285714
+    }
+  },
+  {
+    "state": "lachen",
+    "time": -100,
+    "energy": 0,
+    "pose": {
+      "frame": "faeuste_laecheln",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 6,
+      "progress": 0.956140350877193
+    }
+  },
+  {
+    "state": "lachen",
+    "time": -100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "faeuste_laecheln",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0005068435160767,
+      "sy": 0.9992759378341762,
+      "index": 6,
+      "progress": 0.956140350877193
+    }
+  },
+  {
+    "state": "lachen",
+    "time": -100,
+    "energy": 1,
+    "pose": {
+      "frame": "faeuste_laecheln",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0007240621658238,
+      "sy": 0.9989656254773946,
+      "index": 6,
+      "progress": 0.956140350877193
+    }
+  },
+  {
+    "state": "lachen",
+    "time": 0,
+    "energy": 0,
+    "pose": {
+      "frame": "faeuste_laecheln",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "lachen",
+    "time": 0,
+    "energy": 0.7,
+    "pose": {
+      "frame": "faeuste_laecheln",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0098,
+      "sy": 0.986,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "lachen",
+    "time": 0,
+    "energy": 1,
+    "pose": {
+      "frame": "faeuste_laecheln",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.014,
+      "sy": 0.98,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "lachen",
+    "time": 100,
+    "energy": 0,
+    "pose": {
+      "frame": "faeuste_laecheln",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.043859649122807015
+    }
+  },
+  {
+    "state": "lachen",
+    "time": 100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "faeuste_laecheln",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9971922529907702,
+      "sy": 1.0040110671560427,
+      "index": 0,
+      "progress": 0.043859649122807015
+    }
+  },
+  {
+    "state": "lachen",
+    "time": 100,
+    "energy": 1,
+    "pose": {
+      "frame": "faeuste_laecheln",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9959889328439573,
+      "sy": 1.0057300959372037,
+      "index": 0,
+      "progress": 0.043859649122807015
+    }
+  },
+  {
+    "state": "lachen",
+    "time": 321,
+    "energy": 0,
+    "pose": {
+      "frame": "aufgeregt",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 1,
+      "progress": 0.14078947368421052
+    }
+  },
+  {
+    "state": "lachen",
+    "time": 321,
+    "energy": 0.7,
+    "pose": {
+      "frame": "aufgeregt",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0016377232416473,
+      "sy": 0.9976603953690752,
+      "index": 1,
+      "progress": 0.14078947368421052
+    }
+  },
+  {
+    "state": "lachen",
+    "time": 321,
+    "energy": 1,
+    "pose": {
+      "frame": "aufgeregt",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0023396046309248,
+      "sy": 0.9966577076701075,
+      "index": 1,
+      "progress": 0.14078947368421052
+    }
+  },
+  {
+    "state": "lachen",
+    "time": 1000,
+    "energy": 0,
+    "pose": {
+      "frame": "jubel_zittern",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 3,
+      "progress": 0.43859649122807015
+    }
+  },
+  {
+    "state": "lachen",
+    "time": 1000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "jubel_zittern",
+      "mirror": false,
+      "tx": -1.4,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9994737488032838,
+      "sy": 1.0007517874238803,
+      "index": 3,
+      "progress": 0.43859649122807015
+    }
+  },
+  {
+    "state": "lachen",
+    "time": 1000,
+    "energy": 1,
+    "pose": {
+      "frame": "jubel_zittern",
+      "mirror": false,
+      "tx": -2,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9992482125761196,
+      "sy": 1.0010739820341148,
+      "index": 3,
+      "progress": 0.43859649122807015
+    }
+  },
+  {
+    "state": "lachen",
+    "time": 5000,
+    "energy": 0,
+    "pose": {
+      "frame": "aufgeregt",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 1,
+      "progress": 0.19298245614035087
+    }
+  },
+  {
+    "state": "lachen",
+    "time": 5000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "aufgeregt",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0004098448440948,
+      "sy": 0.9994145073655788,
+      "index": 1,
+      "progress": 0.19298245614035087
+    }
+  },
+  {
+    "state": "lachen",
+    "time": 5000,
+    "energy": 1,
+    "pose": {
+      "frame": "aufgeregt",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0005854926344213,
+      "sy": 0.9991635819508268,
+      "index": 1,
+      "progress": 0.19298245614035087
+    }
+  },
+  {
+    "state": "lachen",
+    "time": 2280,
+    "energy": 0,
+    "pose": {
+      "frame": "faeuste_laecheln",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "lachen",
+    "time": 2280,
+    "energy": 0.7,
+    "pose": {
+      "frame": "faeuste_laecheln",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0098,
+      "sy": 0.986,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "lachen",
+    "time": 2280,
+    "energy": 1,
+    "pose": {
+      "frame": "faeuste_laecheln",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.014,
+      "sy": 0.98,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "lachen",
+    "time": 2281,
+    "energy": 0,
+    "pose": {
+      "frame": "faeuste_laecheln",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.0004385964912280702
+    }
+  },
+  {
+    "state": "lachen",
+    "time": 2281,
+    "energy": 0.7,
+    "pose": {
+      "frame": "faeuste_laecheln",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0096734868065589,
+      "sy": 0.9861807331334873,
+      "index": 0,
+      "progress": 0.0004385964912280702
+    }
+  },
+  {
+    "state": "lachen",
+    "time": 2281,
+    "energy": 1,
+    "pose": {
+      "frame": "faeuste_laecheln",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0138192668665127,
+      "sy": 0.9802581901906962,
+      "index": 0,
+      "progress": 0.0004385964912280702
+    }
+  },
+  {
+    "state": "zeigen",
+    "time": -100,
+    "energy": 0,
+    "pose": {
+      "frame": "zeigen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.9375
+    }
+  },
+  {
+    "state": "zeigen",
+    "time": -100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "zeigen",
+      "mirror": false,
+      "tx": 0.7175883860929608,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.002474873734153,
+      "sy": 0.9950502525316942,
+      "index": 0,
+      "progress": 0.9375
+    }
+  },
+  {
+    "state": "zeigen",
+    "time": -100,
+    "energy": 1,
+    "pose": {
+      "frame": "zeigen",
+      "mirror": false,
+      "tx": 1.025126265847087,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0035355339059326,
+      "sy": 0.9929289321881345,
+      "index": 0,
+      "progress": 0.9375
+    }
+  },
+  {
+    "state": "zeigen",
+    "time": 0,
+    "energy": 0,
+    "pose": {
+      "frame": "zeigen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "zeigen",
+    "time": 0,
+    "energy": 0.7,
+    "pose": {
+      "frame": "zeigen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "zeigen",
+    "time": 0,
+    "energy": 1,
+    "pose": {
+      "frame": "zeigen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "zeigen",
+    "time": 100,
+    "energy": 0,
+    "pose": {
+      "frame": "zeigen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.0625
+    }
+  },
+  {
+    "state": "zeigen",
+    "time": 100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "zeigen",
+      "mirror": false,
+      "tx": 0.7175883860929584,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9975251262658471,
+      "sy": 1.0049497474683058,
+      "index": 0,
+      "progress": 0.0625
+    }
+  },
+  {
+    "state": "zeigen",
+    "time": 100,
+    "energy": 1,
+    "pose": {
+      "frame": "zeigen",
+      "mirror": false,
+      "tx": 1.0251262658470834,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9964644660940672,
+      "sy": 1.0070710678118655,
+      "index": 0,
+      "progress": 0.0625
+    }
+  },
+  {
+    "state": "zeigen",
+    "time": 321,
+    "energy": 0,
+    "pose": {
+      "frame": "zeigen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.200625
+    }
+  },
+  {
+    "state": "zeigen",
+    "time": 321,
+    "energy": 0.7,
+    "pose": {
+      "frame": "zeigen",
+      "mirror": false,
+      "tx": 4.443340701276927,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9979650538548805,
+      "sy": 1.004069892290239,
+      "index": 0,
+      "progress": 0.200625
+    }
+  },
+  {
+    "state": "zeigen",
+    "time": 321,
+    "energy": 1,
+    "pose": {
+      "frame": "zeigen",
+      "mirror": false,
+      "tx": 6.347629573252754,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9970929340784008,
+      "sy": 1.0058141318431983,
+      "index": 0,
+      "progress": 0.200625
+    }
+  },
+  {
+    "state": "zeigen",
+    "time": 1000,
+    "energy": 0,
+    "pose": {
+      "frame": "zeigen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.625
+    }
+  },
+  {
+    "state": "zeigen",
+    "time": 1000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "zeigen",
+      "mirror": false,
+      "tx": 2.449999999999999,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9965,
+      "sy": 1.007,
+      "index": 0,
+      "progress": 0.625
+    }
+  },
+  {
+    "state": "zeigen",
+    "time": 1000,
+    "energy": 1,
+    "pose": {
+      "frame": "zeigen",
+      "mirror": false,
+      "tx": 3.4999999999999987,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.995,
+      "sy": 1.01,
+      "index": 0,
+      "progress": 0.625
+    }
+  },
+  {
+    "state": "zeigen",
+    "time": 5000,
+    "energy": 0,
+    "pose": {
+      "frame": "zeigen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.125
+    }
+  },
+  {
+    "state": "zeigen",
+    "time": 5000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "zeigen",
+      "mirror": false,
+      "tx": 2.4499999999999993,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9965,
+      "sy": 1.007,
+      "index": 0,
+      "progress": 0.125
+    }
+  },
+  {
+    "state": "zeigen",
+    "time": 5000,
+    "energy": 1,
+    "pose": {
+      "frame": "zeigen",
+      "mirror": false,
+      "tx": 3.4999999999999996,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.995,
+      "sy": 1.01,
+      "index": 0,
+      "progress": 0.125
+    }
+  },
+  {
+    "state": "zeigen",
+    "time": 1600,
+    "energy": 0,
+    "pose": {
+      "frame": "zeigen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "zeigen",
+    "time": 1600,
+    "energy": 0.7,
+    "pose": {
+      "frame": "zeigen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "zeigen",
+    "time": 1600,
+    "energy": 1,
+    "pose": {
+      "frame": "zeigen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "zeigen",
+    "time": 1601,
+    "energy": 0,
+    "pose": {
+      "frame": "zeigen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.000625
+    }
+  },
+  {
+    "state": "zeigen",
+    "time": 1601,
+    "energy": 0.7,
+    "pose": {
+      "frame": "zeigen",
+      "mirror": false,
+      "tx": 0.00007556377026532445,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9999725113468895,
+      "sy": 1.000054977306221,
+      "index": 0,
+      "progress": 0.000625
+    }
+  },
+  {
+    "state": "zeigen",
+    "time": 1601,
+    "energy": 1,
+    "pose": {
+      "frame": "zeigen",
+      "mirror": false,
+      "tx": 0.0001079482432361778,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9999607304955564,
+      "sy": 1.000078539008887,
+      "index": 0,
+      "progress": 0.000625
+    }
+  },
+  {
+    "state": "idee",
+    "time": -100,
+    "energy": 0,
+    "pose": {
+      "frame": "idee",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 1,
+      "progress": 0.9375
+    }
+  },
+  {
+    "state": "idee",
+    "time": -100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "idee",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0013393658194927,
+      "sy": 0.9973212532429795,
+      "index": 1,
+      "progress": 0.9375
+    }
+  },
+  {
+    "state": "idee",
+    "time": -100,
+    "energy": 1,
+    "pose": {
+      "frame": "idee",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0019133797206812,
+      "sy": 0.9961732188572532,
+      "index": 1,
+      "progress": 0.9375
+    }
+  },
+  {
+    "state": "idee",
+    "time": 0,
+    "energy": 0,
+    "pose": {
+      "frame": "idee",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "idee",
+    "time": 0,
+    "energy": 0.7,
+    "pose": {
+      "frame": "idee",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0294,
+      "sy": 0.958,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "idee",
+    "time": 0,
+    "energy": 1,
+    "pose": {
+      "frame": "idee",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.042,
+      "sy": 0.94,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "idee",
+    "time": 100,
+    "energy": 0,
+    "pose": {
+      "frame": "idee",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.0625
+    }
+  },
+  {
+    "state": "idee",
+    "time": 100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "idee",
+      "mirror": false,
+      "tx": 0,
+      "ty": -14.849242404917497,
+      "rotation": 0,
+      "sx": 0.990248648980791,
+      "sy": 1.0147442198425647,
+      "index": 0,
+      "progress": 0.0625
+    }
+  },
+  {
+    "state": "idee",
+    "time": 100,
+    "energy": 1,
+    "pose": {
+      "frame": "idee",
+      "mirror": false,
+      "tx": 0,
+      "ty": -21.213203435596423,
+      "rotation": 0,
+      "sx": 0.9860764059042473,
+      "sy": 1.0210829065186933,
+      "index": 0,
+      "progress": 0.0625
+    }
+  },
+  {
+    "state": "idee",
+    "time": 321,
+    "energy": 0,
+    "pose": {
+      "frame": "idee",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.200625
+    }
+  },
+  {
+    "state": "idee",
+    "time": 321,
+    "energy": 0.7,
+    "pose": {
+      "frame": "idee",
+      "mirror": false,
+      "tx": 0,
+      "ty": -12.209676870716445,
+      "rotation": 0,
+      "sx": 0.9962482840076672,
+      "sy": 1.0072701217183266,
+      "index": 0,
+      "progress": 0.200625
+    }
+  },
+  {
+    "state": "idee",
+    "time": 321,
+    "energy": 1,
+    "pose": {
+      "frame": "idee",
+      "mirror": false,
+      "tx": 0,
+      "ty": -17.442395529594922,
+      "rotation": 0,
+      "sx": 0.9946412631637934,
+      "sy": 1.01038833799348,
+      "index": 0,
+      "progress": 0.200625
+    }
+  },
+  {
+    "state": "idee",
+    "time": 1000,
+    "energy": 0,
+    "pose": {
+      "frame": "idee",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 1,
+      "progress": 0.625
+    }
+  },
+  {
+    "state": "idee",
+    "time": 1000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "idee",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.002488457837164,
+      "sy": 0.9950309903957177,
+      "index": 1,
+      "progress": 0.625
+    }
+  },
+  {
+    "state": "idee",
+    "time": 1000,
+    "energy": 1,
+    "pose": {
+      "frame": "idee",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.003554960299587,
+      "sy": 0.9929014735144814,
+      "index": 1,
+      "progress": 0.625
+    }
+  },
+  {
+    "state": "idee",
+    "time": 5000,
+    "energy": 0,
+    "pose": {
+      "frame": "idee",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.125
+    }
+  },
+  {
+    "state": "idee",
+    "time": 5000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "idee",
+      "mirror": false,
+      "tx": 0,
+      "ty": -21,
+      "rotation": 0,
+      "sx": 0.9999324526151822,
+      "sy": 1.001485112925509,
+      "index": 0,
+      "progress": 0.125
+    }
+  },
+  {
+    "state": "idee",
+    "time": 5000,
+    "energy": 1,
+    "pose": {
+      "frame": "idee",
+      "mirror": false,
+      "tx": 0,
+      "ty": -30,
+      "rotation": 0,
+      "sx": 0.9998998470358473,
+      "sy": 1.0021111421789353,
+      "index": 0,
+      "progress": 0.125
+    }
+  },
+  {
+    "state": "idee",
+    "time": 1600,
+    "energy": 0,
+    "pose": {
+      "frame": "idee",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "idee",
+    "time": 1600,
+    "energy": 0.7,
+    "pose": {
+      "frame": "idee",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0294,
+      "sy": 0.958,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "idee",
+    "time": 1600,
+    "energy": 1,
+    "pose": {
+      "frame": "idee",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.042,
+      "sy": 0.94,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "idee",
+    "time": 1601,
+    "energy": 0,
+    "pose": {
+      "frame": "idee",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.000625
+    }
+  },
+  {
+    "state": "idee",
+    "time": 1601,
+    "energy": 0.7,
+    "pose": {
+      "frame": "idee",
+      "mirror": false,
+      "tx": 0,
+      "ty": -0.16493191866293802,
+      "rotation": 0,
+      "sx": 1.029006317117383,
+      "sy": 0.9585685486376418,
+      "index": 0,
+      "progress": 0.000625
+    }
+  },
+  {
+    "state": "idee",
+    "time": 1601,
+    "energy": 1,
+    "pose": {
+      "frame": "idee",
+      "mirror": false,
+      "tx": 0,
+      "ty": -0.23561702666134002,
+      "rotation": 0,
+      "sx": 1.041437351676,
+      "sy": 0.9408115146081292,
+      "index": 0,
+      "progress": 0.000625
+    }
+  },
+  {
+    "state": "daumen",
+    "time": -100,
+    "energy": 0,
+    "pose": {
+      "frame": "daumen_hoch",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 1,
+      "progress": 0.9375
+    }
+  },
+  {
+    "state": "daumen",
+    "time": -100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "daumen_hoch",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": -0.9899494936611678,
+      "sx": 1,
+      "sy": 1,
+      "index": 1,
+      "progress": 0.9375
+    }
+  },
+  {
+    "state": "daumen",
+    "time": -100,
+    "energy": 1,
+    "pose": {
+      "frame": "daumen_hoch",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": -1.414213562373097,
+      "sx": 1,
+      "sy": 1,
+      "index": 1,
+      "progress": 0.9375
+    }
+  },
+  {
+    "state": "daumen",
+    "time": 0,
+    "energy": 0,
+    "pose": {
+      "frame": "daumen_hoch",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "daumen",
+    "time": 0,
+    "energy": 0.7,
+    "pose": {
+      "frame": "daumen_hoch",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0343,
+      "sy": 0.951,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "daumen",
+    "time": 0,
+    "energy": 1,
+    "pose": {
+      "frame": "daumen_hoch",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.049,
+      "sy": 0.9299999999999999,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "daumen",
+    "time": 100,
+    "energy": 0,
+    "pose": {
+      "frame": "daumen_hoch",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.0625
+    }
+  },
+  {
+    "state": "daumen",
+    "time": 100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "daumen_hoch",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0.9899494936611664,
+      "sx": 0.9901728854676954,
+      "sy": 1.0140387350461493,
+      "index": 0,
+      "progress": 0.0625
+    }
+  },
+  {
+    "state": "daumen",
+    "time": 100,
+    "energy": 1,
+    "pose": {
+      "frame": "daumen_hoch",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 1.414213562373095,
+      "sx": 0.9859612649538507,
+      "sy": 1.0200553357802133,
+      "index": 0,
+      "progress": 0.0625
+    }
+  },
+  {
+    "state": "daumen",
+    "time": 321,
+    "energy": 0,
+    "pose": {
+      "frame": "daumen_hoch",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 1,
+      "progress": 0.200625
+    }
+  },
+  {
+    "state": "daumen",
+    "time": 321,
+    "energy": 0.7,
+    "pose": {
+      "frame": "daumen_hoch",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0.8139784580477629,
+      "sx": 1,
+      "sy": 1,
+      "index": 1,
+      "progress": 0.200625
+    }
+  },
+  {
+    "state": "daumen",
+    "time": 321,
+    "energy": 1,
+    "pose": {
+      "frame": "daumen_hoch",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 1.1628263686396614,
+      "sx": 1,
+      "sy": 1,
+      "index": 1,
+      "progress": 0.200625
+    }
+  },
+  {
+    "state": "daumen",
+    "time": 1000,
+    "energy": 0,
+    "pose": {
+      "frame": "daumen_hoch",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 1,
+      "progress": 0.625
+    }
+  },
+  {
+    "state": "daumen",
+    "time": 1000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "daumen_hoch",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 1.4,
+      "sx": 1,
+      "sy": 1,
+      "index": 1,
+      "progress": 0.625
+    }
+  },
+  {
+    "state": "daumen",
+    "time": 1000,
+    "energy": 1,
+    "pose": {
+      "frame": "daumen_hoch",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 2,
+      "sx": 1,
+      "sy": 1,
+      "index": 1,
+      "progress": 0.625
+    }
+  },
+  {
+    "state": "daumen",
+    "time": 5000,
+    "energy": 0,
+    "pose": {
+      "frame": "daumen_hoch",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.125
+    }
+  },
+  {
+    "state": "daumen",
+    "time": 5000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "daumen_hoch",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 1.4,
+      "sx": 1.0028155154527998,
+      "sy": 0.995977835067429,
+      "index": 0,
+      "progress": 0.125
+    }
+  },
+  {
+    "state": "daumen",
+    "time": 5000,
+    "energy": 1,
+    "pose": {
+      "frame": "daumen_hoch",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 2,
+      "sx": 1.0040221649325711,
+      "sy": 0.9942540500963271,
+      "index": 0,
+      "progress": 0.125
+    }
+  },
+  {
+    "state": "daumen",
+    "time": 1600,
+    "energy": 0,
+    "pose": {
+      "frame": "daumen_hoch",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "daumen",
+    "time": 1600,
+    "energy": 0.7,
+    "pose": {
+      "frame": "daumen_hoch",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0343,
+      "sy": 0.951,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "daumen",
+    "time": 1600,
+    "energy": 1,
+    "pose": {
+      "frame": "daumen_hoch",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.049,
+      "sy": 0.9299999999999999,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "daumen",
+    "time": 1601,
+    "energy": 0,
+    "pose": {
+      "frame": "daumen_hoch",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.000625
+    }
+  },
+  {
+    "state": "daumen",
+    "time": 1601,
+    "energy": 0.7,
+    "pose": {
+      "frame": "daumen_hoch",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0.010995461244195866,
+      "sx": 1.033857203822956,
+      "sy": 0.9516325659672055,
+      "index": 0,
+      "progress": 0.000625
+    }
+  },
+  {
+    "state": "daumen",
+    "time": 1601,
+    "energy": 1,
+    "pose": {
+      "frame": "daumen_hoch",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0.01570780177742267,
+      "sx": 1.0483674340327944,
+      "sy": 0.9309036656674364,
+      "index": 0,
+      "progress": 0.000625
+    }
+  },
+  {
+    "state": "jubeln",
+    "time": -100,
+    "energy": 0,
+    "pose": {
+      "frame": "aufgeregt_zittern",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 5,
+      "progress": 0.935064935064935
+    }
+  },
+  {
+    "state": "jubeln",
+    "time": -100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "aufgeregt_zittern",
+      "mirror": false,
+      "tx": -2.8,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9986843720082094,
+      "sy": 1.0018794685597008,
+      "index": 5,
+      "progress": 0.935064935064935
+    }
+  },
+  {
+    "state": "jubeln",
+    "time": -100,
+    "energy": 1,
+    "pose": {
+      "frame": "aufgeregt_zittern",
+      "mirror": false,
+      "tx": -4,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9981205314402991,
+      "sy": 1.002684955085287,
+      "index": 5,
+      "progress": 0.935064935064935
+    }
+  },
+  {
+    "state": "jubeln",
+    "time": 0,
+    "energy": 0,
+    "pose": {
+      "frame": "aufgeregt",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "jubeln",
+    "time": 0,
+    "energy": 0.7,
+    "pose": {
+      "frame": "aufgeregt",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0245,
+      "sy": 0.965,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "jubeln",
+    "time": 0,
+    "energy": 1,
+    "pose": {
+      "frame": "aufgeregt",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.035,
+      "sy": 0.95,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "jubeln",
+    "time": 100,
+    "energy": 0,
+    "pose": {
+      "frame": "aufgeregt",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.06493506493506493
+    }
+  },
+  {
+    "state": "jubeln",
+    "time": 100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "aufgeregt",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9929806324769254,
+      "sy": 1.0100276678901066,
+      "index": 0,
+      "progress": 0.06493506493506493
+    }
+  },
+  {
+    "state": "jubeln",
+    "time": 100,
+    "energy": 1,
+    "pose": {
+      "frame": "aufgeregt",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9899723321098933,
+      "sy": 1.0143252398430096,
+      "index": 0,
+      "progress": 0.06493506493506493
+    }
+  },
+  {
+    "state": "jubeln",
+    "time": 321,
+    "energy": 0,
+    "pose": {
+      "frame": "jubel_lachen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 1,
+      "progress": 0.20844155844155843
+    }
+  },
+  {
+    "state": "jubeln",
+    "time": 321,
+    "energy": 0.7,
+    "pose": {
+      "frame": "jubel_lachen",
+      "mirror": false,
+      "tx": 0,
+      "ty": -15.398680644639706,
+      "rotation": 0,
+      "sx": 0.9965873011438963,
+      "sy": 1.0048752840801483,
+      "index": 1,
+      "progress": 0.20844155844155843
+    }
+  },
+  {
+    "state": "jubeln",
+    "time": 321,
+    "energy": 1,
+    "pose": {
+      "frame": "jubel_lachen",
+      "mirror": false,
+      "tx": 0,
+      "ty": -21.998115206628153,
+      "rotation": 0,
+      "sx": 0.9951247159198517,
+      "sy": 1.006964691543069,
+      "index": 1,
+      "progress": 0.20844155844155843
+    }
+  },
+  {
+    "state": "jubeln",
+    "time": 1000,
+    "energy": 0,
+    "pose": {
+      "frame": "jubel_zittern",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 3,
+      "progress": 0.6493506493506493
+    }
+  },
+  {
+    "state": "jubeln",
+    "time": 1000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "jubel_zittern",
+      "mirror": false,
+      "tx": -2.057406622567553e-15,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0003769337305315,
+      "sy": 0.9994615232420978,
+      "index": 3,
+      "progress": 0.6493506493506493
+    }
+  },
+  {
+    "state": "jubeln",
+    "time": 1000,
+    "energy": 1,
+    "pose": {
+      "frame": "jubel_zittern",
+      "mirror": false,
+      "tx": -2.9391523179536475e-15,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0005384767579022,
+      "sy": 0.9992307474887111,
+      "index": 3,
+      "progress": 0.6493506493506493
+    }
+  },
+  {
+    "state": "jubeln",
+    "time": 5000,
+    "energy": 0,
+    "pose": {
+      "frame": "jubel_lachen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 1,
+      "progress": 0.24675324675324675
+    }
+  },
+  {
+    "state": "jubeln",
+    "time": 5000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "jubel_lachen",
+      "mirror": false,
+      "tx": 0,
+      "ty": -10.889444430272832,
+      "rotation": 0,
+      "sx": 1.001671287371744,
+      "sy": 0.9976124466117943,
+      "index": 1,
+      "progress": 0.24675324675324675
+    }
+  },
+  {
+    "state": "jubeln",
+    "time": 5000,
+    "energy": 1,
+    "pose": {
+      "frame": "jubel_lachen",
+      "mirror": false,
+      "tx": 0,
+      "ty": -15.556349186104047,
+      "rotation": 0,
+      "sx": 1.0023875533882056,
+      "sy": 0.9965892094454204,
+      "index": 1,
+      "progress": 0.24675324675324675
+    }
+  },
+  {
+    "state": "jubeln",
+    "time": 1540,
+    "energy": 0,
+    "pose": {
+      "frame": "aufgeregt",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "jubeln",
+    "time": 1540,
+    "energy": 0.7,
+    "pose": {
+      "frame": "aufgeregt",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0245,
+      "sy": 0.965,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "jubeln",
+    "time": 1540,
+    "energy": 1,
+    "pose": {
+      "frame": "aufgeregt",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.035,
+      "sy": 0.95,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "jubeln",
+    "time": 1541,
+    "energy": 0,
+    "pose": {
+      "frame": "aufgeregt",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.0006493506493506494
+    }
+  },
+  {
+    "state": "jubeln",
+    "time": 1541,
+    "energy": 0.7,
+    "pose": {
+      "frame": "aufgeregt",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0241837170163972,
+      "sy": 0.9654518328337182,
+      "index": 0,
+      "progress": 0.0006493506493506494
+    }
+  },
+  {
+    "state": "jubeln",
+    "time": 1541,
+    "energy": 1,
+    "pose": {
+      "frame": "aufgeregt",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0345481671662817,
+      "sy": 0.9506454754767403,
+      "index": 0,
+      "progress": 0.0006493506493506494
+    }
+  },
+  {
+    "state": "rennen",
+    "time": -100,
+    "energy": 0,
+    "pose": {
+      "frame": "rennen_8",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 6,
+      "progress": 0.8214285714285714
+    }
+  },
+  {
+    "state": "rennen",
+    "time": -100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "rennen_8",
+      "mirror": false,
+      "tx": 0,
+      "ty": -0.017605812298920397,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 6,
+      "progress": 0.8214285714285714
+    }
+  },
+  {
+    "state": "rennen",
+    "time": -100,
+    "energy": 1,
+    "pose": {
+      "frame": "rennen_8",
+      "mirror": false,
+      "tx": 0,
+      "ty": -0.02515116042702914,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 6,
+      "progress": 0.8214285714285714
+    }
+  },
+  {
+    "state": "rennen",
+    "time": 0,
+    "energy": 0,
+    "pose": {
+      "frame": "rennen_7",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "rennen",
+    "time": 0,
+    "energy": 0.7,
+    "pose": {
+      "frame": "rennen_7",
+      "mirror": false,
+      "tx": 0,
+      "ty": -4.7798989873223325,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "rennen",
+    "time": 0,
+    "energy": 1,
+    "pose": {
+      "frame": "rennen_7",
+      "mirror": false,
+      "tx": 0,
+      "ty": -6.82842712474619,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "rennen",
+    "time": 100,
+    "energy": 0,
+    "pose": {
+      "frame": "rennen_4",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 1,
+      "progress": 0.17857142857142858
+    }
+  },
+  {
+    "state": "rennen",
+    "time": 100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "rennen_4",
+      "mirror": false,
+      "tx": 0,
+      "ty": -3.1135005330892622,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 1,
+      "progress": 0.17857142857142858
+    }
+  },
+  {
+    "state": "rennen",
+    "time": 100,
+    "energy": 1,
+    "pose": {
+      "frame": "rennen_4",
+      "mirror": false,
+      "tx": 0,
+      "ty": -4.447857904413232,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 1,
+      "progress": 0.17857142857142858
+    }
+  },
+  {
+    "state": "rennen",
+    "time": 321,
+    "energy": 0,
+    "pose": {
+      "frame": "rennen_1",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 4,
+      "progress": 0.5732142857142857
+    }
+  },
+  {
+    "state": "rennen",
+    "time": 321,
+    "energy": 0.7,
+    "pose": {
+      "frame": "rennen_1",
+      "mirror": false,
+      "tx": 0,
+      "ty": -5.574659332950217,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 4,
+      "progress": 0.5732142857142857
+    }
+  },
+  {
+    "state": "rennen",
+    "time": 321,
+    "energy": 1,
+    "pose": {
+      "frame": "rennen_1",
+      "mirror": false,
+      "tx": 0,
+      "ty": -7.963799047071739,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 4,
+      "progress": 0.5732142857142857
+    }
+  },
+  {
+    "state": "rennen",
+    "time": 1000,
+    "energy": 0,
+    "pose": {
+      "frame": "rennen_8",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 6,
+      "progress": 0.7857142857142857
+    }
+  },
+  {
+    "state": "rennen",
+    "time": 1000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "rennen_8",
+      "mirror": false,
+      "tx": 0,
+      "ty": -0.15712667513657202,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 6,
+      "progress": 0.7857142857142857
+    }
+  },
+  {
+    "state": "rennen",
+    "time": 1000,
+    "energy": 1,
+    "pose": {
+      "frame": "rennen_8",
+      "mirror": false,
+      "tx": 0,
+      "ty": -0.22446667876653148,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 6,
+      "progress": 0.7857142857142857
+    }
+  },
+  {
+    "state": "rennen",
+    "time": 5000,
+    "energy": 0,
+    "pose": {
+      "frame": "rennen_2",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 7,
+      "progress": 0.9285714285714286
+    }
+  },
+  {
+    "state": "rennen",
+    "time": 5000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "rennen_2",
+      "mirror": false,
+      "tx": 0,
+      "ty": -2.4864994669107388,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 7,
+      "progress": 0.9285714285714286
+    }
+  },
+  {
+    "state": "rennen",
+    "time": 5000,
+    "energy": 1,
+    "pose": {
+      "frame": "rennen_2",
+      "mirror": false,
+      "tx": 0,
+      "ty": -3.55214209558677,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 7,
+      "progress": 0.9285714285714286
+    }
+  },
+  {
+    "state": "rennen",
+    "time": 560,
+    "energy": 0,
+    "pose": {
+      "frame": "rennen_7",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "rennen",
+    "time": 560,
+    "energy": 0.7,
+    "pose": {
+      "frame": "rennen_7",
+      "mirror": false,
+      "tx": 0,
+      "ty": -4.7798989873223325,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "rennen",
+    "time": 560,
+    "energy": 1,
+    "pose": {
+      "frame": "rennen_7",
+      "mirror": false,
+      "tx": 0,
+      "ty": -6.82842712474619,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "rennen",
+    "time": 561,
+    "energy": 0,
+    "pose": {
+      "frame": "rennen_7",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.0017857142857142857
+    }
+  },
+  {
+    "state": "rennen",
+    "time": 561,
+    "energy": 0.7,
+    "pose": {
+      "frame": "rennen_7",
+      "mirror": false,
+      "tx": 0,
+      "ty": -4.823825618716695,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.0017857142857142857
+    }
+  },
+  {
+    "state": "rennen",
+    "time": 561,
+    "energy": 1,
+    "pose": {
+      "frame": "rennen_7",
+      "mirror": false,
+      "tx": 0,
+      "ty": -6.891179455309565,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.0017857142857142857
+    }
+  },
+  {
+    "state": "sprint",
+    "time": -100,
+    "energy": 0,
+    "pose": {
+      "frame": "sprint",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.84375
+    }
+  },
+  {
+    "state": "sprint",
+    "time": -100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "sprint",
+      "mirror": false,
+      "tx": 0,
+      "ty": -2.987436867076456,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.84375
+    }
+  },
+  {
+    "state": "sprint",
+    "time": -100,
+    "energy": 1,
+    "pose": {
+      "frame": "sprint",
+      "mirror": false,
+      "tx": 0,
+      "ty": -4.267766952966366,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.84375
+    }
+  },
+  {
+    "state": "sprint",
+    "time": 0,
+    "energy": 0,
+    "pose": {
+      "frame": "sprint",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "sprint",
+    "time": 0,
+    "energy": 0.7,
+    "pose": {
+      "frame": "sprint",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "sprint",
+    "time": 0,
+    "energy": 1,
+    "pose": {
+      "frame": "sprint",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "sprint",
+    "time": 100,
+    "energy": 0,
+    "pose": {
+      "frame": "sprint",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.15625
+    }
+  },
+  {
+    "state": "sprint",
+    "time": 100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "sprint",
+      "mirror": false,
+      "tx": 0,
+      "ty": -2.9874368670764584,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.15625
+    }
+  },
+  {
+    "state": "sprint",
+    "time": 100,
+    "energy": 1,
+    "pose": {
+      "frame": "sprint",
+      "mirror": false,
+      "tx": 0,
+      "ty": -4.267766952966369,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.15625
+    }
+  },
+  {
+    "state": "sprint",
+    "time": 321,
+    "energy": 0,
+    "pose": {
+      "frame": "sprint",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.5015625
+    }
+  },
+  {
+    "state": "sprint",
+    "time": 321,
+    "energy": 0.7,
+    "pose": {
+      "frame": "sprint",
+      "mirror": false,
+      "tx": 0,
+      "ty": -0.0013491865787349233,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.5015625
+    }
+  },
+  {
+    "state": "sprint",
+    "time": 321,
+    "energy": 1,
+    "pose": {
+      "frame": "sprint",
+      "mirror": false,
+      "tx": 0,
+      "ty": -0.0019274093981927476,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.5015625
+    }
+  },
+  {
+    "state": "sprint",
+    "time": 1000,
+    "energy": 0,
+    "pose": {
+      "frame": "sprint",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.5625
+    }
+  },
+  {
+    "state": "sprint",
+    "time": 1000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "sprint",
+      "mirror": false,
+      "tx": 0,
+      "ty": -1.7499999999999991,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.5625
+    }
+  },
+  {
+    "state": "sprint",
+    "time": 1000,
+    "energy": 1,
+    "pose": {
+      "frame": "sprint",
+      "mirror": false,
+      "tx": 0,
+      "ty": -2.4999999999999987,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.5625
+    }
+  },
+  {
+    "state": "sprint",
+    "time": 5000,
+    "energy": 0,
+    "pose": {
+      "frame": "sprint",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.8125
+    }
+  },
+  {
+    "state": "sprint",
+    "time": 5000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "sprint",
+      "mirror": false,
+      "tx": 0,
+      "ty": -1.7500000000000016,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.8125
+    }
+  },
+  {
+    "state": "sprint",
+    "time": 5000,
+    "energy": 1,
+    "pose": {
+      "frame": "sprint",
+      "mirror": false,
+      "tx": 0,
+      "ty": -2.500000000000002,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.8125
+    }
+  },
+  {
+    "state": "sprint",
+    "time": 640,
+    "energy": 0,
+    "pose": {
+      "frame": "sprint",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "sprint",
+    "time": 640,
+    "energy": 0.7,
+    "pose": {
+      "frame": "sprint",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "sprint",
+    "time": 640,
+    "energy": 1,
+    "pose": {
+      "frame": "sprint",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "sprint",
+    "time": 641,
+    "energy": 0,
+    "pose": {
+      "frame": "sprint",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.0015625
+    }
+  },
+  {
+    "state": "sprint",
+    "time": 641,
+    "energy": 0.7,
+    "pose": {
+      "frame": "sprint",
+      "mirror": false,
+      "tx": 0,
+      "ty": -0.0013491865787349233,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.0015625
+    }
+  },
+  {
+    "state": "sprint",
+    "time": 641,
+    "energy": 1,
+    "pose": {
+      "frame": "sprint",
+      "mirror": false,
+      "tx": 0,
+      "ty": -0.0019274093981927476,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.0015625
+    }
+  },
+  {
+    "state": "fliegen",
+    "time": -100,
+    "energy": 0,
+    "pose": {
+      "frame": "fliegen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.9375
+    }
+  },
+  {
+    "state": "fliegen",
+    "time": -100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "fliegen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 2.6787840265556326,
+      "rotation": -0.5357568053111265,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.9375
+    }
+  },
+  {
+    "state": "fliegen",
+    "time": -100,
+    "energy": 1,
+    "pose": {
+      "frame": "fliegen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 3.826834323650904,
+      "rotation": -0.7653668647301808,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.9375
+    }
+  },
+  {
+    "state": "fliegen",
+    "time": 0,
+    "energy": 0,
+    "pose": {
+      "frame": "fliegen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "fliegen",
+    "time": 0,
+    "energy": 0.7,
+    "pose": {
+      "frame": "fliegen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "fliegen",
+    "time": 0,
+    "energy": 1,
+    "pose": {
+      "frame": "fliegen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "fliegen",
+    "time": 100,
+    "energy": 0,
+    "pose": {
+      "frame": "fliegen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.0625
+    }
+  },
+  {
+    "state": "fliegen",
+    "time": 100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "fliegen",
+      "mirror": false,
+      "tx": 0,
+      "ty": -2.6787840265556286,
+      "rotation": 0.5357568053111257,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.0625
+    }
+  },
+  {
+    "state": "fliegen",
+    "time": 100,
+    "energy": 1,
+    "pose": {
+      "frame": "fliegen",
+      "mirror": false,
+      "tx": 0,
+      "ty": -3.826834323650898,
+      "rotation": 0.7653668647301796,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.0625
+    }
+  },
+  {
+    "state": "fliegen",
+    "time": 321,
+    "energy": 0,
+    "pose": {
+      "frame": "fliegen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.200625
+    }
+  },
+  {
+    "state": "fliegen",
+    "time": 321,
+    "energy": 0.7,
+    "pose": {
+      "frame": "fliegen",
+      "mirror": false,
+      "tx": 0,
+      "ty": -6.6658388078897675,
+      "rotation": 1.3331677615779534,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.200625
+    }
+  },
+  {
+    "state": "fliegen",
+    "time": 321,
+    "energy": 1,
+    "pose": {
+      "frame": "fliegen",
+      "mirror": false,
+      "tx": 0,
+      "ty": -9.522626868413953,
+      "rotation": 1.9045253736827907,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.200625
+    }
+  },
+  {
+    "state": "fliegen",
+    "time": 1000,
+    "energy": 0,
+    "pose": {
+      "frame": "fliegen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.625
+    }
+  },
+  {
+    "state": "fliegen",
+    "time": 1000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "fliegen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 4.949747468305832,
+      "rotation": -0.9899494936611664,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.625
+    }
+  },
+  {
+    "state": "fliegen",
+    "time": 1000,
+    "energy": 1,
+    "pose": {
+      "frame": "fliegen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 7.071067811865475,
+      "rotation": -1.414213562373095,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.625
+    }
+  },
+  {
+    "state": "fliegen",
+    "time": 5000,
+    "energy": 0,
+    "pose": {
+      "frame": "fliegen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.125
+    }
+  },
+  {
+    "state": "fliegen",
+    "time": 5000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "fliegen",
+      "mirror": false,
+      "tx": 0,
+      "ty": -4.949747468305832,
+      "rotation": 0.9899494936611664,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.125
+    }
+  },
+  {
+    "state": "fliegen",
+    "time": 5000,
+    "energy": 1,
+    "pose": {
+      "frame": "fliegen",
+      "mirror": false,
+      "tx": 0,
+      "ty": -7.071067811865475,
+      "rotation": 1.414213562373095,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.125
+    }
+  },
+  {
+    "state": "fliegen",
+    "time": 1600,
+    "energy": 0,
+    "pose": {
+      "frame": "fliegen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "fliegen",
+    "time": 1600,
+    "energy": 0.7,
+    "pose": {
+      "frame": "fliegen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "fliegen",
+    "time": 1600,
+    "energy": 1,
+    "pose": {
+      "frame": "fliegen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "fliegen",
+    "time": 1601,
+    "energy": 0,
+    "pose": {
+      "frame": "fliegen",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.000625
+    }
+  },
+  {
+    "state": "fliegen",
+    "time": 1601,
+    "energy": 0.7,
+    "pose": {
+      "frame": "fliegen",
+      "mirror": false,
+      "tx": 0,
+      "ty": -0.027488865066642002,
+      "rotation": 0.0054977730133284,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.000625
+    }
+  },
+  {
+    "state": "fliegen",
+    "time": 1601,
+    "energy": 1,
+    "pose": {
+      "frame": "fliegen",
+      "mirror": false,
+      "tx": 0,
+      "ty": -0.039269807238060006,
+      "rotation": 0.007853961447612,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.000625
+    }
+  },
+  {
+    "state": "schweben",
+    "time": -100,
+    "energy": 0,
+    "pose": {
+      "frame": "schweben",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.9375
+    }
+  },
+  {
+    "state": "schweben",
+    "time": -100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "schweben",
+      "mirror": false,
+      "tx": 0,
+      "ty": 3.2145408318667585,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.9375
+    }
+  },
+  {
+    "state": "schweben",
+    "time": -100,
+    "energy": 1,
+    "pose": {
+      "frame": "schweben",
+      "mirror": false,
+      "tx": 0,
+      "ty": 4.592201188381084,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.9375
+    }
+  },
+  {
+    "state": "schweben",
+    "time": 0,
+    "energy": 0,
+    "pose": {
+      "frame": "schweben",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "schweben",
+    "time": 0,
+    "energy": 0.7,
+    "pose": {
+      "frame": "schweben",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "schweben",
+    "time": 0,
+    "energy": 1,
+    "pose": {
+      "frame": "schweben",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "schweben",
+    "time": 100,
+    "energy": 0,
+    "pose": {
+      "frame": "schweben",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.0625
+    }
+  },
+  {
+    "state": "schweben",
+    "time": 100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "schweben",
+      "mirror": false,
+      "tx": 0,
+      "ty": -3.2145408318667537,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.0625
+    }
+  },
+  {
+    "state": "schweben",
+    "time": 100,
+    "energy": 1,
+    "pose": {
+      "frame": "schweben",
+      "mirror": false,
+      "tx": 0,
+      "ty": -4.592201188381077,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.0625
+    }
+  },
+  {
+    "state": "schweben",
+    "time": 321,
+    "energy": 0,
+    "pose": {
+      "frame": "schweben",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.200625
+    }
+  },
+  {
+    "state": "schweben",
+    "time": 321,
+    "energy": 0.7,
+    "pose": {
+      "frame": "schweben",
+      "mirror": false,
+      "tx": 0,
+      "ty": -7.99900656946772,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.200625
+    }
+  },
+  {
+    "state": "schweben",
+    "time": 321,
+    "energy": 1,
+    "pose": {
+      "frame": "schweben",
+      "mirror": false,
+      "tx": 0,
+      "ty": -11.427152242096744,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.200625
+    }
+  },
+  {
+    "state": "schweben",
+    "time": 1000,
+    "energy": 0,
+    "pose": {
+      "frame": "schweben",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.625
+    }
+  },
+  {
+    "state": "schweben",
+    "time": 1000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "schweben",
+      "mirror": false,
+      "tx": 0,
+      "ty": 5.939696961966997,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.625
+    }
+  },
+  {
+    "state": "schweben",
+    "time": 1000,
+    "energy": 1,
+    "pose": {
+      "frame": "schweben",
+      "mirror": false,
+      "tx": 0,
+      "ty": 8.48528137423857,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.625
+    }
+  },
+  {
+    "state": "schweben",
+    "time": 5000,
+    "energy": 0,
+    "pose": {
+      "frame": "schweben",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.125
+    }
+  },
+  {
+    "state": "schweben",
+    "time": 5000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "schweben",
+      "mirror": false,
+      "tx": 0,
+      "ty": -5.939696961966997,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.125
+    }
+  },
+  {
+    "state": "schweben",
+    "time": 5000,
+    "energy": 1,
+    "pose": {
+      "frame": "schweben",
+      "mirror": false,
+      "tx": 0,
+      "ty": -8.48528137423857,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.125
+    }
+  },
+  {
+    "state": "schweben",
+    "time": 1600,
+    "energy": 0,
+    "pose": {
+      "frame": "schweben",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "schweben",
+    "time": 1600,
+    "energy": 0.7,
+    "pose": {
+      "frame": "schweben",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "schweben",
+    "time": 1600,
+    "energy": 1,
+    "pose": {
+      "frame": "schweben",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "schweben",
+    "time": 1601,
+    "energy": 0,
+    "pose": {
+      "frame": "schweben",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.000625
+    }
+  },
+  {
+    "state": "schweben",
+    "time": 1601,
+    "energy": 0.7,
+    "pose": {
+      "frame": "schweben",
+      "mirror": false,
+      "tx": 0,
+      "ty": -0.0329866380799704,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.000625
+    }
+  },
+  {
+    "state": "schweben",
+    "time": 1601,
+    "energy": 1,
+    "pose": {
+      "frame": "schweben",
+      "mirror": false,
+      "tx": 0,
+      "ty": -0.047123768685672,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.000625
+    }
+  },
+  {
+    "state": "freudensprung",
+    "time": -100,
+    "energy": 0,
+    "pose": {
+      "frame": "faeuste_laecheln",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 2,
+      "progress": 0.9305555555555556
+    }
+  },
+  {
+    "state": "freudensprung",
+    "time": -100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "faeuste_laecheln",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9999523207320006,
+      "sy": 1.0000681132399991,
+      "index": 2,
+      "progress": 0.9305555555555556
+    }
+  },
+  {
+    "state": "freudensprung",
+    "time": -100,
+    "energy": 1,
+    "pose": {
+      "frame": "faeuste_laecheln",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9999318867600008,
+      "sy": 1.0000973046285702,
+      "index": 2,
+      "progress": 0.9305555555555556
+    }
+  },
+  {
+    "state": "freudensprung",
+    "time": 0,
+    "energy": 0,
+    "pose": {
+      "frame": "faeuste",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "freudensprung",
+    "time": 0,
+    "energy": 0.7,
+    "pose": {
+      "frame": "faeuste",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0392,
+      "sy": 0.944,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "freudensprung",
+    "time": 0,
+    "energy": 1,
+    "pose": {
+      "frame": "faeuste",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.056,
+      "sy": 0.92,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "freudensprung",
+    "time": 100,
+    "energy": 0,
+    "pose": {
+      "frame": "faeuste",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.06944444444444445
+    }
+  },
+  {
+    "state": "freudensprung",
+    "time": 100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "faeuste",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9887690119630805,
+      "sy": 1.0160442686241706,
+      "index": 0,
+      "progress": 0.06944444444444445
+    }
+  },
+  {
+    "state": "freudensprung",
+    "time": 100,
+    "energy": 1,
+    "pose": {
+      "frame": "faeuste",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9839557313758294,
+      "sy": 1.0229203837488152,
+      "index": 0,
+      "progress": 0.06944444444444445
+    }
+  },
+  {
+    "state": "freudensprung",
+    "time": 321,
+    "energy": 0,
+    "pose": {
+      "frame": "freudensprung",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 1,
+      "progress": 0.22291666666666668
+    }
+  },
+  {
+    "state": "freudensprung",
+    "time": 321,
+    "energy": 0.7,
+    "pose": {
+      "frame": "freudensprung",
+      "mirror": false,
+      "tx": 0,
+      "ty": -6.200064021263663,
+      "rotation": 0,
+      "sx": 1.0148893617729249,
+      "sy": 0.9787294831815359,
+      "index": 1,
+      "progress": 0.22291666666666668
+    }
+  },
+  {
+    "state": "freudensprung",
+    "time": 321,
+    "energy": 1,
+    "pose": {
+      "frame": "freudensprung",
+      "mirror": false,
+      "tx": 0,
+      "ty": -8.857234316090947,
+      "rotation": 0,
+      "sx": 1.0212705168184641,
+      "sy": 0.9696135474021941,
+      "index": 1,
+      "progress": 0.22291666666666668
+    }
+  },
+  {
+    "state": "freudensprung",
+    "time": 1000,
+    "energy": 0,
+    "pose": {
+      "frame": "faeuste_laecheln",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 2,
+      "progress": 0.6944444444444444
+    }
+  },
+  {
+    "state": "freudensprung",
+    "time": 1000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "faeuste_laecheln",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.003342574743488,
+      "sy": 0.9952248932235885,
+      "index": 2,
+      "progress": 0.6944444444444444
+    }
+  },
+  {
+    "state": "freudensprung",
+    "time": 1000,
+    "energy": 1,
+    "pose": {
+      "frame": "faeuste_laecheln",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0047751067764115,
+      "sy": 0.9931784188908408,
+      "index": 2,
+      "progress": 0.6944444444444444
+    }
+  },
+  {
+    "state": "freudensprung",
+    "time": 5000,
+    "energy": 0,
+    "pose": {
+      "frame": "freudensprung",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 1,
+      "progress": 0.4722222222222222
+    }
+  },
+  {
+    "state": "freudensprung",
+    "time": 5000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "freudensprung",
+      "mirror": false,
+      "tx": 0,
+      "ty": -36.677026660383945,
+      "rotation": 0,
+      "sx": 1.0001714845270122,
+      "sy": 0.9997550221042684,
+      "index": 1,
+      "progress": 0.4722222222222222
+    }
+  },
+  {
+    "state": "freudensprung",
+    "time": 5000,
+    "energy": 1,
+    "pose": {
+      "frame": "freudensprung",
+      "mirror": false,
+      "tx": 0,
+      "ty": -52.39575237197707,
+      "rotation": 0,
+      "sx": 1.0002449778957316,
+      "sy": 0.9996500315775262,
+      "index": 1,
+      "progress": 0.4722222222222222
+    }
+  },
+  {
+    "state": "freudensprung",
+    "time": 1440,
+    "energy": 0,
+    "pose": {
+      "frame": "faeuste",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "freudensprung",
+    "time": 1440,
+    "energy": 0.7,
+    "pose": {
+      "frame": "faeuste",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0392,
+      "sy": 0.944,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "freudensprung",
+    "time": 1440,
+    "energy": 1,
+    "pose": {
+      "frame": "faeuste",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.056,
+      "sy": 0.92,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "freudensprung",
+    "time": 1441,
+    "energy": 0,
+    "pose": {
+      "frame": "faeuste",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.0006944444444444445
+    }
+  },
+  {
+    "state": "freudensprung",
+    "time": 1441,
+    "energy": 0.7,
+    "pose": {
+      "frame": "faeuste",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0386939472262355,
+      "sy": 0.9447229325339491,
+      "index": 0,
+      "progress": 0.0006944444444444445
+    }
+  },
+  {
+    "state": "freudensprung",
+    "time": 1441,
+    "energy": 1,
+    "pose": {
+      "frame": "faeuste",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0552770674660508,
+      "sy": 0.9210327607627845,
+      "index": 0,
+      "progress": 0.0006944444444444445
+    }
+  },
+  {
+    "state": "drehen",
+    "time": -100,
+    "energy": 0,
+    "pose": {
+      "frame": "dreiviertel_a",
+      "mirror": true,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 3,
+      "progress": 0.9397590361445783
+    }
+  },
+  {
+    "state": "drehen",
+    "time": -100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "dreiviertel_a",
+      "mirror": true,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9970762937470088,
+      "sy": 1.0034143146390817,
+      "index": 3,
+      "progress": 0.9397590361445783
+    }
+  },
+  {
+    "state": "drehen",
+    "time": -100,
+    "energy": 1,
+    "pose": {
+      "frame": "dreiviertel_a",
+      "mirror": true,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9958199417932134,
+      "sy": 1.0048680638037508,
+      "index": 3,
+      "progress": 0.9397590361445783
+    }
+  },
+  {
+    "state": "drehen",
+    "time": 0,
+    "energy": 0,
+    "pose": {
+      "frame": "front",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "drehen",
+    "time": 0,
+    "energy": 0.7,
+    "pose": {
+      "frame": "front",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0147,
+      "sy": 0.979,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "drehen",
+    "time": 0,
+    "energy": 1,
+    "pose": {
+      "frame": "front",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.021,
+      "sy": 0.97,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "drehen",
+    "time": 100,
+    "energy": 0,
+    "pose": {
+      "frame": "front",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.060240963855421686
+    }
+  },
+  {
+    "state": "drehen",
+    "time": 100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "front",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9945004652253016,
+      "sy": 1.0086188868290464,
+      "index": 0,
+      "progress": 0.060240963855421686
+    }
+  },
+  {
+    "state": "drehen",
+    "time": 100,
+    "energy": 1,
+    "pose": {
+      "frame": "front",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9921468567386588,
+      "sy": 1.0123222240078602,
+      "index": 0,
+      "progress": 0.060240963855421686
+    }
+  },
+  {
+    "state": "drehen",
+    "time": 321,
+    "energy": 0,
+    "pose": {
+      "frame": "front",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.19337349397590362
+    }
+  },
+  {
+    "state": "drehen",
+    "time": 321,
+    "energy": 0.7,
+    "pose": {
+      "frame": "front",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9965097960443136,
+      "sy": 1.006863699586069,
+      "index": 0,
+      "progress": 0.19337349397590362
+    }
+  },
+  {
+    "state": "drehen",
+    "time": 321,
+    "energy": 1,
+    "pose": {
+      "frame": "front",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9950144163634058,
+      "sy": 1.009806490878345,
+      "index": 0,
+      "progress": 0.19337349397590362
+    }
+  },
+  {
+    "state": "drehen",
+    "time": 1000,
+    "energy": 0,
+    "pose": {
+      "frame": "ruecken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 2,
+      "progress": 0.6024096385542169
+    }
+  },
+  {
+    "state": "drehen",
+    "time": 1000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "ruecken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9978794169378339,
+      "sy": 1.0017915697285185,
+      "index": 2,
+      "progress": 0.6024096385542169
+    }
+  },
+  {
+    "state": "drehen",
+    "time": 1000,
+    "energy": 1,
+    "pose": {
+      "frame": "ruecken",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9969651809907475,
+      "sy": 1.002543914941513,
+      "index": 2,
+      "progress": 0.6024096385542169
+    }
+  },
+  {
+    "state": "drehen",
+    "time": 5000,
+    "energy": 0,
+    "pose": {
+      "frame": "front",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.012048192771084338
+    }
+  },
+  {
+    "state": "drehen",
+    "time": 5000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "front",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0089947748620811,
+      "sy": 0.9872910720983898,
+      "index": 0,
+      "progress": 0.012048192771084338
+    }
+  },
+  {
+    "state": "drehen",
+    "time": 5000,
+    "energy": 1,
+    "pose": {
+      "frame": "front",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0128481773716904,
+      "sy": 0.981840100132811,
+      "index": 0,
+      "progress": 0.012048192771084338
+    }
+  },
+  {
+    "state": "drehen",
+    "time": 1660,
+    "energy": 0,
+    "pose": {
+      "frame": "front",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "drehen",
+    "time": 1660,
+    "energy": 0.7,
+    "pose": {
+      "frame": "front",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0147,
+      "sy": 0.979,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "drehen",
+    "time": 1660,
+    "energy": 1,
+    "pose": {
+      "frame": "front",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.021,
+      "sy": 0.97,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "drehen",
+    "time": 1661,
+    "energy": 0,
+    "pose": {
+      "frame": "front",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.0006024096385542169
+    }
+  },
+  {
+    "state": "drehen",
+    "time": 1661,
+    "energy": 0.7,
+    "pose": {
+      "frame": "front",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0144967903351805,
+      "sy": 0.9792970457783365,
+      "index": 0,
+      "progress": 0.0006024096385542169
+    }
+  },
+  {
+    "state": "drehen",
+    "time": 1661,
+    "energy": 1,
+    "pose": {
+      "frame": "front",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.020709582789181,
+      "sy": 0.9704240148557712,
+      "index": 0,
+      "progress": 0.0006024096385542169
+    }
+  },
+  {
+    "state": "ueberrascht",
+    "time": -100,
+    "energy": 0,
+    "pose": {
+      "frame": "ueberrascht",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 1,
+      "progress": 0.9375
+    }
+  },
+  {
+    "state": "ueberrascht",
+    "time": -100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "ueberrascht",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.00160726452301,
+      "sy": 0.9967854675460681,
+      "index": 1,
+      "progress": 0.9375
+    }
+  },
+  {
+    "state": "ueberrascht",
+    "time": -100,
+    "energy": 1,
+    "pose": {
+      "frame": "ueberrascht",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.002296092169939,
+      "sy": 0.9954078107635556,
+      "index": 1,
+      "progress": 0.9375
+    }
+  },
+  {
+    "state": "ueberrascht",
+    "time": 0,
+    "energy": 0,
+    "pose": {
+      "frame": "ueberrascht",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "ueberrascht",
+    "time": 0,
+    "energy": 0.7,
+    "pose": {
+      "frame": "ueberrascht",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0392,
+      "sy": 0.944,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "ueberrascht",
+    "time": 0,
+    "energy": 1,
+    "pose": {
+      "frame": "ueberrascht",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.056,
+      "sy": 0.92,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "ueberrascht",
+    "time": 100,
+    "energy": 0,
+    "pose": {
+      "frame": "ueberrascht",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.0625
+    }
+  },
+  {
+    "state": "ueberrascht",
+    "time": 100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "ueberrascht",
+      "mirror": false,
+      "tx": 0,
+      "ty": -19.304319966598246,
+      "rotation": 0,
+      "sx": 0.9871797927819607,
+      "sy": 1.0193103844126472,
+      "index": 0,
+      "progress": 0.0625
+    }
+  },
+  {
+    "state": "ueberrascht",
+    "time": 100,
+    "energy": 1,
+    "pose": {
+      "frame": "ueberrascht",
+      "mirror": false,
+      "tx": 0,
+      "ty": -27.577599952283208,
+      "rotation": 0,
+      "sx": 0.9816964700363602,
+      "sy": 1.0276178399506857,
+      "index": 0,
+      "progress": 0.0625
+    }
+  },
+  {
+    "state": "ueberrascht",
+    "time": 321,
+    "energy": 0,
+    "pose": {
+      "frame": "ueberrascht",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.200625
+    }
+  },
+  {
+    "state": "ueberrascht",
+    "time": 321,
+    "energy": 0.7,
+    "pose": {
+      "frame": "ueberrascht",
+      "mirror": false,
+      "tx": 0,
+      "ty": -8.411932852691033,
+      "rotation": 0,
+      "sx": 0.9954424747262083,
+      "sy": 1.0088057841513627,
+      "index": 0,
+      "progress": 0.200625
+    }
+  },
+  {
+    "state": "ueberrascht",
+    "time": 321,
+    "energy": 1,
+    "pose": {
+      "frame": "ueberrascht",
+      "mirror": false,
+      "tx": 0,
+      "ty": -12.017046932415763,
+      "rotation": 0,
+      "sx": 0.9934906215105562,
+      "sy": 1.0125836113639108,
+      "index": 0,
+      "progress": 0.200625
+    }
+  },
+  {
+    "state": "ueberrascht",
+    "time": 1000,
+    "energy": 0,
+    "pose": {
+      "frame": "ueberrascht",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 1,
+      "progress": 0.625
+    }
+  },
+  {
+    "state": "ueberrascht",
+    "time": 1000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "ueberrascht",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0029729052436227,
+      "sy": 0.9940559750252959,
+      "index": 1,
+      "progress": 0.625
+    }
+  },
+  {
+    "state": "ueberrascht",
+    "time": 1000,
+    "energy": 1,
+    "pose": {
+      "frame": "ueberrascht",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0042470130324657,
+      "sy": 0.9915085515834974,
+      "index": 1,
+      "progress": 0.625
+    }
+  },
+  {
+    "state": "ueberrascht",
+    "time": 5000,
+    "energy": 0,
+    "pose": {
+      "frame": "ueberrascht",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.125
+    }
+  },
+  {
+    "state": "ueberrascht",
+    "time": 5000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "ueberrascht",
+      "mirror": false,
+      "tx": 0,
+      "ty": -24.817155375907642,
+      "rotation": 0,
+      "sx": 1.0002383272887412,
+      "sy": 1.0013156336780795,
+      "index": 0,
+      "progress": 0.125
+    }
+  },
+  {
+    "state": "ueberrascht",
+    "time": 5000,
+    "energy": 1,
+    "pose": {
+      "frame": "ueberrascht",
+      "mirror": false,
+      "tx": 0,
+      "ty": -35.45307910843949,
+      "rotation": 0,
+      "sx": 1.000334616835141,
+      "sy": 1.0018627603395325,
+      "index": 0,
+      "progress": 0.125
+    }
+  },
+  {
+    "state": "ueberrascht",
+    "time": 1600,
+    "energy": 0,
+    "pose": {
+      "frame": "ueberrascht",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "ueberrascht",
+    "time": 1600,
+    "energy": 0.7,
+    "pose": {
+      "frame": "ueberrascht",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0392,
+      "sy": 0.944,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "ueberrascht",
+    "time": 1600,
+    "energy": 1,
+    "pose": {
+      "frame": "ueberrascht",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.056,
+      "sy": 0.92,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "ueberrascht",
+    "time": 1601,
+    "energy": 0,
+    "pose": {
+      "frame": "ueberrascht",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.000625
+    }
+  },
+  {
+    "state": "ueberrascht",
+    "time": 1601,
+    "energy": 0.7,
+    "pose": {
+      "frame": "ueberrascht",
+      "mirror": false,
+      "tx": 0,
+      "ty": -0.21990869455902315,
+      "rotation": 0,
+      "sx": 1.038676815715579,
+      "sy": 0.9447540957674104,
+      "index": 0,
+      "progress": 0.000625
+    }
+  },
+  {
+    "state": "ueberrascht",
+    "time": 1601,
+    "energy": 1,
+    "pose": {
+      "frame": "ueberrascht",
+      "mirror": false,
+      "tx": 0,
+      "ty": -0.31415527794146164,
+      "rotation": 0,
+      "sx": 1.0552522031498375,
+      "sy": 0.9210761632975546,
+      "index": 0,
+      "progress": 0.000625
+    }
+  },
+  {
+    "state": "traurig",
+    "time": -100,
+    "energy": 0,
+    "pose": {
+      "frame": "traurig",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.9666666666666667
+    }
+  },
+  {
+    "state": "traurig",
+    "time": -100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "traurig",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": -0.21830727535864783,
+      "sx": 1.0011643054685795,
+      "sy": 0.9976713890628411,
+      "index": 0,
+      "progress": 0.9666666666666667
+    }
+  },
+  {
+    "state": "traurig",
+    "time": -100,
+    "energy": 1,
+    "pose": {
+      "frame": "traurig",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": -0.3118675362266398,
+      "sx": 1.0016632935265422,
+      "sy": 0.9966734129469158,
+      "index": 0,
+      "progress": 0.9666666666666667
+    }
+  },
+  {
+    "state": "traurig",
+    "time": 0,
+    "energy": 0,
+    "pose": {
+      "frame": "traurig",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "traurig",
+    "time": 0,
+    "energy": 0.7,
+    "pose": {
+      "frame": "traurig",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "traurig",
+    "time": 0,
+    "energy": 1,
+    "pose": {
+      "frame": "traurig",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "traurig",
+    "time": 100,
+    "energy": 0,
+    "pose": {
+      "frame": "traurig",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.03333333333333333
+    }
+  },
+  {
+    "state": "traurig",
+    "time": 100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "traurig",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0.21830727535864725,
+      "sx": 0.9988356945314205,
+      "sy": 1.002328610937159,
+      "index": 0,
+      "progress": 0.03333333333333333
+    }
+  },
+  {
+    "state": "traurig",
+    "time": 100,
+    "energy": 1,
+    "pose": {
+      "frame": "traurig",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0.311867536226639,
+      "sx": 0.998336706473458,
+      "sy": 1.003326587053084,
+      "index": 0,
+      "progress": 0.03333333333333333
+    }
+  },
+  {
+    "state": "traurig",
+    "time": 321,
+    "energy": 0,
+    "pose": {
+      "frame": "traurig",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.107
+    }
+  },
+  {
+    "state": "traurig",
+    "time": 321,
+    "energy": 0.7,
+    "pose": {
+      "frame": "traurig",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0.6539271695125181,
+      "sx": 0.9965123884292666,
+      "sy": 1.0069752231414668,
+      "index": 0,
+      "progress": 0.107
+    }
+  },
+  {
+    "state": "traurig",
+    "time": 321,
+    "energy": 1,
+    "pose": {
+      "frame": "traurig",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0.9341816707321688,
+      "sx": 0.995017697756095,
+      "sy": 1.00996460448781,
+      "index": 0,
+      "progress": 0.107
+    }
+  },
+  {
+    "state": "traurig",
+    "time": 1000,
+    "energy": 0,
+    "pose": {
+      "frame": "traurig",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.3333333333333333
+    }
+  },
+  {
+    "state": "traurig",
+    "time": 1000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "traurig",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0.9093266739736605,
+      "sx": 0.9951502577388072,
+      "sy": 1.0096994845223857,
+      "index": 0,
+      "progress": 0.3333333333333333
+    }
+  },
+  {
+    "state": "traurig",
+    "time": 1000,
+    "energy": 1,
+    "pose": {
+      "frame": "traurig",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 1.299038105676658,
+      "sx": 0.9930717967697245,
+      "sy": 1.013856406460551,
+      "index": 0,
+      "progress": 0.3333333333333333
+    }
+  },
+  {
+    "state": "traurig",
+    "time": 5000,
+    "energy": 0,
+    "pose": {
+      "frame": "traurig",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.6666666666666666
+    }
+  },
+  {
+    "state": "traurig",
+    "time": 5000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "traurig",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": -0.9093266739736603,
+      "sx": 1.0048497422611928,
+      "sy": 0.9903005154776143,
+      "index": 0,
+      "progress": 0.6666666666666666
+    }
+  },
+  {
+    "state": "traurig",
+    "time": 5000,
+    "energy": 1,
+    "pose": {
+      "frame": "traurig",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": -1.2990381056766578,
+      "sx": 1.0069282032302755,
+      "sy": 0.986143593539449,
+      "index": 0,
+      "progress": 0.6666666666666666
+    }
+  },
+  {
+    "state": "traurig",
+    "time": 3000,
+    "energy": 0,
+    "pose": {
+      "frame": "traurig",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "traurig",
+    "time": 3000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "traurig",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "traurig",
+    "time": 3000,
+    "energy": 1,
+    "pose": {
+      "frame": "traurig",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "traurig",
+    "time": 3001,
+    "energy": 0,
+    "pose": {
+      "frame": "traurig",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.0003333333333333333
+    }
+  },
+  {
+    "state": "traurig",
+    "time": 3001,
+    "energy": 0.7,
+    "pose": {
+      "frame": "traurig",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0.002199113249780342,
+      "sx": 0.9999882713960012,
+      "sy": 1.0000234572079976,
+      "index": 0,
+      "progress": 0.0003333333333333333
+    }
+  },
+  {
+    "state": "traurig",
+    "time": 3001,
+    "energy": 1,
+    "pose": {
+      "frame": "traurig",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0.0031415903568290608,
+      "sx": 0.9999832448514302,
+      "sy": 1.0000335102971396,
+      "index": 0,
+      "progress": 0.0003333333333333333
+    }
+  },
+  {
+    "state": "wuetend",
+    "time": -100,
+    "energy": 0,
+    "pose": {
+      "frame": "wuetend",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.9166666666666666
+    }
+  },
+  {
+    "state": "wuetend",
+    "time": -100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "wuetend",
+      "mirror": false,
+      "tx": 1.5155444566227647,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.006062177826491,
+      "sy": 0.9878756443470178,
+      "index": 0,
+      "progress": 0.9166666666666666
+    }
+  },
+  {
+    "state": "wuetend",
+    "time": -100,
+    "energy": 1,
+    "pose": {
+      "frame": "wuetend",
+      "mirror": false,
+      "tx": 2.1650635094610924,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0086602540378444,
+      "sy": 0.9826794919243113,
+      "index": 0,
+      "progress": 0.9166666666666666
+    }
+  },
+  {
+    "state": "wuetend",
+    "time": 0,
+    "energy": 0,
+    "pose": {
+      "frame": "wuetend",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "wuetend",
+    "time": 0,
+    "energy": 0.7,
+    "pose": {
+      "frame": "wuetend",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "wuetend",
+    "time": 0,
+    "energy": 1,
+    "pose": {
+      "frame": "wuetend",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "wuetend",
+    "time": 100,
+    "energy": 0,
+    "pose": {
+      "frame": "wuetend",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.08333333333333333
+    }
+  },
+  {
+    "state": "wuetend",
+    "time": 100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "wuetend",
+      "mirror": false,
+      "tx": -1.5155444566227676,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9939378221735089,
+      "sy": 1.0121243556529822,
+      "index": 0,
+      "progress": 0.08333333333333333
+    }
+  },
+  {
+    "state": "wuetend",
+    "time": 100,
+    "energy": 1,
+    "pose": {
+      "frame": "wuetend",
+      "mirror": false,
+      "tx": -2.1650635094610964,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9913397459621556,
+      "sy": 1.0173205080756889,
+      "index": 0,
+      "progress": 0.08333333333333333
+    }
+  },
+  {
+    "state": "wuetend",
+    "time": 321,
+    "energy": 0,
+    "pose": {
+      "frame": "wuetend",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.2675
+    }
+  },
+  {
+    "state": "wuetend",
+    "time": 321,
+    "energy": 0.7,
+    "pose": {
+      "frame": "wuetend",
+      "mirror": false,
+      "tx": -1.5592614173296424,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0015270026897758,
+      "sy": 0.9969459946204484,
+      "index": 0,
+      "progress": 0.2675
+    }
+  },
+  {
+    "state": "wuetend",
+    "time": 321,
+    "energy": 1,
+    "pose": {
+      "frame": "wuetend",
+      "mirror": false,
+      "tx": -2.227516310470918,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0021814324139655,
+      "sy": 0.9956371351720692,
+      "index": 0,
+      "progress": 0.2675
+    }
+  },
+  {
+    "state": "wuetend",
+    "time": 1000,
+    "energy": 0,
+    "pose": {
+      "frame": "wuetend",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.8333333333333334
+    }
+  },
+  {
+    "state": "wuetend",
+    "time": 1000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "wuetend",
+      "mirror": false,
+      "tx": 1.5155444566227652,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.006062177826491,
+      "sy": 0.9878756443470179,
+      "index": 0,
+      "progress": 0.8333333333333334
+    }
+  },
+  {
+    "state": "wuetend",
+    "time": 1000,
+    "energy": 1,
+    "pose": {
+      "frame": "wuetend",
+      "mirror": false,
+      "tx": 2.1650635094610933,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0086602540378444,
+      "sy": 0.9826794919243113,
+      "index": 0,
+      "progress": 0.8333333333333334
+    }
+  },
+  {
+    "state": "wuetend",
+    "time": 5000,
+    "energy": 0,
+    "pose": {
+      "frame": "wuetend",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.16666666666666666
+    }
+  },
+  {
+    "state": "wuetend",
+    "time": 5000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "wuetend",
+      "mirror": false,
+      "tx": -1.5155444566227678,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9939378221735089,
+      "sy": 1.0121243556529822,
+      "index": 0,
+      "progress": 0.16666666666666666
+    }
+  },
+  {
+    "state": "wuetend",
+    "time": 5000,
+    "energy": 1,
+    "pose": {
+      "frame": "wuetend",
+      "mirror": false,
+      "tx": -2.165063509461097,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9913397459621556,
+      "sy": 1.0173205080756889,
+      "index": 0,
+      "progress": 0.16666666666666666
+    }
+  },
+  {
+    "state": "wuetend",
+    "time": 1200,
+    "energy": 0,
+    "pose": {
+      "frame": "wuetend",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "wuetend",
+    "time": 1200,
+    "energy": 0.7,
+    "pose": {
+      "frame": "wuetend",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "wuetend",
+    "time": 1200,
+    "energy": 1,
+    "pose": {
+      "frame": "wuetend",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "wuetend",
+    "time": 1201,
+    "energy": 0,
+    "pose": {
+      "frame": "wuetend",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.0008333333333333334
+    }
+  },
+  {
+    "state": "wuetend",
+    "time": 1201,
+    "energy": 0.7,
+    "pose": {
+      "frame": "wuetend",
+      "mirror": false,
+      "tx": 0.0915879234251517,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9999266975111862,
+      "sy": 1.0001466049776275,
+      "index": 0,
+      "progress": 0.0008333333333333334
+    }
+  },
+  {
+    "state": "wuetend",
+    "time": 1201,
+    "energy": 1,
+    "pose": {
+      "frame": "wuetend",
+      "mirror": false,
+      "tx": 0.13083989060735957,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9998952821588375,
+      "sy": 1.000209435682325,
+      "index": 0,
+      "progress": 0.0008333333333333334
+    }
+  },
+  {
+    "state": "stopp",
+    "time": -100,
+    "energy": 0,
+    "pose": {
+      "frame": "stopp",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 1,
+      "progress": 0.9375
+    }
+  },
+  {
+    "state": "stopp",
+    "time": -100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "stopp",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0029698484809835,
+      "sy": 0.9940603030380329,
+      "index": 1,
+      "progress": 0.9375
+    }
+  },
+  {
+    "state": "stopp",
+    "time": -100,
+    "energy": 1,
+    "pose": {
+      "frame": "stopp",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0042426406871192,
+      "sy": 0.9915147186257615,
+      "index": 1,
+      "progress": 0.9375
+    }
+  },
+  {
+    "state": "stopp",
+    "time": 0,
+    "energy": 0,
+    "pose": {
+      "frame": "stopp",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "stopp",
+    "time": 0,
+    "energy": 0.7,
+    "pose": {
+      "frame": "stopp",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0392,
+      "sy": 0.944,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "stopp",
+    "time": 0,
+    "energy": 1,
+    "pose": {
+      "frame": "stopp",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.056,
+      "sy": 0.92,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "stopp",
+    "time": 100,
+    "energy": 0,
+    "pose": {
+      "frame": "stopp",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.0625
+    }
+  },
+  {
+    "state": "stopp",
+    "time": 100,
+    "energy": 0.7,
+    "pose": {
+      "frame": "stopp",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9858325178148585,
+      "sy": 1.0220792636797416,
+      "index": 0,
+      "progress": 0.0625
+    }
+  },
+  {
+    "state": "stopp",
+    "time": 100,
+    "energy": 1,
+    "pose": {
+      "frame": "stopp",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.97978116075557,
+      "sy": 1.031600151028368,
+      "index": 0,
+      "progress": 0.0625
+    }
+  },
+  {
+    "state": "stopp",
+    "time": 321,
+    "energy": 0,
+    "pose": {
+      "frame": "stopp",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 1,
+      "progress": 0.200625
+    }
+  },
+  {
+    "state": "stopp",
+    "time": 321,
+    "energy": 0.7,
+    "pose": {
+      "frame": "stopp",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9975580646258567,
+      "sy": 1.0048838707482866,
+      "index": 1,
+      "progress": 0.200625
+    }
+  },
+  {
+    "state": "stopp",
+    "time": 321,
+    "energy": 1,
+    "pose": {
+      "frame": "stopp",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.996511520894081,
+      "sy": 1.006976958211838,
+      "index": 1,
+      "progress": 0.200625
+    }
+  },
+  {
+    "state": "stopp",
+    "time": 1000,
+    "energy": 0,
+    "pose": {
+      "frame": "stopp",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 1,
+      "progress": 0.625
+    }
+  },
+  {
+    "state": "stopp",
+    "time": 1000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "stopp",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9958,
+      "sy": 1.0084,
+      "index": 1,
+      "progress": 0.625
+    }
+  },
+  {
+    "state": "stopp",
+    "time": 1000,
+    "energy": 1,
+    "pose": {
+      "frame": "stopp",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.994,
+      "sy": 1.012,
+      "index": 1,
+      "progress": 0.625
+    }
+  },
+  {
+    "state": "stopp",
+    "time": 5000,
+    "energy": 0,
+    "pose": {
+      "frame": "stopp",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.125
+    }
+  },
+  {
+    "state": "stopp",
+    "time": 5000,
+    "energy": 0.7,
+    "pose": {
+      "frame": "stopp",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9990042174718835,
+      "sy": 1.003764627293709,
+      "index": 0,
+      "progress": 0.125
+    }
+  },
+  {
+    "state": "stopp",
+    "time": 5000,
+    "energy": 1,
+    "pose": {
+      "frame": "stopp",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 0.9985691793634007,
+      "sy": 1.005354398511409,
+      "index": 0,
+      "progress": 0.125
+    }
+  },
+  {
+    "state": "stopp",
+    "time": 1600,
+    "energy": 0,
+    "pose": {
+      "frame": "stopp",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "stopp",
+    "time": 1600,
+    "energy": 0.7,
+    "pose": {
+      "frame": "stopp",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0392,
+      "sy": 0.944,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "stopp",
+    "time": 1600,
+    "energy": 1,
+    "pose": {
+      "frame": "stopp",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.056,
+      "sy": 0.92,
+      "index": 0,
+      "progress": 0
+    }
+  },
+  {
+    "state": "stopp",
+    "time": 1601,
+    "energy": 0,
+    "pose": {
+      "frame": "stopp",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1,
+      "sy": 1,
+      "index": 0,
+      "progress": 0.000625
+    }
+  },
+  {
+    "state": "stopp",
+    "time": 1601,
+    "energy": 0.7,
+    "pose": {
+      "frame": "stopp",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0386596844691116,
+      "sy": 0.9447852585202963,
+      "index": 0,
+      "progress": 0.000625
+    }
+  },
+  {
+    "state": "stopp",
+    "time": 1601,
+    "energy": 1,
+    "pose": {
+      "frame": "stopp",
+      "mirror": false,
+      "tx": 0,
+      "ty": 0,
+      "rotation": 0,
+      "sx": 1.0552273392170626,
+      "sy": 0.921119565163004,
+      "index": 0,
+      "progress": 0.000625
+    }
+  }
+]
