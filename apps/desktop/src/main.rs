@@ -1,5 +1,8 @@
 #![cfg_attr(target_os = "windows", windows_subsystem = "windows")]
 mod app;
+mod placement;
+mod tray;
+mod window;
 
 use buddy_core::{Engine, Settings};
 use eframe::egui;

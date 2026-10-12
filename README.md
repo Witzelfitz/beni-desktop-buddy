@@ -47,6 +47,8 @@ Linux-Desktop-/Compositor-Verhalten muss separat abgenommen werden. Ein erfolgre
 | Aktion | Bedienung |
 | --- | --- |
 | Beni verschieben | Beni mit der linken Maustaste ziehen |
+| Beni anzeigen / ausblenden | «Beni» in der Menüleiste → «Beni anzeigen» / «Beni ausblenden» |
+| Verlorenen Beni zurückholen | «Beni» in der Menüleiste → «Beni zurückholen» (Hauptbildschirm) |
 | Begrüssen | Beni oder «Hoi!» anklicken |
 | Pause/Fortsetzen | «Pause» / «Weiter» |
 | Animation auswählen | «Menü» → Animation |
@@ -55,13 +57,17 @@ Linux-Desktop-/Compositor-Verhalten muss separat abgenommen werden. Ein erfolgre
 | Eigene Sprechblase | Nachricht im Menü eingeben und anzeigen |
 | Vordergrunddarstellung | «Menü» → «Immer im Vordergrund» |
 | Menü schliessen | Escape |
-| Beenden | «Beenden» oder Alt/Option + Q bei fokussiertem Buddy-Fenster |
+| Beenden | «Beenden» im Fenster oder Tray; Alt/Option + Q bei fokussiertem Buddy-Fenster |
 
-Vier Desktop-UI-Tests prüfen die tatsächlichen egui-Ereignisse für Menü, Pause/Fortsetzen, Nachricht, reduzierte Bewegung, Dragging und Beenden. Fenster-/Compositor-Verhalten auf Windows/Linux sowie die vollständige manuelle Abnahme bleiben separat zu prüfen.
+13 Desktoptests prüfen UI-Ereignisse, Fehlerablauf, Bedienbarkeit bei Zeichenfehlern, Tray-Aktionen ohne Zeichnen und Fensterpositionen. Fenster-/Compositor-Verhalten auf Windows/Linux sowie die vollständige manuelle Abnahme bleiben separat zu prüfen.
+
+Das Tray-Menü bietet auch Pause/Fortsetzen und Einstellungen. Gespeicherte Positionen werden beim Start und nach Änderungen der Bildschirme geprüft; vollständig verlorene Fenster werden automatisch zurückgeholt. Auf macOS berücksichtigt dies Menüleiste, Dock und Retina-Punkte. Eine Fehlermeldung verschwindet nach sechs Sekunden oder bei einer erfolgreichen Aktion; bei einem Zeichenfehler bleibt eine bedienbare Ersatzfläche sichtbar.
+
+Unter Linux braucht das Tray einen StatusNotifier-Host (KSNI, beispielsweise in KDE oder über eine passende GNOME-Erweiterung). Unter Wayland bestimmt der Compositor die Fensterposition; das Begrenzen und gezielte Zurückholen auf den Hauptbildschirm ist dort nicht garantiert. Wenn das Erstellen des Tray fehlschlägt, erhält das Fenster eine normale Titelleiste; auf macOS erscheint zusätzlich ein Dock-Eintrag.
 
 Die Sprechblase zeigt Text, ohne Audioausgabe. Einzelaktionen kehren nach einem Durchlauf zu «warten» zurück. Einstellungen werden lokal gespeichert. Idle zeichnet mit bis zu 15 fps, aktive Gesten mit bis zu 30 fps; Pause und reduzierte Bewegung mit bis zu 4 fps.
 
-Das MVP hat noch kein Tray-Menü, keine globalen Hotkeys, keinen Autostart und keine Click-through-Flächen. Diese Funktionen folgen erst nach der Desktop-Abnahme.
+Globale Hotkeys, Autostart und Click-through-Flächen sind noch offen.
 
 ## Entwicklung
 
