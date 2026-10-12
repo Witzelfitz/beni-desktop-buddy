@@ -378,6 +378,7 @@ checksum = "f2032f911046de80f0a198e0901378627c33f59ea0ac00e363d481118bd70a53"
 name = "beni-desktop-buddy"
 version = "0.1.0"
 dependencies = [
+ "block2 0.6.2",
  "buddy-core",
  "buddy-ipc",
  "eframe",
@@ -385,6 +386,7 @@ dependencies = [
  "objc2 0.6.5",
  "objc2-app-kit 0.3.2",
  "tray-icon",
+ "windows-sys 0.61.2",
  "winit",
 ]
 
@@ -1916,6 +1918,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d49e936b501e5c5bf01fda3a9452ff86dc3ea98ad5f283e1455153142d97518c"
 dependencies = [
  "bitflags 2.13.2",
+ "block2 0.6.2",
  "objc2 0.6.5",
  "objc2-core-foundation",
  "objc2-core-graphics",

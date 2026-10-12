@@ -28,6 +28,7 @@ Nativer Start, Transparenz und die sichtbare Bedienleiste wurden auf macOS gepr�
 | Pause / Tempo / reduzierte Bewegung | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |
 | Menü / eigene Sprechblase | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |
 | Bedienleiste: eingeklappter Start / Klick auf Beni / Escape | PASS | NOT_RUN | NOT_RUN | NOT_RUN |
+| Transparenter Hintergrund / Avatar / Bedienleiste / Blase anklickbar | PASS | NOT_RUN | NOT_RUN | NOT_RUN |
 | Native Accessibility-API: beschrifteter Beni / Aktionen | PASS | NOT_RUN | NOT_RUN | NOT_RUN |
 | Vollständige Screenreader-Bedienung (VoiceOver / NVDA / Orca) | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |
 | Tray: Ausblenden / Anzeigen | PASS | NOT_RUN | NOT_RUN | NOT_RUN |
@@ -45,7 +46,7 @@ Nativer Start, Transparenz und die sichtbare Bedienleiste wurden auf macOS gepr�
 | Retina / DPI / Monitorwechsel | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |
 | Idle-Last und minimiertes Fenster | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |
 
-Transparente Bereiche der Fensterfläche können im MVP weiterhin Mausereignisse blockieren. Das ist ein offener Punkt für Phase 2 und muss bei der ersten Abnahme dokumentiert werden.
+Transparente Bereiche der Fensterfläche sind bei verfügbarem Tray standardmässig durchklickbar. Native macOS-Prüfung: Ein eigenes Testfenster direkt hinter Beni erhält Klicks durch transparenten Hintergrund und die eingeklappte Leiste; Klicks auf Beni öffnen die Bedienung, sichtbare Blasen lassen sich schliessen, und Dragging funktioniert weiterhin. Die Einstellung lässt sich im Menü abschalten; vollständige Windows-/Linux-Desktop-Abnahme bleibt offen.
 
 Punkt 1 wurde am 12. Oktober 2026 mit dem echten macOS-Menü, gezielten Fensteraufnahmen und CGWindow-Geometrie geprüft. Für den Neustart wurden ausschliesslich Benis gespeicherte Fensterkoordinaten vorübergehend auf `{99999, 99999}` gesetzt; die gesicherten Einstellungen wurden anschliessend wiederhergestellt. Das 340 × 440-Punkte-Fenster landete sichtbar bei `{1372, 661}` auf dem 1728 × 1117-Punkte-Hauptbildschirm. Ein physisches Abhängen eines Monitors und gemischte DPI sind weiterhin NOT_RUN; die Positionierungsregeln dafür sind automatisch getestet.
 

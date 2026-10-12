@@ -119,3 +119,14 @@ Die Mindestversion 1.95 in den Manifesten bleibt bestehen. Die festgelegte Entwi
 - NOT_RUN: öffentliche Gatekeeper-/Notarisierungsabnahme auf einem frischen Gerät, native Windows-Explorer-/Linux-Launcher-Abnahme. Die Windows-Exe-Ressource wird im nativen Windows-CI-Build kompiliert.
 
 Master und Exportformate liegen in `assets/app-icon/`; das Exportskript benötigt macOS mit sips/iconutil und keine Python-Pakete. Die ursprünglichen Beni-Grafiken wurden nicht überschrieben.
+
+## Durchklickbare transparente Flächen
+
+- PASS: `./scripts/check.sh --desktop`: 51 Rusttests (27 Root, 24 Desktop), 11 Integrationstests, Formatierung, Clippy ohne Warnungen, Asset-/Icon-Prüfung und Debug-Build.
+- PASS: Eingabegeometrie prüft Sprite-Alpha, Rotation, runde UI-Ecken, versteckte Elemente und sortierte, nicht überlappende Rechtecke bei gebrochener DPI-Skalierung. Sichtbare Blase, Bedienleiste und Einstellungen sind in der Eingabemaske enthalten.
+- PASS: native macOS-Prüfung mit eigenem Testfenster direkt hinter Beni: transparente Fläche und eingeklappte Leiste geben Klicks weiter; Beni fängt seinen Klick selbst ab und klappt die Leiste auf/zu; Schliessen einer echten IPC-Meldung bleibt bedienbar. Temporäres Testfenster anschliessend beendet.
+- PASS: natives Dragging bei aktiver Durchklick-Funktion; ursprüngliche Fensterposition anschliessend wiederhergestellt.
+- PASS: neues macOS-Release-Bundle ad hoc signiert und streng geprüft; lokale Buddy-Instanz aktualisiert.
+- NOT_RUN (lokal): Windows-/Linux-Desktop-Abnahme und gemischte DPI. Linux-CI führt einen gezielten nativen Backend-Test mit Xvfb und Weston Headless aus; die lokalen Regeln ersetzen diesen Test nicht.
+
+Die Einstellung ist standardmässig aktiv und wird gespeichert. Ohne Tray oder bei Fehlern bleibt normale Bedienung erhalten. macOS verwendet passive lokale/globale Mausmonitore auf dem Hauptthread, gibt lokale Ereignisse unverändert weiter und entfernt beide Monitore bei Ende/Abschalten. Es werden keine Tastaturereignisse überwacht oder Eingabedaten gespeichert. Windows verwendet native Fensterregionen; X11 nur die Input Shape und Wayland die kopierte Oberflächen-Eingaberegion. Der Animationskern bleibt davon unabhängig.
