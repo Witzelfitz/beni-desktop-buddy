@@ -20,7 +20,7 @@ Kein WebView und kein JavaScript zur Laufzeit: Der bestehende Beni-Animationsans
 
 ## Start
 
-Rust stable (mindestens 1.95), Cargo und die üblichen nativen Build-Werkzeuge installieren. Unter macOS benötigt der Build die Xcode Command Line Tools, unter Windows die MSVC Build Tools.
+Rustup und die üblichen nativen Build-Werkzeuge installieren. `rust-toolchain.toml` legt Rust 1.99.0 mit rustfmt und Clippy für lokale Builds und CI fest; rustup installiert die Toolchain bei Bedarf automatisch. Die Manifeste deklarieren weiterhin Rust 1.95 als Mindestversion. Unter macOS benötigt der Build die Xcode Command Line Tools, unter Windows die MSVC Build Tools.
 
 Im Repository:
 

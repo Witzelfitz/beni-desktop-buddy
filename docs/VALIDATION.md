@@ -100,3 +100,11 @@ Die Bedienleiste behält ihren Platz im transparenten Fenster, auch wenn sie ein
 | NOT_RUN | Native Windows-/Linux-Accessibility-Abnahme | Die Plattformadapter sind im Desktop-Lockfile erfasst; die reale Desktop-Abnahme bleibt offen |
 
 Aktiviert wurde ausschliesslich das native `accesskit`-Feature von eframe. Rust-Version und Packaging-Signierung bleiben getrennte Folgeschritte. Die Klickfläche der Sprechblase ist ein Maus-Kürzel; der benannte Schliessen-Button übernimmt Tastatur- und Accessibility-Zugriff, damit der Blasenhintergrund keinen unbeschrifteten Tab-Stopp erzeugt.
+
+## Feste Rust-Toolchain
+
+- PASS: Rust 1.99.0, rustfmt und Clippy aus `rust-toolchain.toml` installiert; lokale aktive Toolchain ist `1.99.0-aarch64-apple-darwin`.
+- PASS: Derselbe explizite CI-Installationsbefehl `rustup toolchain install --no-self-update` verwendet die aktive Version aus der Projektdatei; kein Update des beweglichen stable-Kanals.
+- PASS: `./scripts/check.sh --desktop` mit der versionierten Toolchain: 47 Rusttests, 11 Integrationstests, Formatierung, Clippy, Asset-Hashes und Debug-Build.
+
+Die Mindestversion 1.95 in den Manifesten bleibt bestehen. Die festgelegte Entwicklungstoolchain ist 1.99.0; eine vollständige Prüfung der Mindestversion ist hier nicht ausgeführt worden.
