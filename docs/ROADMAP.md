@@ -36,8 +36,8 @@ Abnahme: Zeit und Ereignisse sind testbar; Nachrichten sind begrenzt; externe St
 
 ## 4 · Installation und Updates
 
-- Beni-App-Icon und plattformspezifische Pakete.
-- macOS signieren und notarisieren; Windows-Signierung vorbereiten.
+- Erledigt: Beni-App-Icon (PNG/ICNS/ICO), Windows-Exe-Ressource und Linux-Desktop-Vorlage in den plattformspezifischen Paketen.
+- Erledigt: macOS-Entwicklungsbundle ad hoc signieren und streng prüfen. Developer-ID-Signierung und Notarisierung sowie Windows-Signierung bleiben offen.
 - Reproduzierbare Releases aus freigegebenen Tags.
 - Optionaler, bewusst aktivierter Autostart.
 - Updatekonzept erst nach den ersten stabilen Builds festlegen.

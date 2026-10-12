@@ -23,3 +23,6 @@ objc2-app-kit = { version = "=0.3.2", default-features = false, features = ["NSS
 lto = "thin"
 codegen-units = 1
 strip = true
+
+[build-dependencies]
+embed-resource = "=3.0.11"

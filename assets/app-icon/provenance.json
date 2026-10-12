@@ -1,0 +1,19 @@
+{
+  "source": "Beni Desktop Buddy · neues App-Icon auf Basis der bestehenden Beni-Figur von Witzelfitz",
+  "generated_at": "2026-10-12",
+  "generated_with": "built-in image_gen",
+  "reference": {
+    "path": "docs/images/macos-buddy.png",
+    "sha256": "fc10b5e61a60b56f5462aed7deb8dd33e4e9a22b778dc797c97b9c0ffe8aba99"
+  },
+  "prompt": "Square desktop app icon, close-up of the exact friendly Beni character: black rectangular glasses, large brown eyes, short dark hair, warm skin, beard and moustache, smile, grey hoodie and red collar. Clean illustrated cartoon style, pale mint/cream rounded-square tile, restrained depth, transparent outside margin, readable at 32 px, no text, badges or extra objects.",
+  "original_asset_provenance": "assets/beni/provenance.json",
+  "export": "scripts/export-app-icon.py; sips PNG resampling, iconutil ICNS, ICO with PNG payloads",
+  "files": {
+    "beni-master.png": "338ba1628ec1489d80545ee34ac9d3b9b85aed70f2e4aa3e336e7d5c787d28d4",
+    "beni.png": "f294891ac9991ce3245b7383fd904cb5fba53c6e68bcaa2124bb9b40397e439f",
+    "beni-256.png": "3db6de0f5e9f410db643a036c730a43eebde127e908759ca78d07da5e964407c",
+    "Beni.icns": "81b417ef877870f0a1270dc114390028811cb7f3d19a326c08f15510f29ab787",
+    "Beni.ico": "359029434145dc6a6e7e538f9331e1d0a04f8f20746ce0cf4e63c2a7216e5352"
+  }
+}
