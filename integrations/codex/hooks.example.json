@@ -1,0 +1,52 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"/ABSOLUTER/PFAD/notify-hook.py\" UserPromptSubmit",
+            "commandWindows": "python \"C:/ABSOLUTER/PFAD/notify-hook.py\" UserPromptSubmit",
+            "timeout": 3
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"/ABSOLUTER/PFAD/notify-hook.py\" Stop",
+            "commandWindows": "python \"C:/ABSOLUTER/PFAD/notify-hook.py\" Stop",
+            "timeout": 3
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"/ABSOLUTER/PFAD/notify-hook.py\" PermissionRequest",
+            "commandWindows": "python \"C:/ABSOLUTER/PFAD/notify-hook.py\" PermissionRequest",
+            "timeout": 3
+          }
+        ]
+      }
+    ],
+    "Interrupt": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"/ABSOLUTER/PFAD/notify-hook.py\" Interrupt",
+            "commandWindows": "python \"C:/ABSOLUTER/PFAD/notify-hook.py\" Interrupt",
+            "timeout": 3
+          }
+        ]
+      }
+    ]
+  }
+}

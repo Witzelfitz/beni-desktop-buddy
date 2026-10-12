@@ -57,3 +57,17 @@ Nächste getrennte Pakete: Sprechblase, lokale IPC-Steuerung und danach optional
 Die CI führt zusätzlich native IPC-/CLI-Tests und Wrapperprüfungen auf macOS, Linux und Windows aus und erstellt Archive mit Desktop, CLI und Vorlagen. Der aktuelle Status steht bei den [PR-/Branch-Prüfungen](https://github.com/Witzelfitz/beni-desktop-buddy/actions?query=branch%3Afeat%2Flocal-status-integrations). Auf Windows entfallen die beiden Unix-Dateirechte-Tests; die Named-Pipe-Tests sowie der PowerShell-Wrapper laufen dort tatsächlich auf dem Windows-Runner.
 
 Die neuen Sprechblasentests prüfen die Erreichbarkeit der letzten Textzeile, das Schliessen und die Fenstergrenzen bei maximalem Quellennamen. Ein weiterer Test sendet über einen echten lokalen Listener, führt den Logikpfad bei verstecktem Fenster aus und prüft anschliessend Text, Quelle, Geste und Abschalten. Meldungsinhalte und Warteschlange werden nicht persistiert. Die lokale macOS-Instanz hat für die Einrichtung Statusmeldungen aktiviert; neue Installationen bleiben standardmässig ausgeschaltet.
+
+## Codex-Statusadapter
+
+| Status | Prüfung | Ergebnis |
+| --- | --- | --- |
+| PASS | `python3 scripts/check-integrations.py` | 11 Tests einschliesslich vier Codex-Ereignissen, sicheren Argumenten, Eingabe-/Antwortschutz, getrennten Sitzungsquellen, grossen/defekten Payloads, optionaler CLI, leerem JSON und erhaltenden/idempotenten Installer-Aufrufen |
+| PASS | Installierte Codex-Version | Lokales CLI und laufender App-Server 0.162.1; Hooks-Feature aktiv |
+| PASS | Lokale Registrierung | Vier Benutzer-Hooks in `~/.codex/hooks.json`, Adapter unter `~/.codex/hooks/beni-status.py`; Konfiguration und Script mit Dateirechten 0600 |
+| PASS | Tatsächlicher App-Server `hooks/list` | Vier Definitionen erkannt, keine Warnungen/Fehler; jede Definition hat `trustStatus: untrusted` |
+| PASS | Direkter macOS-End-to-end-Test | Installiertes Python-Script mit synthetischem Stop-Payload liefert `{}`; Beni zeigt «Codex hat geantwortet» mit Quellenkennung und Daumen-Geste |
+| NOT_RUN | Automatische Codex-Turn-Ereignisse | Benötigen die Nutzerprüfung der vier Definitionen über `/hooks`; kein Trust-Bypass verwendet |
+| NOT_RUN | Codex-Laufzeit auf Windows/Linux und Cloud-Orchestrierung | Portable Hook-/Installer-Tests laufen in CI; reale Codex-Integration dort nicht ausgeführt |
+
+Die direkten Script-Tests bestätigen den Weg Script → CLI → Beni; sie belegen noch keine automatische Ausführung durch Codex. Ein Probeaufruf des bestehenden Daemon-Proxys lief in einen Timeout. Der anschliessende read-only `hooks/list`-Aufruf über einen temporären stdio-App-Server bestätigte die Registrierung. Der laufende Daemon wurde nicht neu gestartet und es wurde keine zusätzliche Modellsitzung erzeugt.

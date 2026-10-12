@@ -92,7 +92,7 @@ assets/beni/                  Originalatlas, Animationen, Aliase und SHA-256-Pro
 crates/buddy-core/            Deterministische Rust-Engine und Tests
 crates/buddy-cli/             CLI, notify/run und Prozess-Integrationstests
 crates/buddy-ipc/             Geschützter lokaler Transport und Hintergrundlistener
-integrations/                Shell, PowerShell und optionale Claude-Code-Hooks
+integrations/                Shell, PowerShell und optionale Codex-/Claude-Code-Hooks
 apps/desktop/                Native egui/eframe-App
 .github/workflows/ci.yml      Kern- und Desktopchecks auf drei Plattformen
 scripts/                     Prüfungen, GitHub-Veröffentlichung und macOS-Packaging
