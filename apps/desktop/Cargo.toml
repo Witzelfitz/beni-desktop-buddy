@@ -10,6 +10,7 @@ resolver = "3"
 
 [dependencies]
 buddy-core = { path = "../../crates/buddy-core" }
+buddy-ipc = { path = "../../crates/buddy-ipc" }
 winit = { version = "=0.30.13", default-features = false, features = ["x11", "wayland"] }
 tray-icon = { version = "=0.26.1", default-features = false, features = ["ksni"] }
 eframe = { version = "=0.36.2", default-features = false, features = ["default_fonts", "glow", "x11", "wayland", "persistence"] }

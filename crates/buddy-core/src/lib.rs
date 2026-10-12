@@ -1,4 +1,5 @@
 //! Deterministic, headless Beni animation engine. No OS, network or GPU access.
+pub mod notifications;
 use serde::{Deserialize, Serialize};
 use std::{collections::BTreeMap, error::Error, f64::consts::PI, fmt};
 

@@ -5,6 +5,7 @@ cargo fmt --all --check
 cargo test --workspace --locked
 cargo clippy --workspace --all-targets --locked -- -D warnings
 cargo run --locked -p buddy-cli -- validate-assets
+python3 scripts/check-integrations.py
 python3 scripts/check-assets.py
 if [[ "${1:-}" == "--desktop" ]]; then
   cargo fmt --manifest-path apps/desktop/Cargo.toml --check

@@ -11,4 +11,5 @@ path = "src/main.rs"
 
 [dependencies]
 buddy-core = { path = "../buddy-core" }
+buddy-ipc = { path = "../buddy-ipc" }
 serde_json.workspace = true

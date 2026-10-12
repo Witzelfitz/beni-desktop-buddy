@@ -1,0 +1,21 @@
+[package]
+name = "buddy-ipc"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.95"
+publish = false
+
+[dependencies]
+buddy-core = { path = "../buddy-core" }
+serde = { version = "=1.0.229", features = ["derive"] }
+serde_json = "=1.0.151"
+interprocess = { version = "=2.4.4", features = ["tokio"] }
+tokio = { version = "=1.53.2", features = ["rt", "net", "io-util", "time", "sync", "macros"] }
+directories = "=6.0.0"
+
+[target.'cfg(unix)'.dependencies]
+nix = { version = "=0.31.3", features = ["user"] }
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "=0.61.2", features = ["Win32_Foundation", "Win32_Security", "Win32_Security_Authorization", "Win32_System_Threading", "Win32_System_Memory"] }
+widestring = "=1.2.1"

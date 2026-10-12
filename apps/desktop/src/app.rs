@@ -2,7 +2,7 @@ use crate::{
     tray::{Action, Tray},
     window::PlacementGuard,
 };
-use buddy_core::{ATLAS_PNG, Engine, Player, Settings};
+use buddy_core::{ATLAS_PNG, Engine, Player, Settings, notifications::reading_time_ms};
 use eframe::egui::{self, Color32, FontId, Rect, Sense, TextureHandle, Vec2};
 use std::sync::mpsc::{Receiver, SyncSender, sync_channel};
 use std::time::{Duration, Instant};
@@ -20,6 +20,11 @@ pub struct BuddyApp {
     last_tick: Instant,
     message: String,
     message_until: Instant,
+    message_source: Option<String>,
+    active_remote: bool,
+    ipc_enabled: bool,
+    server: Option<buddy_ipc::Server>,
+    hidden: bool,
     menu_open: bool,
     speech_draft: String,
     error: Option<TransientError>,
@@ -65,6 +70,14 @@ impl BuddyApp {
             last_tick: Instant::now(),
             message: "Hoi! Ich bin Beni. Zieh mich an deinen Lieblingsplatz.".into(),
             message_until: Instant::now() + Duration::from_secs(10),
+            message_source: None,
+            active_remote: false,
+            ipc_enabled: cc
+                .storage
+                .and_then(|s| eframe::get_value(s, "status-receiving"))
+                .unwrap_or(false),
+            server: None,
+            hidden: false,
             menu_open: false,
             speech_draft: "Schön bist du da!".into(),
             error: None,
@@ -83,7 +96,9 @@ impl BuddyApp {
         }
         self.error = None;
         self.message = message.chars().take(400).collect();
-        self.message_until = Instant::now() + Duration::from_secs(10);
+        self.message_until = Instant::now() + Duration::from_millis(reading_time_ms(&self.message));
+        self.message_source = None;
+        self.active_remote = false;
     }
     fn report_error(&mut self, message: String, now: Instant) {
         self.error = Some(TransientError {
@@ -95,6 +110,86 @@ impl BuddyApp {
         if self.error.as_ref().is_some_and(|error| now >= error.until) {
             self.error = None;
         }
+    }
+    fn dismiss_speech(&mut self, now: Instant) {
+        self.error = None;
+        self.message_until = now;
+        self.active_remote = false;
+    }
+    fn deliver_status(&mut self, visible: bool, now: Instant) {
+        if !visible
+            || self.menu_open
+            || self.error.is_some()
+            || (self.active_remote && now < self.message_until)
+        {
+            return;
+        }
+        if let Some(delivery) = self.server.as_ref().and_then(|s| s.pop()) {
+            let message = delivery.message;
+            self.play(message.state.as_deref().unwrap_or("reden"), &message.text);
+            self.message_source = Some(message.source);
+            self.message_until = now
+                + Duration::from_millis(reading_time_ms(&message.text).min(delivery.remaining_ms));
+            self.active_remote = true;
+        }
+    }
+    fn speech(&mut self, ui: &mut egui::Ui, now: Instant) {
+        if now >= self.message_until && self.error.is_none() {
+            ui.allocate_space(Vec2::new(ui.available_width(), 78.0));
+            return;
+        }
+        let top = ui.cursor().min.y;
+        let text = self
+            .error
+            .as_ref()
+            .map(|e| &e.message)
+            .unwrap_or(&self.message)
+            .clone();
+        let mut dismiss = false;
+        let response = egui::Frame::new()
+            .fill(Color32::from_rgb(246, 249, 237))
+            .corner_radius(16)
+            .inner_margin(12)
+            .show(ui, |ui| {
+                ui.set_width((ui.available_width() - 24.0).max(100.0));
+                ui.visuals_mut().override_text_color = Some(Color32::from_rgb(28, 41, 35));
+                ui.horizontal(|ui| {
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                        dismiss = ui
+                            .add(
+                                egui::Button::new("×")
+                                    .small()
+                                    .fill(Color32::from_rgb(220, 231, 205)),
+                            )
+                            .on_hover_text("Nachricht schliessen")
+                            .clicked();
+                        let source = if self.error.is_some() {
+                            "Hinweis"
+                        } else {
+                            self.message_source.as_deref().unwrap_or("Mini-Beni")
+                        };
+                        ui.add_sized(
+                            [ui.available_width(), ui.spacing().interact_size.y],
+                            egui::Label::new(egui::RichText::new(source).small())
+                                .truncate()
+                                .halign(egui::Align::Min),
+                        );
+                    });
+                });
+                egui::ScrollArea::vertical()
+                    .id_salt("speech-text")
+                    .max_height(125.0)
+                    .auto_shrink([false, true])
+                    .show(ui, |ui| {
+                        ui.add(egui::Label::new(egui::RichText::new(text).size(14.0)).wrap());
+                    });
+            })
+            .response
+            .interact(Sense::click());
+        if dismiss || response.clicked() {
+            self.dismiss_speech(now);
+        }
+        ui.add_space((78.0 - (ui.cursor().min.y - top)).max(0.0));
     }
     fn avatar_mesh(&self, stage: Rect) -> Result<egui::Mesh, buddy_core::BuddyError> {
         let pose = self.player.pose(&self.engine, &self.settings)?;
@@ -196,6 +291,8 @@ impl BuddyApp {
             .fixed_pos([12.0, 12.0])
             .default_width(296.0)
             .resizable(false)
+            .max_height(360.0)
+            .vscroll(true)
             .collapsible(false)
             .show(ctx, |ui| {
                 ui.label("Welche Animation soll ich zeigen?");
@@ -206,7 +303,7 @@ impl BuddyApp {
                     .map(|(name, animation)| (name.clone(), animation.label.clone()))
                     .collect();
                 egui::ScrollArea::vertical()
-                    .max_height(110.0)
+                    .max_height(70.0)
                     .show(ui, |ui| {
                         for (name, label) in states {
                             if ui
@@ -235,6 +332,8 @@ impl BuddyApp {
                     ));
                 }
                 ui.separator();
+                ui.checkbox(&mut self.ipc_enabled, "Statusmeldungen empfangen");
+                ui.small("Lokale Programme können Beni Meldungen schicken.");
                 ui.add(
                     egui::TextEdit::singleline(&mut self.speech_draft)
                         .hint_text("Benis Nachricht")
@@ -272,32 +371,9 @@ impl BuddyApp {
         }
         ui.vertical_centered(|ui| {
             ui.add_space(8.0);
-            let speech = Rect::from_min_size(
-                ui.cursor().min + egui::vec2(12.0, 0.0),
-                egui::vec2(ui.available_width() - 24.0, 72.0),
-            );
-            if now < self.message_until || self.error.is_some() {
-                ui.painter()
-                    .rect_filled(speech, 16, Color32::from_rgb(246, 249, 237));
-                let text = self
-                    .error
-                    .as_ref()
-                    .map(|error| error.message.as_str())
-                    .unwrap_or(&self.message);
-                let galley = ui.painter().layout(
-                    text.to_string(),
-                    FontId::proportional(14.0),
-                    Color32::from_rgb(28, 41, 35),
-                    speech.width() - 28.0,
-                );
-                ui.painter().with_clip_rect(speech.shrink(8.0)).galley(
-                    speech.min + egui::vec2(14.0, 12.0),
-                    galley,
-                    Color32::BLACK,
-                );
-            }
-            ui.allocate_space(Vec2::new(ui.available_width(), 78.0));
-            let (_, stage) = ui.allocate_space(Vec2::new(ui.available_width(), 295.0));
+            self.speech(ui, now);
+            let stage_height = (ui.available_height() - 52.0).max(100.0);
+            let (_, stage) = ui.allocate_space(Vec2::new(ui.available_width(), stage_height));
             self.paint_avatar(ui, stage);
             self.controls(ui);
         });
@@ -325,6 +401,7 @@ impl BuddyApp {
     ) {
         match action {
             Action::Show | Action::Recover | Action::Settings => {
+                self.hidden = false;
                 ctx.send_viewport_cmd(egui::ViewportCommand::Visible(true));
                 ctx.send_viewport_cmd(egui::ViewportCommand::Minimized(false));
                 ctx.send_viewport_cmd(egui::ViewportCommand::Focus);
@@ -335,7 +412,10 @@ impl BuddyApp {
                     self.menu_open = true;
                 }
             }
-            Action::Hide => ctx.send_viewport_cmd(egui::ViewportCommand::Visible(false)),
+            Action::Hide => {
+                self.hidden = true;
+                ctx.send_viewport_cmd(egui::ViewportCommand::Visible(false));
+            }
             Action::Pause => self.player.paused = !self.player.paused,
             Action::Quit => ctx.send_viewport_cmd(egui::ViewportCommand::Close),
         }
@@ -368,6 +448,30 @@ impl eframe::App for BuddyApp {
         while let Ok(action) = self.tray_receiver.try_recv() {
             self.handle_tray(action, ctx, window.as_deref());
         }
+        if window.is_some() && self.ipc_enabled && self.server.is_none() {
+            let wake = ctx.clone();
+            match buddy_ipc::Server::start(move || wake.request_repaint()) {
+                Ok(server) => self.server = Some(server),
+                Err(error) => {
+                    self.ipc_enabled = false;
+                    self.report_error(format!("Statusmeldungen: {error}"), Instant::now());
+                }
+            }
+        }
+        if !self.ipc_enabled {
+            self.server = None;
+        }
+        if let Some(error) = self.server.as_ref().and_then(|s| s.take_error()) {
+            self.server = None;
+            self.ipc_enabled = false;
+            self.report_error(format!("Statusmeldungen: {error}"), Instant::now());
+        }
+        let visible = !self.hidden
+            && window.as_ref().is_none_or(|w| {
+                w.is_visible().unwrap_or(true) && !w.is_minimized().unwrap_or(false)
+            });
+        let occluded = ctx.input(|i| i.viewport().occluded.unwrap_or(false));
+        self.deliver_status(visible && !occluded, Instant::now());
         if let Some(tray) = &self.tray {
             tray.set_paused(self.player.paused);
         }
@@ -384,12 +488,19 @@ impl eframe::App for BuddyApp {
     }
     fn save(&mut self, storage: &mut dyn eframe::Storage) {
         eframe::set_value(storage, "buddy-settings", &self.settings);
+        eframe::set_value(storage, "status-receiving", &self.ipc_enabled);
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    mod common {
+        include!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../crates/buddy-ipc/tests/common/mod.rs"
+        ));
+    }
     fn app(ctx: &egui::Context) -> BuddyApp {
         let icon = eframe::icon_data::from_png_bytes(ATLAS_PNG).unwrap();
         let image = egui::ColorImage::from_rgba_unmultiplied(
@@ -405,6 +516,11 @@ mod tests {
             last_tick: Instant::now(),
             message: "Hoi!".into(),
             message_until: Instant::now() + Duration::from_secs(10),
+            message_source: None,
+            active_remote: false,
+            ipc_enabled: false,
+            server: None,
+            hidden: false,
             menu_open: false,
             speech_draft: "Hoi von den Tests!".into(),
             error: None,
@@ -737,5 +853,110 @@ mod tests {
             eframe::App::logic(&mut app, ctx, &mut native_frame);
         });
         assert!(!app.player.paused);
+    }
+
+    #[test]
+    fn long_speech_scrolls_and_can_be_closed_without_hiding_controls() {
+        let ctx = egui::Context::default();
+        ctx.all_styles_mut(|style| style.animation_time = 0.0);
+        let mut app = app(&ctx);
+        let text = "Beni erklärt den nächsten Schritt. ".repeat(11);
+        app.play("reden", &text);
+        app.message_source = Some("W".repeat(48));
+        assert!(app.message_until.duration_since(Instant::now()) > Duration::from_secs(20));
+        let output = frame(&ctx, &mut app, 0.0, vec![]);
+        for label in ["Hoi!", "Pause", "Menü", "Beenden", "×"] {
+            let rect = text_rect(&output, label);
+            assert!(
+                rect.min.y >= 0.0 && rect.max.y <= 440.0,
+                "{label}: {rect:?}"
+            );
+        }
+        let (text_rect_before, clip) = output
+            .shapes
+            .iter()
+            .find_map(|s| find_text(&s.shape, &text).map(|r| (r, s.clip_rect)))
+            .unwrap();
+        assert!(
+            text_rect_before.max.y > clip.max.y,
+            "long text must have a scroll range"
+        );
+        let pos = clip.center();
+        output.drop_without_applying_deltas();
+        frame(
+            &ctx,
+            &mut app,
+            0.1,
+            vec![
+                egui::Event::PointerMoved(pos),
+                egui::Event::MouseWheel {
+                    phase: egui::TouchPhase::Move,
+                    unit: egui::MouseWheelUnit::Point,
+                    delta: egui::vec2(0.0, -2000.0),
+                    modifiers: Default::default(),
+                },
+            ],
+        )
+        .drop_without_applying_deltas();
+        let output = frame(&ctx, &mut app, 0.2, vec![]);
+        let (after, clip) = output
+            .shapes
+            .iter()
+            .find_map(|s| find_text(&s.shape, &text).map(|r| (r, s.clip_rect)))
+            .unwrap();
+        assert!(
+            after.max.y <= clip.max.y + 1.0,
+            "last line must be reachable: {after:?} / {clip:?}"
+        );
+        let close = text_rect(&output, "×").center();
+        output.drop_without_applying_deltas();
+        click(&ctx, &mut app, close, 0.3).drop_without_applying_deltas();
+        assert!(app.message_until <= Instant::now());
+    }
+
+    #[test]
+    fn received_status_waits_while_hidden_and_then_shows_text_source_and_gesture() {
+        let endpoint = common::TestEndpoint::new();
+        let ctx = egui::Context::default();
+        let mut app = app(&ctx);
+        assert!(!app.ipc_enabled, "receiving is opt-in");
+        let wake = ctx.clone();
+        app.server = Some(
+            buddy_ipc::Server::start_at(endpoint.endpoint.clone(), move || wake.request_repaint())
+                .unwrap(),
+        );
+        app.ipc_enabled = true;
+        app.hidden = true;
+        let mut message = buddy_core::notifications::Notification::new("Build grün");
+        message.source = "test-build".into();
+        buddy_ipc::notify(&endpoint.endpoint, message).unwrap();
+        let mut native_frame = eframe::Frame::_new_kittest();
+        let _ = ctx.run_logic(&egui::RawInput::default(), |ctx| {
+            eframe::App::logic(&mut app, ctx, &mut native_frame)
+        });
+        assert_eq!(app.server.as_ref().unwrap().pending(), 1);
+        app.hidden = false;
+        let _ = ctx.run_logic(&egui::RawInput::default(), |ctx| {
+            eframe::App::logic(&mut app, ctx, &mut native_frame)
+        });
+        assert_eq!(app.player.state(), "daumen");
+        assert_eq!(app.message, "Build grün");
+        assert_eq!(app.message_source.as_deref(), Some("test-build"));
+        let output = frame(&ctx, &mut app, 0.0, vec![]);
+        text_rect(&output, "Build grün");
+        text_rect(&output, "test-build");
+        output.drop_without_applying_deltas();
+        app.ipc_enabled = false;
+        let _ = ctx.run_logic(&egui::RawInput::default(), |ctx| {
+            eframe::App::logic(&mut app, ctx, &mut native_frame)
+        });
+        assert!(app.server.is_none());
+        assert!(
+            buddy_ipc::notify(
+                &endpoint.endpoint,
+                buddy_core::notifications::Notification::new("ok")
+            )
+            .is_err()
+        );
     }
 }
