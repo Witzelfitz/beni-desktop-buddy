@@ -2,8 +2,9 @@
 
 ## 1 · Desktop-Abnahme und erster Build
 
-- GUI-Abhängigkeiten laden, Desktop-Lockfile committen, Compiler-/CI-Probleme beheben.
-- Unter macOS Transparenz, PNG-Alpha, alle Animationen, Dragging, Sprechblase und Neustart prüfen.
+- Erledigt: GUI-Abhängigkeiten, committete Lockfiles und erfolgreiche Tests, Clippy und Release-Builds auf macOS, Windows und Linux.
+- Erledigt: nativer macOS-Start, Transparenz und PNG-Alpha; egui-UI-Tests für Menü, Nachricht, Pause/Fortsetzen, reduzierte Bewegung, Dragging und Beenden.
+- Offen: alle Animationen und Persistenz manuell auf dem Desktop prüfen.
 - Monitorwechsel und hohe Pixeldichte prüfen; einen verlorenen Fensterstand wiederherstellen können.
 - Windows, Linux/X11 und Wayland separat prüfen und Ergebnisse dokumentieren.
 

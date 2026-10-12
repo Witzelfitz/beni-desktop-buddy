@@ -13,10 +13,12 @@ Ausführungsumgebung: macOS auf Apple Silicon, Rust/Cargo 1.99.0. GitHub- und Cr
 | PASS | Nativer macOS-Start | Transparentes 340 × 440-Punkte-Fenster mit Beni und sichtbarer Bedienleiste; CGWindow-Abfrage und gezielter Fenster-Screenshot |
 | PASS | PNG-Alpha der Fensteraufnahme | RGBA-Aufnahme; Hintergrundpixel ausserhalb der UI haben Alpha 0 |
 | PASS | GitHub-API | Privates Repository `Witzelfitz/beni-desktop-buddy` erstellt und per API bestätigt |
-| PENDING | GitHub Actions | Workflow vorbereitet; Resultate am Pull Request prüfen |
+| PASS | [GitHub Actions](https://github.com/Witzelfitz/beni-desktop-buddy/actions/runs/38248825723) | Alle sechs Jobs bestanden: Kern/CLI und Desktop auf macOS, Windows und Linux; drei Download-Artefakte erstellt |
 | NOT_RUN | Vollständige manuelle Testmatrix | Windows/Linux-Desktop, Monitorwechsel, Langzeitlast und Installer-Abnahme sind offen |
 
 Die Desktop-UI-Tests führen denselben `egui::Context::run_ui`-Pfad aus wie eframe und senden Pointer-Ereignisse. Sie prüfen UI-Aktionen und daraus entstehende native Fensterkommandos; sie ersetzen keine Prüfung des Betriebssystem-/Compositor-Verhaltens.
+
+Die plattformübergreifende CI hat den Implementierungsstand `0bc6d05` geprüft. Der nachfolgende Abschlusscommit aktualisiert ausschliesslich Dokumentation und Vorschau; er verändert keinen Programmcode oder Build-Workflow.
 
 ## Nächster Entwicklungsschritt
 

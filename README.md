@@ -2,13 +2,15 @@
 
 Mini-Beni als nativer Desktop-Buddy in Rust: ein animierter Begleiter auf dem Desktop, mit transparentem Fenster, Gesten und Sprechblasen.
 
-Dieses Repository startet mit einer Rust-Grundlage. Die erste Desktop-Abnahmeplattform ist macOS; Windows und Linux sind im Build-Workflow vorgesehen.
+Die native Rust-Grundlage ist auf macOS gestartet und visuell geprüft. Tests, Clippy und Release-Builds bestehen in GitHub Actions auf macOS, Windows und Linux.
+
+<img src="docs/images/macos-buddy.png" alt="Beni als nativer macOS-Desktop-Buddy mit Sprechblase und Bedienleiste" width="340">
 
 ## Aktueller Stand
 
 - **Implementiert und getestet:** unabhängiger Rust-Animationskern, 44 Posen, 20 Animationen, SDK-kompatible Bewegung, Aliase, One-shot → Idle, Pause, Tempo, Spiegelung, reduzierte Bewegung und Asset-Validierung.
 - **Auf macOS gebaut und gestartet:** Desktop-App mit egui/eframe, transparentem Fenster, Verschieben per Ziehen, Sprechblase, Animationsmenü, Einstellungen und lokalem Speichern der Einstellungen/Fensterposition.
-- **Vorbereitet:** CI mit Download-Artefakten für macOS, Windows und Linux; macOS-App-Bundle; Roadmap und manuelle Abnahmeliste.
+- **CI bestanden:** Kern, CLI und Desktop auf macOS, Windows und Linux. Download-Artefakte, macOS-App-Bundle, Roadmap und manuelle Abnahmeliste sind vorhanden.
 - **GitHub:** [Witzelfitz/beni-desktop-buddy](https://github.com/Witzelfitz/beni-desktop-buddy), privat.
 
 Kein WebView und kein JavaScript zur Laufzeit: Der bestehende Beni-Animationsansatz wird in Rust berechnet und aus dem originalen PNG-Atlas gezeichnet. Grafik und Daten sind im Binary eingebettet.
