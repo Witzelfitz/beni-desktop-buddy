@@ -142,6 +142,10 @@ mod tests {
                     .apply(&window, &map, &ctx, false)
                     .expect("restore full input region");
                 probe(&window, false);
+                guard
+                    .apply(&window, &map, &ctx, true)
+                    .expect("reactivate selective input region");
+                probe(&window, true);
                 self.0 = true;
                 event_loop.exit();
             }

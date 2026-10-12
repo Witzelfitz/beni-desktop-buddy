@@ -17,6 +17,11 @@ pub struct InputGuard {
     monitor: Option<macos::Monitor>,
 }
 impl InputGuard {
+    pub fn retry_if_failed(&mut self) {
+        if self.disabled {
+            *self = Self::default();
+        }
+    }
     pub fn apply(
         &mut self,
         window: &Arc<Window>,

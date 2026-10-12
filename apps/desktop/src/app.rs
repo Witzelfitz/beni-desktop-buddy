@@ -368,8 +368,9 @@ impl BuddyApp {
                 if ui
                     .checkbox(&mut self.click_through, "Hintergrund durchklickbar")
                     .changed()
+                    && self.click_through
                 {
-                    self.input = crate::input::InputGuard::default();
+                    self.input.retry_if_failed();
                 }
                 if ui
                     .checkbox(&mut self.settings.always_on_top, "Immer im Vordergrund")
