@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/buddy-core", "crates/buddy-cli"]
+members = ["crates/buddy-core", "crates/buddy-cli", "crates/buddy-ipc"]
 # Desktop has its own lockfile: the headless core stays testable without a GPU or GUI dependencies.
 exclude = ["apps/desktop"]
 

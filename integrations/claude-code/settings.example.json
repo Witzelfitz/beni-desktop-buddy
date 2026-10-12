@@ -1,0 +1,6 @@
+{
+  "hooks": {
+    "Stop": [{"hooks": [{"type": "command", "command": "python3 \"/ABSOLUTER/PFAD/notify-hook.py\"", "timeout": 3}]}],
+    "Notification": [{"matcher": "permission_prompt|worker_permission_prompt|agent_needs_input|elicitation_dialog", "hooks": [{"type": "command", "command": "python3 \"/ABSOLUTER/PFAD/notify-hook.py\"", "timeout": 3}]}]
+  }
+}

@@ -37,3 +37,23 @@ Die plattformübergreifende CI hat den Implementierungsstand `0bc6d05` geprüft.
 Das Tray wird auf dem nativen Hauptthread erzeugt. Ereignisse wecken die App auch ohne sichtbaren Renderpass. macOS-Arbeitsbereiche werden in logischen Cocoa-Punkten inklusive Dock und Menüleiste berücksichtigt. Unter Wayland bleibt Positionierung vom Compositor abhängig. Linux benötigt einen StatusNotifier-Host; ein fehlender Host ist nicht zwingend als Fehler bei der Tray-Erzeugung erkennbar. Bei erkanntem Tray-Fehler bleibt eine normale Titelleiste verfügbar; unter macOS zusätzlich der Dock-Eintrag.
 
 Nächste getrennte Pakete: Sprechblase, lokale IPC-Steuerung und danach optional die Emotionserkennung. Click-through, Grössenwahl und vollständige Plattform-Abnahme bleiben offen. Das lokale macOS-Bundle ist ein Entwicklungsbundle ohne Notarisierung.
+
+## Sprechblase und plattformübergreifende Statusintegration
+
+| Status | Prüfung | Ergebnis |
+| --- | --- | --- |
+| PASS | `./scripts/check.sh --desktop` | 42 Rusttests: 10 Engine-, 6 Protokoll-/Queue-/Regeltests, 5 CLI-Prozesstests, 6 echte IPC-Tests und 15 Desktoptests; Formatierung, beide Clippy-Prüfungen, Asset-Hashes und Debug-Build |
+| PASS | `python3 scripts/check-integrations.py` | Fünf Tests für Hook-Filter, untrusted Input, nicht verfügbare CLI, JSON-Vorlage sowie Exitcodes/Argumentgrenzen des POSIX-Wrappers |
+| PASS | Gestenregeln | 52 deutsche/englische Statusbeispiele; explizite Geste hat Vorrang, unbekannte/unerlaubte Animationen abgelehnt |
+| PASS | Echter Unix-Transport | Annahme/Ack, Normalisierung, Wecken, Überlastung, falsches/grosses JSON, Idle-Client, Timeout, mehrere Listener, Abschalten/Neustart, sichere Dateirechte und verwaiste Sockets |
+| PASS | Windows-Cross-Compile | `cargo check -p buddy-ipc --target x86_64-pc-windows-gnu --locked` sowie Clippy für IPC/CLI und alle Targets; prüft Windows-Code, führt ihn nicht aus |
+| PASS | macOS-Release-Bundle | Desktop, CLI, Wrapper, Hook-Vorlage und Integrationsanleitung gebündelt |
+| PASS | Native macOS-Sprechblase | Lange Meldung, Scrollen bis «LETZTE ZEILE», Schliessen, Quellenname, sichtbare Geste und weiterhin sichtbare Bedienleiste |
+| PASS | Native macOS-IPC | Empfang standardmässig aus; Aktivieren, Abschalten (Exitcode 3), erneutes Aktivieren und Erhalt der Freigabe nach Neustart |
+| PASS | Verdeckte Darstellung | Via Tray ausgeblendet, Meldung angenommen, erst nach erneutem Anzeigen zugestellt |
+| PASS | Lokale CLI eingerichtet | `cargo install --path crates/buddy-cli --locked`; `beni-buddy-cli` im Cargo-Binärpfad |
+| NOT_RUN | Native Windows-/Linux-GUI und echte Integrationsregistrierung | Keine Windows-/Linux-Desktop-Sitzung; bestehende Claude-/OS-Konfigurationen nicht verändert |
+
+Die CI führt zusätzlich native IPC-/CLI-Tests und Wrapperprüfungen auf macOS, Linux und Windows aus und erstellt Archive mit Desktop, CLI und Vorlagen. Der aktuelle Status steht bei den [PR-/Branch-Prüfungen](https://github.com/Witzelfitz/beni-desktop-buddy/actions?query=branch%3Afeat%2Flocal-status-integrations). Auf Windows entfallen die beiden Unix-Dateirechte-Tests; die Named-Pipe-Tests sowie der PowerShell-Wrapper laufen dort tatsächlich auf dem Windows-Runner.
+
+Die neuen Sprechblasentests prüfen die Erreichbarkeit der letzten Textzeile, das Schliessen und die Fenstergrenzen bei maximalem Quellennamen. Ein weiterer Test sendet über einen echten lokalen Listener, führt den Logikpfad bei verstecktem Fenster aus und prüft anschliessend Text, Quelle, Geste und Abschalten. Meldungsinhalte und Warteschlange werden nicht persistiert. Die lokale macOS-Instanz hat für die Einrichtung Statusmeldungen aktiviert; neue Installationen bleiben standardmässig ausgeschaltet.
