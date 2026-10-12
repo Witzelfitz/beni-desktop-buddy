@@ -1,0 +1,25 @@
+name: Fehler melden
+description: Ein Problem mit Beni nachvollziehbar melden.
+body:
+  - type: input
+    id: platform
+    attributes:
+      label: Plattform
+      placeholder: macOS-Version / Windows-Version / Linux-Desktop und X11 oder Wayland
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Schritte und beobachtetes Verhalten
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Erwartetes Verhalten
+  - type: textarea
+    id: checks
+    attributes:
+      label: Build-Version und relevante Fehlermeldung
+      description: Keine Tokens, Passwörter oder personenbezogenen Logs einfügen.

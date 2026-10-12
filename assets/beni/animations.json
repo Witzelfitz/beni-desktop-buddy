@@ -1,0 +1,620 @@
+{
+  "warten": {
+    "label": "Bereit",
+    "segs": [
+      {
+        "f": "stehen",
+        "d": 2400
+      },
+      {
+        "f": "dreiviertel_b",
+        "d": 900,
+        "pop": 0.03
+      },
+      {
+        "f": "stehen",
+        "d": 300,
+        "pop": 0.03
+      }
+    ],
+    "motion": [
+      {
+        "t": "breathe",
+        "a": 0.012,
+        "c": 3
+      }
+    ],
+    "group": "Dialog"
+  },
+  "hallo": {
+    "label": "Winken",
+    "segs": [
+      {
+        "f": "winken",
+        "d": 200,
+        "pop": 0.025
+      },
+      {
+        "f": "winken_o",
+        "d": 200,
+        "pop": 0.02
+      },
+      {
+        "f": "winken",
+        "d": 200,
+        "pop": 0.02
+      },
+      {
+        "f": "winken_o",
+        "d": 200,
+        "pop": 0.02
+      },
+      {
+        "f": "winken",
+        "d": 200,
+        "pop": 0.02
+      },
+      {
+        "f": "winken_o",
+        "d": 200,
+        "pop": 0.02
+      },
+      {
+        "f": "winken",
+        "d": 200,
+        "pop": 0.02
+      },
+      {
+        "f": "winken_o",
+        "d": 200,
+        "pop": 0.02
+      }
+    ],
+    "motion": [
+      {
+        "t": "sway",
+        "a": 2.5,
+        "c": 4
+      }
+    ],
+    "group": "Dialog"
+  },
+  "reden": {
+    "label": "Reden",
+    "segs": [
+      {
+        "f": "finger_laecheln",
+        "d": 220,
+        "pop": 0.012
+      },
+      {
+        "f": "reden_daumen",
+        "d": 240,
+        "pop": 0.012
+      },
+      {
+        "f": "winken",
+        "d": 240,
+        "pop": 0.012
+      },
+      {
+        "f": "winken_o",
+        "d": 200,
+        "pop": 0.012
+      },
+      {
+        "f": "reden_haende",
+        "d": 270,
+        "pop": 0.012
+      },
+      {
+        "f": "reden_achseln",
+        "d": 220,
+        "pop": 0.012
+      },
+      {
+        "f": "finger_laecheln",
+        "d": 260,
+        "pop": 0.012
+      },
+      {
+        "f": "erklaeren",
+        "d": 320,
+        "pop": 0.012
+      }
+    ],
+    "motion": [
+      {
+        "t": "breathe",
+        "a": 0.01,
+        "c": 1
+      }
+    ],
+    "group": "Dialog"
+  },
+  "erklaeren": {
+    "label": "Erklären",
+    "segs": [
+      {
+        "f": "erklaeren",
+        "d": 950,
+        "pop": 0.022
+      },
+      {
+        "f": "arme_offen",
+        "d": 1100,
+        "pop": 0.022
+      },
+      {
+        "f": "zeigen",
+        "d": 1100,
+        "pop": 0.022
+      },
+      {
+        "f": "nachdenken",
+        "d": 800,
+        "pop": 0.022
+      },
+      {
+        "f": "idee",
+        "d": 1000,
+        "pop": 0.022
+      },
+      {
+        "f": "faeuste_laecheln",
+        "d": 650,
+        "pop": 0.022
+      },
+      {
+        "f": "daumen_hoch",
+        "d": 800,
+        "pop": 0.022
+      }
+    ],
+    "motion": [
+      {
+        "t": "breathe",
+        "a": 0.012,
+        "c": 2
+      },
+      {
+        "t": "sway",
+        "a": 1.2,
+        "c": 1
+      }
+    ],
+    "group": "Dialog"
+  },
+  "nachdenken": {
+    "label": "Denken",
+    "segs": [
+      {
+        "f": "nachdenken",
+        "d": 2800
+      }
+    ],
+    "motion": [
+      {
+        "t": "sway",
+        "a": 2.2,
+        "c": 1
+      },
+      {
+        "t": "breathe",
+        "a": 0.01,
+        "c": 2
+      }
+    ],
+    "group": "Dialog"
+  },
+  "lachen": {
+    "label": "Lachen",
+    "segs": [
+      {
+        "f": "faeuste_laecheln",
+        "d": 280,
+        "shake": 0,
+        "pop": 0.02
+      },
+      {
+        "f": "aufgeregt",
+        "d": 220,
+        "shake": 0,
+        "pop": 0.02
+      },
+      {
+        "f": "jubel_lachen",
+        "d": 360,
+        "shake": 1.5,
+        "pop": 0.02
+      },
+      {
+        "f": "jubel_zittern",
+        "d": 300,
+        "shake": 2,
+        "pop": 0.02
+      },
+      {
+        "f": "jubel_arm",
+        "d": 350,
+        "shake": 1.5,
+        "pop": 0.02
+      },
+      {
+        "f": "kichern",
+        "d": 450,
+        "shake": 1,
+        "pop": 0.02
+      },
+      {
+        "f": "faeuste_laecheln",
+        "d": 320,
+        "shake": 0,
+        "pop": 0.02
+      }
+    ],
+    "motion": [],
+    "group": "Emotion"
+  },
+  "zeigen": {
+    "label": "Zeigen",
+    "segs": [
+      {
+        "f": "zeigen",
+        "d": 1600
+      }
+    ],
+    "motion": [
+      {
+        "t": "nudgex",
+        "a": 7,
+        "c": 2
+      },
+      {
+        "t": "breathe",
+        "a": 0.01,
+        "c": 2
+      }
+    ],
+    "group": "Dialog"
+  },
+  "idee": {
+    "label": "Idee!",
+    "segs": [
+      {
+        "f": "idee",
+        "d": 400,
+        "hop": 30,
+        "pop": 0.06
+      },
+      {
+        "f": "idee",
+        "d": 1200,
+        "pop": 0.05
+      }
+    ],
+    "motion": [
+      {
+        "t": "breathe",
+        "a": 0.01,
+        "c": 1
+      }
+    ],
+    "group": "Dialog"
+  },
+  "daumen": {
+    "label": "Daumen hoch",
+    "segs": [
+      {
+        "f": "daumen_hoch",
+        "d": 320,
+        "pop": 0.07
+      },
+      {
+        "f": "daumen_hoch",
+        "d": 1280
+      }
+    ],
+    "motion": [
+      {
+        "t": "sway",
+        "a": 2,
+        "c": 2
+      }
+    ],
+    "group": "Dialog"
+  },
+  "jubeln": {
+    "label": "Jubeln",
+    "segs": [
+      {
+        "f": "aufgeregt",
+        "d": 200,
+        "pop": 0.05
+      },
+      {
+        "f": "jubel_lachen",
+        "d": 240,
+        "hop": 22,
+        "pop": 0.04
+      },
+      {
+        "f": "jubel_kick",
+        "d": 320,
+        "hop": 40,
+        "pop": 0.04
+      },
+      {
+        "f": "jubel_zittern",
+        "d": 260,
+        "shake": 4,
+        "pop": 0.05
+      },
+      {
+        "f": "jubel_arm",
+        "d": 280,
+        "hop": 26,
+        "pop": 0.04
+      },
+      {
+        "f": "aufgeregt_zittern",
+        "d": 240,
+        "shake": 4,
+        "pop": 0.05
+      }
+    ],
+    "motion": [],
+    "group": "Emotion"
+  },
+  "rennen": {
+    "label": "Laufen",
+    "segs": [
+      {
+        "f": "rennen_7",
+        "d": 70
+      },
+      {
+        "f": "rennen_4",
+        "d": 70
+      },
+      {
+        "f": "rennen_5",
+        "d": 70
+      },
+      {
+        "f": "rennen_2",
+        "d": 70
+      },
+      {
+        "f": "rennen_1",
+        "d": 70
+      },
+      {
+        "f": "rennen_3",
+        "d": 70
+      },
+      {
+        "f": "rennen_8",
+        "d": 70
+      },
+      {
+        "f": "rennen_2",
+        "d": 70
+      }
+    ],
+    "motion": [
+      {
+        "t": "bob",
+        "a": 8,
+        "c": 2,
+        "p": 0.375
+      }
+    ],
+    "group": "Bewegung"
+  },
+  "sprint": {
+    "label": "Sprint",
+    "segs": [
+      {
+        "f": "sprint",
+        "d": 640
+      }
+    ],
+    "motion": [
+      {
+        "t": "bob",
+        "a": 5,
+        "c": 4
+      }
+    ],
+    "group": "Bewegung"
+  },
+  "fliegen": {
+    "label": "Fliegen",
+    "pivot": 210,
+    "segs": [
+      {
+        "f": "fliegen",
+        "d": 1600
+      }
+    ],
+    "motion": [
+      {
+        "t": "bobs",
+        "a": 10,
+        "c": 1
+      },
+      {
+        "t": "sway",
+        "a": 2,
+        "c": 1
+      }
+    ],
+    "group": "Bewegung"
+  },
+  "schweben": {
+    "label": "Schweben",
+    "pivot": 210,
+    "segs": [
+      {
+        "f": "schweben",
+        "d": 1600
+      }
+    ],
+    "motion": [
+      {
+        "t": "bobs",
+        "a": 12,
+        "c": 1
+      }
+    ],
+    "group": "Bewegung"
+  },
+  "freudensprung": {
+    "label": "Freudensprung",
+    "segs": [
+      {
+        "f": "faeuste",
+        "d": 300,
+        "pop": 0.08
+      },
+      {
+        "f": "freudensprung",
+        "d": 520,
+        "hop": 70,
+        "pop": 0.05
+      },
+      {
+        "f": "faeuste_laecheln",
+        "d": 620,
+        "pop": 0.08
+      }
+    ],
+    "motion": [],
+    "group": "Bewegung"
+  },
+  "drehen": {
+    "label": "Drehen",
+    "segs": [
+      {
+        "f": "front",
+        "d": 700,
+        "pop": 0.03
+      },
+      {
+        "f": "dreiviertel_a",
+        "d": 200,
+        "pop": 0.03
+      },
+      {
+        "f": "ruecken",
+        "d": 560,
+        "pop": 0.03
+      },
+      {
+        "f": "dreiviertel_a",
+        "d": 200,
+        "pop": 0.03,
+        "mirror": true
+      }
+    ],
+    "motion": [
+      {
+        "t": "breathe",
+        "a": 0.01,
+        "c": 1
+      }
+    ],
+    "group": "Bewegung"
+  },
+  "ueberrascht": {
+    "label": "Überrascht",
+    "segs": [
+      {
+        "f": "ueberrascht",
+        "d": 360,
+        "hop": 36,
+        "pop": 0.08
+      },
+      {
+        "f": "ueberrascht",
+        "d": 1240,
+        "pop": 0.06
+      }
+    ],
+    "motion": [
+      {
+        "t": "breathe",
+        "a": 0.012,
+        "c": 1
+      }
+    ],
+    "group": "Emotion"
+  },
+  "traurig": {
+    "label": "Traurig",
+    "segs": [
+      {
+        "f": "traurig",
+        "d": 3000
+      }
+    ],
+    "motion": [
+      {
+        "t": "sway",
+        "a": 1.5,
+        "c": 1
+      },
+      {
+        "t": "breathe",
+        "a": 0.016,
+        "c": 1
+      }
+    ],
+    "group": "Emotion"
+  },
+  "wuetend": {
+    "label": "Wütend",
+    "segs": [
+      {
+        "f": "wuetend",
+        "d": 1200
+      }
+    ],
+    "motion": [
+      {
+        "t": "shakex",
+        "a": 2.5,
+        "c": 10
+      },
+      {
+        "t": "breathe",
+        "a": 0.02,
+        "c": 2
+      }
+    ],
+    "group": "Emotion"
+  },
+  "stopp": {
+    "label": "Stopp!",
+    "segs": [
+      {
+        "f": "stopp",
+        "d": 320,
+        "pop": 0.08
+      },
+      {
+        "f": "stopp",
+        "d": 1280
+      }
+    ],
+    "motion": [
+      {
+        "t": "breathe",
+        "a": 0.012,
+        "c": 2
+      }
+    ],
+    "group": "Emotion"
+  }
+}
