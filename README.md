@@ -42,7 +42,7 @@ Beide Cargo-Workspaces enthalten ein committedes Lockfile. Builds und Tests verw
 Unter Debian/Ubuntu braucht die GUI beispielsweise:
 
 ```sh
-sudo apt-get install libxkbcommon-dev libwayland-dev libx11-dev libxi-dev libxrandr-dev libxcursor-dev libgl1-mesa-dev
+sudo apt-get install libxkbcommon-dev libxkbcommon-x11-dev libwayland-dev libx11-dev libxext-dev libxi-dev libxrandr-dev libxcursor-dev libgl1-mesa-dev
 ```
 
 Linux-Desktop-/Compositor-Verhalten muss separat abgenommen werden. Ein erfolgreicher Build belegt noch keine Transparenz oder Vordergrunddarstellung.
