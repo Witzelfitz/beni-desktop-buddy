@@ -13,6 +13,7 @@ import unittest
 from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.dont_write_bytecode = True
 spec = importlib.util.spec_from_file_location("beni_hook", ROOT / "integrations/claude-code/notify-hook.py")
 hook = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(hook)
