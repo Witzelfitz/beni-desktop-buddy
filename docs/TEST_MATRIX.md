@@ -28,6 +28,8 @@ Nativer Start, Transparenz und die sichtbare Bedienleiste wurden auf macOS gepr�
 | Pause / Tempo / reduzierte Bewegung | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |
 | Menü / eigene Sprechblase | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |
 | Bedienleiste: eingeklappter Start / Klick auf Beni / Escape | PASS | NOT_RUN | NOT_RUN | NOT_RUN |
+| Native Accessibility-API: beschrifteter Beni / Aktionen | PASS | NOT_RUN | NOT_RUN | NOT_RUN |
+| Vollständige Screenreader-Bedienung (VoiceOver / NVDA / Orca) | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |
 | Tray: Ausblenden / Anzeigen | PASS | NOT_RUN | NOT_RUN | NOT_RUN |
 | Tray: Pause / Fortsetzen / Einstellungen | PASS | NOT_RUN | NOT_RUN | NOT_RUN |
 | Tray: Zurückholen auf Hauptbildschirm | PASS | NOT_RUN | NOT_RUN | NOT_RUN |
@@ -50,3 +52,5 @@ Punkt 1 wurde am 12. Oktober 2026 mit dem echten macOS-Menü, gezielten Fenstera
 Das Statuspaket wurde auf macOS mit der gebündelten und der im Cargo-Binärpfad installierten CLI geprüft. Das neue IPC-Verzeichnis hat Rechte 0700, der Socket 0600. Vor der Freigabe und nach dem Abschalten liefert notify Exitcode 3. Nach Freigabe erscheint die Meldung mit Quelle und passender Geste; der finale Text einer langen Testmeldung ist durch Scrollen erreichbar. Beim Ausblenden wird eine Meldung angenommen und erst nach erneutem Anzeigen sichtbar. Die Freigabe bleibt nach Neustart erhalten. Die reale Registrierung von Claude-Code-Hooks, Kurzbefehlen, systemd-Units und Aufgabenplanung ist NOT_RUN; die Vorlagen werden nicht automatisch eingerichtet.
 
 Die einklappbare Bedienleiste wurde am 12. Oktober 2026 im neu gebauten macOS-Bundle geprüft: eingeklappter Start, Auf-/Zuklappen durch Klick auf Beni, Einstellungen über «Menü» und Schliessen samt Bedienleiste mit Escape bei fokussiertem Fenster. Gezielte Aufnahmen ausschliesslich des Buddy-Fensters bestätigen transparente Pixel an der Stelle der eingeklappten Leiste. Die IPC-Freigabe und bisherigen Einstellungen bleiben nach dem Neustart erhalten. Native Windows-/Linux-Prüfungen dieses Verhaltens bleiben NOT_RUN.
+
+Die Accessibility-Anbindung wurde im neuen macOS-Release-Bundle über die native AX-API ausschliesslich für Benis Fenster geprüft. Benannte Buttons, Nachrichtenfeld, Checkboxen und Statuslabel sind erreichbar. AXPress klappt die Leiste auf/zu, bedient Pause/Weiter und Einstellungen und schliesst eine echte IPC-Statusmeldung. Die globale VoiceOver-Einstellung wurde dabei nicht verändert. Diese API-Prüfung ersetzt keine vollständige Abnahme der gesprochenen Ausgabe und Navigation mit VoiceOver, NVDA oder Orca.

@@ -85,3 +85,18 @@ Die direkten Script-Tests bestätigen den Weg Script → CLI → Beni; sie beleg
 | NOT_RUN | Native Windows-/Linux-GUI | Derselbe egui-Code; lokale Desktop-Abnahme auf diesen Plattformen weiterhin offen |
 
 Die Bedienleiste behält ihren Platz im transparenten Fenster, auch wenn sie eingeklappt ist. Dadurch verändert das Auf-/Zuklappen weder Benis Grösse noch seine Position. Der offene Zustand wird nicht gespeichert: Nach einem Neustart ist die Leiste wieder eingeklappt. Transparente Fensterbereiche sind weiterhin nicht durchklickbar.
+
+## Native Accessibility-Anbindung
+
+| Status | Prüfung | Ergebnis |
+| --- | --- | --- |
+| PASS | `./scripts/check.sh --desktop` | 47 Rusttests (27 Root, 20 Desktop), 11 Integrationstests, Formatierung, Asset-Hashes, beide Clippy-Prüfungen und Debug-Build |
+| PASS | Accessibility-Baum und Aktionen | Beni als benannter Button mit Auf-/Zuklappzustand und Focus/Click; Bedienelemente erscheinen erst beim Aufklappen; benannter Schliessen-Knopf schliesst die Blase ohne Pointer-Ereignisse |
+| PASS | Tastaturereignisse | Tab fokussiert Beni bei eingeklappter Leiste; Eingabe und Leertaste klappen auf/zu und erzeugen keine Drag-Anforderung |
+| PASS | Einstellungen | Benannte Checkboxen und Nachrichtenfeld mit TextInput-Rolle, festem Namen und aktuellem Eingabewert |
+| PASS | `./scripts/package-macos.sh` | Release-Build und valides Bundle mit nativer AccessKit-Anbindung; lokale Instanz aktualisiert |
+| PASS | Native macOS-AX-API | Benis eigener Fensterbaum enthält benannte Buttons, Textfeld, Checkboxen und Statuslabel; AXPress öffnet/schliesst die Leiste, bedient Pause/Weiter und Einstellungen und schliesst eine echte IPC-Meldung |
+| NOT_RUN | Vollständige VoiceOver-/NVDA-/Orca-Abnahme | Keine globale Screenreader-Einstellung verändert; gesprochene Ausgabe und vollständige Navigation separat prüfen |
+| NOT_RUN | Native Windows-/Linux-Accessibility-Abnahme | Die Plattformadapter sind im Desktop-Lockfile erfasst; die reale Desktop-Abnahme bleibt offen |
+
+Aktiviert wurde ausschliesslich das native `accesskit`-Feature von eframe. Rust-Version und Packaging-Signierung bleiben getrennte Folgeschritte. Die Klickfläche der Sprechblase ist ein Maus-Kürzel; der benannte Schliessen-Button übernimmt Tastatur- und Accessibility-Zugriff, damit der Blasenhintergrund keinen unbeschrifteten Tab-Stopp erzeugt.
