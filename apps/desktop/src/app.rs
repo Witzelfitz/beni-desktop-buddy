@@ -25,6 +25,7 @@ pub struct BuddyApp {
     ipc_enabled: bool,
     server: Option<buddy_ipc::Server>,
     hidden: bool,
+    controls_open: bool,
     menu_open: bool,
     speech_draft: String,
     error: Option<TransientError>,
@@ -68,7 +69,7 @@ impl BuddyApp {
             texture,
             settings,
             last_tick: Instant::now(),
-            message: "Hoi! Ich bin Beni. Zieh mich an deinen Lieblingsplatz.".into(),
+            message: "Hoi! Ich bin Beni. Klick mich für die Bedienung an oder zieh mich an deinen Lieblingsplatz.".into(),
             message_until: Instant::now() + Duration::from_secs(10),
             message_source: None,
             active_remote: false,
@@ -78,6 +79,7 @@ impl BuddyApp {
                 .unwrap_or(false),
             server: None,
             hidden: false,
+            controls_open: false,
             menu_open: false,
             speech_draft: "Schön bist du da!".into(),
             error: None,
@@ -225,9 +227,16 @@ impl BuddyApp {
             ui.ctx().send_viewport_cmd(egui::ViewportCommand::StartDrag);
         }
         if response.clicked() {
-            self.play("hallo", "Hoi! Ich bin dein Desktop-Buddy.");
+            self.controls_open = !self.controls_open;
+            if !self.controls_open {
+                self.menu_open = false;
+            }
         }
-        response.on_hover_text("Ziehen: verschieben · Klicken: Hallo sagen");
+        response.on_hover_text(if self.controls_open {
+            "Ziehen: verschieben · Klicken: Bedienung zuklappen"
+        } else {
+            "Ziehen: verschieben · Klicken: Bedienung aufklappen"
+        });
         match self.avatar_mesh(stage) {
             Ok(mesh) => {
                 ui.painter().add(egui::Shape::mesh(mesh));
@@ -343,7 +352,7 @@ impl BuddyApp {
                     let message = self.speech_draft.clone();
                     self.play("reden", &message);
                 }
-                ui.small("Esc schliesst das Menü. Alt/Option + Q beendet Beni.");
+                ui.small("Esc klappt die Bedienung zu. Alt/Option + Q beendet Beni.");
             });
         self.menu_open = open;
     }
@@ -368,14 +377,18 @@ impl BuddyApp {
         }
         if ctx.input(|i| i.key_pressed(egui::Key::Escape)) {
             self.menu_open = false;
+            self.controls_open = false;
         }
         ui.vertical_centered(|ui| {
             ui.add_space(8.0);
             self.speech(ui, now);
+            // Keep Beni's size and position stable when the controls toggle.
             let stage_height = (ui.available_height() - 52.0).max(100.0);
             let (_, stage) = ui.allocate_space(Vec2::new(ui.available_width(), stage_height));
             self.paint_avatar(ui, stage);
-            self.controls(ui);
+            if self.controls_open {
+                self.controls(ui);
+            }
         });
         self.menu(&ctx);
         let occluded = ctx.input(|i| i.viewport().occluded.unwrap_or(false));
@@ -514,13 +527,14 @@ mod tests {
             texture: ctx.load_texture("test-atlas", image, egui::TextureOptions::LINEAR),
             settings: Settings::default(),
             last_tick: Instant::now(),
-            message: "Hoi!".into(),
+            message: "Hoi aus der Test-Sprechblase!".into(),
             message_until: Instant::now() + Duration::from_secs(10),
             message_source: None,
             active_remote: false,
             ipc_enabled: false,
             server: None,
             hidden: false,
+            controls_open: false,
             menu_open: false,
             speech_draft: "Hoi von den Tests!".into(),
             error: None,
@@ -567,6 +581,30 @@ mod tests {
             .find_map(|s| find_text(&s.shape, needle))
             .unwrap_or_else(|| panic!("UI text missing: {needle}"))
     }
+    fn avatar_rect(output: &egui::FullOutput, app: &BuddyApp) -> Rect {
+        let points = output
+            .shapes
+            .iter()
+            .find_map(|s| match &s.shape {
+                egui::Shape::Mesh(mesh) if mesh.texture_id == app.texture.id() => {
+                    Some(mesh.vertices.iter().map(|v| v.pos).collect::<Vec<_>>())
+                }
+                _ => None,
+            })
+            .expect("avatar mesh");
+        Rect::from_points(&points)
+    }
+    fn assert_controls_hidden(output: &egui::FullOutput) {
+        for label in ["Hoi!", "Pause", "Weiter", "Menü", "Beenden"] {
+            assert!(
+                !output
+                    .shapes
+                    .iter()
+                    .any(|s| find_text(&s.shape, label).is_some()),
+                "collapsed controls must not show {label}"
+            );
+        }
+    }
     fn click(
         ctx: &egui::Context,
         app: &mut BuddyApp,
@@ -601,9 +639,72 @@ mod tests {
         )
     }
     #[test]
+    fn avatar_click_toggles_controls_without_replacing_a_status_or_moving_beni() {
+        let ctx = egui::Context::default();
+        let mut app = app(&ctx);
+        app.play("daumen", "Build grün");
+        app.player.paused = true;
+        app.message_source = Some("codex-test".into());
+        app.active_remote = true;
+        let deadline = app.message_until;
+        let output = frame(&ctx, &mut app, 0.0, vec![]);
+        assert!(!app.controls_open);
+        assert_controls_hidden(&output);
+        let avatar = avatar_rect(&output, &app);
+        output.drop_without_applying_deltas();
+
+        click(&ctx, &mut app, avatar.center(), 0.1).drop_without_applying_deltas();
+        assert!(app.controls_open);
+        let output = frame(&ctx, &mut app, 0.2, vec![]);
+        for label in ["Hoi!", "Weiter", "Menü", "Beenden"] {
+            text_rect(&output, label);
+        }
+        assert_eq!(avatar_rect(&output, &app), avatar);
+        text_rect(&output, "Build grün");
+        text_rect(&output, "codex-test");
+        output.drop_without_applying_deltas();
+
+        click(&ctx, &mut app, avatar.center(), 0.3).drop_without_applying_deltas();
+        assert!(!app.controls_open);
+        let output = frame(&ctx, &mut app, 0.4, vec![]);
+        assert_controls_hidden(&output);
+        assert_eq!(avatar_rect(&output, &app), avatar);
+        assert_eq!(app.player.state(), "daumen");
+        assert_eq!(app.message, "Build grün");
+        assert_eq!(app.message_source.as_deref(), Some("codex-test"));
+        assert_eq!(app.message_until, deadline);
+        assert!(app.active_remote);
+        output.drop_without_applying_deltas();
+    }
+    #[test]
+    fn escape_closes_settings_and_collapses_controls() {
+        let ctx = egui::Context::default();
+        let mut app = app(&ctx);
+        app.controls_open = true;
+        app.menu_open = true;
+        frame(&ctx, &mut app, 0.0, vec![]).drop_without_applying_deltas();
+        let output = frame(
+            &ctx,
+            &mut app,
+            0.1,
+            vec![egui::Event::Key {
+                key: egui::Key::Escape,
+                physical_key: None,
+                pressed: true,
+                repeat: false,
+                modifiers: Default::default(),
+            }],
+        );
+        assert!(!app.menu_open);
+        assert!(!app.controls_open);
+        assert_controls_hidden(&output);
+        output.drop_without_applying_deltas();
+    }
+    #[test]
     fn controls_remain_inside_native_window_after_multiple_frames() {
         let ctx = egui::Context::default();
         let mut app = app(&ctx);
+        app.controls_open = true;
         for i in 0..5 {
             let output = frame(&ctx, &mut app, i as f64 * 0.1, vec![]);
             for label in ["Hoi!", "Pause", "Menü", "Beenden"] {
@@ -627,6 +728,7 @@ mod tests {
     fn pointer_clicks_open_menu_change_motion_and_show_speech() {
         let ctx = egui::Context::default();
         let mut app = app(&ctx);
+        app.controls_open = true;
         let output = frame(&ctx, &mut app, 0.0, vec![]);
         let pos = text_rect(&output, "Menü").center();
         output.drop_without_applying_deltas();
@@ -649,17 +751,7 @@ mod tests {
         let ctx = egui::Context::default();
         let mut app = app(&ctx);
         let output = frame(&ctx, &mut app, 0.0, vec![]);
-        let points = output
-            .shapes
-            .iter()
-            .find_map(|s| match &s.shape {
-                egui::Shape::Mesh(mesh) if mesh.texture_id == app.texture.id() => {
-                    Some(mesh.vertices.iter().map(|v| v.pos).collect::<Vec<_>>())
-                }
-                _ => None,
-            })
-            .expect("avatar mesh");
-        let pos = Rect::from_points(&points).center();
+        let pos = avatar_rect(&output, &app).center();
         output.drop_without_applying_deltas();
         frame(
             &ctx,
@@ -688,11 +780,26 @@ mod tests {
                 .contains(&egui::ViewportCommand::StartDrag)
         );
         output.drop_without_applying_deltas();
+        let output = frame(
+            &ctx,
+            &mut app,
+            0.3,
+            vec![egui::Event::PointerButton {
+                pos: pos + egui::vec2(30.0, 0.0),
+                button: egui::PointerButton::Primary,
+                pressed: false,
+                modifiers: Default::default(),
+            }],
+        );
+        assert!(!app.controls_open, "dragging must not toggle controls");
+        assert_controls_hidden(&output);
+        output.drop_without_applying_deltas();
     }
     #[test]
     fn pause_resume_and_quit_work_through_real_egui_responses() {
         let ctx = egui::Context::default();
         let mut app = app(&ctx);
+        app.controls_open = true;
         let output = frame(&ctx, &mut app, 0.0, vec![]);
         let pos = text_rect(&output, "Pause").center();
         output.drop_without_applying_deltas();
@@ -789,15 +896,24 @@ mod tests {
             app.error.is_none(),
             "persistent draw errors must not restart the timer"
         );
+        assert_controls_hidden(&output);
+        let avatar = text_rect(&output, "Beni").center();
+        output.drop_without_applying_deltas();
+        click(&ctx, &mut app, avatar, 0.5).drop_without_applying_deltas();
+        assert!(
+            app.controls_open,
+            "fallback avatar must still open controls"
+        );
+        let output = frame(&ctx, &mut app, 0.6, vec![]);
         let menu = text_rect(&output, "Menü").center();
         output.drop_without_applying_deltas();
-        click(&ctx, &mut app, menu, 0.5).drop_without_applying_deltas();
+        click(&ctx, &mut app, menu, 0.7).drop_without_applying_deltas();
         assert!(app.menu_open);
         app.menu_open = false;
-        let output = frame(&ctx, &mut app, 0.6, vec![]);
+        let output = frame(&ctx, &mut app, 0.8, vec![]);
         let quit = text_rect(&output, "Beenden").center();
         output.drop_without_applying_deltas();
-        let output = click(&ctx, &mut app, quit, 0.7);
+        let output = click(&ctx, &mut app, quit, 0.9);
         assert!(
             output.viewport_output[&egui::ViewportId::ROOT]
                 .commands
@@ -860,6 +976,7 @@ mod tests {
         let ctx = egui::Context::default();
         ctx.all_styles_mut(|style| style.animation_time = 0.0);
         let mut app = app(&ctx);
+        app.controls_open = true;
         let text = "Beni erklärt den nächsten Schritt. ".repeat(11);
         app.play("reden", &text);
         app.message_source = Some("W".repeat(48));

@@ -71,3 +71,17 @@ Die neuen Sprechblasentests prüfen die Erreichbarkeit der letzten Textzeile, da
 | NOT_RUN | Codex-Laufzeit auf Windows/Linux und Cloud-Orchestrierung | Portable Hook-/Installer-Tests laufen in CI; reale Codex-Integration dort nicht ausgeführt |
 
 Die direkten Script-Tests bestätigen den Weg Script → CLI → Beni; sie belegen noch keine automatische Ausführung durch Codex. Ein Probeaufruf des bestehenden Daemon-Proxys lief in einen Timeout. Der anschliessende read-only `hooks/list`-Aufruf über einen temporären stdio-App-Server bestätigte die Registrierung. Der laufende Daemon wurde nicht neu gestartet und es wurde keine zusätzliche Modellsitzung erzeugt.
+
+## Einklappbare Bedienleiste
+
+| Status | Prüfung | Ergebnis |
+| --- | --- | --- |
+| PASS | `./scripts/check.sh --desktop` | 44 Rusttests (27 Root, 17 Desktop), 11 Integrationstests, Formatierung, Asset-Hashes, beide Clippy-Prüfungen und Debug-Build |
+| PASS | UI-Ereignisse | Start eingeklappt; Avatar-Klick klappt auf/zu, ohne Text, Quelle, Geste oder Frist einer aktiven Meldung zu ersetzen; Avatar-Geometrie bleibt gleich |
+| PASS | Bedienregressionen | Escape schliesst Einstellungen und Leiste; Dragging klappt die Leiste nicht auf; bei Zeichenfehlern öffnet der Ersatzavatar die Bedienung weiterhin |
+| PASS | `./scripts/package-macos.sh` | Release-Build und valides Bundle; lokale laufende Instanz aktualisiert |
+| PASS | Native macOS-Prüfung | Start eingeklappt, Avatar-Klick auf/zu, Einstellungen öffnen und Escape im fokussierten Fenster; eigene Fensteraufnahmen bestätigen transparenten Bereich statt Leiste |
+| PASS | Status nach Aktualisierung | Installierte CLI liefert Annahme; Quellenname und Statusblase erscheinen weiterhin bei eingeklappter Bedienung |
+| NOT_RUN | Native Windows-/Linux-GUI | Derselbe egui-Code; lokale Desktop-Abnahme auf diesen Plattformen weiterhin offen |
+
+Die Bedienleiste behält ihren Platz im transparenten Fenster, auch wenn sie eingeklappt ist. Dadurch verändert das Auf-/Zuklappen weder Benis Grösse noch seine Position. Der offene Zustand wird nicht gespeichert: Nach einem Neustart ist die Leiste wieder eingeklappt. Transparente Fensterbereiche sind weiterhin nicht durchklickbar.
