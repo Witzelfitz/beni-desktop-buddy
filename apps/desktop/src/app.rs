@@ -1,6 +1,16 @@
+use crate::{
+    tray::{Action, Tray},
+    window::PlacementGuard,
+};
 use buddy_core::{ATLAS_PNG, Engine, Player, Settings};
 use eframe::egui::{self, Color32, FontId, Rect, Sense, TextureHandle, Vec2};
+use std::sync::mpsc::{Receiver, SyncSender, sync_channel};
 use std::time::{Duration, Instant};
+
+struct TransientError {
+    message: String,
+    until: Instant,
+}
 
 pub struct BuddyApp {
     engine: Engine,
@@ -12,7 +22,13 @@ pub struct BuddyApp {
     message_until: Instant,
     menu_open: bool,
     speech_draft: String,
-    error: Option<String>,
+    error: Option<TransientError>,
+    last_render_error: Option<String>,
+    tray: Option<Tray>,
+    tray_attempted: bool,
+    tray_sender: SyncSender<Action>,
+    tray_receiver: Receiver<Action>,
+    placement: PlacementGuard,
 }
 impl BuddyApp {
     pub fn new(
@@ -40,6 +56,7 @@ impl BuddyApp {
             ));
         let mut player = Player::default();
         player.play(&engine, "hallo", true)?;
+        let (tray_sender, tray_receiver) = sync_channel(32);
         Ok(Self {
             engine,
             player,
@@ -51,34 +68,39 @@ impl BuddyApp {
             menu_open: false,
             speech_draft: "Schön bist du da!".into(),
             error: None,
+            last_render_error: None,
+            tray: None,
+            tray_attempted: false,
+            tray_sender,
+            tray_receiver,
+            placement: PlacementGuard::default(),
         })
     }
     fn play(&mut self, state: &str, message: &str) {
         if let Err(e) = self.player.play(&self.engine, state, true) {
-            self.error = Some(e.to_string());
+            self.report_error(e.to_string(), Instant::now());
             return;
         }
+        self.error = None;
         self.message = message.chars().take(400).collect();
         self.message_until = Instant::now() + Duration::from_secs(10);
     }
-    fn paint_avatar(&mut self, ui: &mut egui::Ui, stage: Rect) {
-        let pose = match self.player.pose(&self.engine, &self.settings) {
-            Ok(pose) => pose,
-            Err(e) => {
-                self.error = Some(e.to_string());
-                return;
-            }
-        };
-        let corners = match self
+    fn report_error(&mut self, message: String, now: Instant) {
+        self.error = Some(TransientError {
+            message,
+            until: now + Duration::from_secs(6),
+        });
+    }
+    fn expire_error(&mut self, now: Instant) {
+        if self.error.as_ref().is_some_and(|error| now >= error.until) {
+            self.error = None;
+        }
+    }
+    fn avatar_mesh(&self, stage: Rect) -> Result<egui::Mesh, buddy_core::BuddyError> {
+        let pose = self.player.pose(&self.engine, &self.settings)?;
+        let corners = self
             .engine
-            .corners(self.player.state(), &pose, self.settings.mirrored)
-        {
-            Ok(corners) => corners,
-            Err(e) => {
-                self.error = Some(e.to_string());
-                return;
-            }
-        };
+            .corners(self.player.state(), &pose, self.settings.mirrored)?;
         let [x, y, w, h, _, _] = self.engine.atlas.frames[&pose.frame];
         let [iw, ih] = self.engine.image_size.map(|n| n as f32);
         let uv = [
@@ -99,7 +121,10 @@ impl BuddyApp {
             });
         }
         mesh.indices.extend_from_slice(&[0, 1, 2, 0, 2, 3]);
-        ui.painter().add(egui::Shape::mesh(mesh));
+        Ok(mesh)
+    }
+    fn paint_avatar(&mut self, ui: &mut egui::Ui, stage: Rect) {
+        // Register interactions first: a failed draw must never remove the drag/click target.
         let response = ui.interact(stage, ui.id().with("avatar"), Sense::click_and_drag());
         if response.drag_started() {
             ui.ctx().send_viewport_cmd(egui::ViewportCommand::StartDrag);
@@ -108,6 +133,31 @@ impl BuddyApp {
             self.play("hallo", "Hoi! Ich bin dein Desktop-Buddy.");
         }
         response.on_hover_text("Ziehen: verschieben · Klicken: Hallo sagen");
+        match self.avatar_mesh(stage) {
+            Ok(mesh) => {
+                ui.painter().add(egui::Shape::mesh(mesh));
+                self.last_render_error = None;
+            }
+            Err(error) => {
+                let message = error.to_string();
+                if self.last_render_error.as_ref() != Some(&message) {
+                    self.report_error(message.clone(), Instant::now());
+                    self.last_render_error = Some(message);
+                }
+                ui.painter().rect_filled(
+                    stage.shrink(35.0),
+                    24,
+                    Color32::from_rgba_unmultiplied(28, 44, 38, 180),
+                );
+                ui.painter().text(
+                    stage.center(),
+                    egui::Align2::CENTER_CENTER,
+                    "Beni",
+                    FontId::proportional(28.0),
+                    Color32::from_rgb(190, 235, 170),
+                );
+            }
+        }
     }
     fn controls(&mut self, ui: &mut egui::Ui) {
         egui::Frame::new()
@@ -205,11 +255,13 @@ impl BuddyApp {
         let now = Instant::now();
         let delta = now.duration_since(self.last_tick).as_secs_f64() * 1000.0;
         self.last_tick = now;
+        self.expire_error(now);
         if let Err(e) = self
             .player
             .advance(&self.engine, delta.min(1000.0), self.settings.speed)
         {
-            self.error = Some(e.to_string());
+            self.report_error(e.to_string(), Instant::now());
+            self.settings = self.settings.clone().sanitize();
         }
         let quit = ctx.input(|i| i.modifiers.alt && i.key_pressed(egui::Key::Q));
         if quit {
@@ -227,7 +279,11 @@ impl BuddyApp {
             if now < self.message_until || self.error.is_some() {
                 ui.painter()
                     .rect_filled(speech, 16, Color32::from_rgb(246, 249, 237));
-                let text = self.error.as_deref().unwrap_or(&self.message);
+                let text = self
+                    .error
+                    .as_ref()
+                    .map(|error| error.message.as_str())
+                    .unwrap_or(&self.message);
                 let galley = ui.painter().layout(
                     text.to_string(),
                     FontId::proportional(14.0),
@@ -260,7 +316,66 @@ impl BuddyApp {
         }
     }
 }
+impl BuddyApp {
+    fn handle_tray(
+        &mut self,
+        action: Action,
+        ctx: &egui::Context,
+        window: Option<&winit::window::Window>,
+    ) {
+        match action {
+            Action::Show | Action::Recover | Action::Settings => {
+                ctx.send_viewport_cmd(egui::ViewportCommand::Visible(true));
+                ctx.send_viewport_cmd(egui::ViewportCommand::Minimized(false));
+                ctx.send_viewport_cmd(egui::ViewportCommand::Focus);
+                if let Some(window) = window {
+                    crate::window::restore(window, &mut self.placement, action == Action::Recover);
+                }
+                if action == Action::Settings {
+                    self.menu_open = true;
+                }
+            }
+            Action::Hide => ctx.send_viewport_cmd(egui::ViewportCommand::Visible(false)),
+            Action::Pause => self.player.paused = !self.player.paused,
+            Action::Quit => ctx.send_viewport_cmd(egui::ViewportCommand::Close),
+        }
+    }
+}
 impl eframe::App for BuddyApp {
+    fn logic(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+        let window = frame.winit_window().cloned();
+        if let Some(window) = window.as_deref() {
+            if !self.tray_attempted {
+                self.tray_attempted = true;
+                match Tray::new(
+                    ctx.clone(),
+                    self.tray_sender.clone(),
+                    &self.engine,
+                    self.player.paused,
+                ) {
+                    Ok(tray) => self.tray = Some(tray),
+                    Err(error) => {
+                        self.report_error(
+                            format!("Menüleiste nicht verfügbar: {error}"),
+                            Instant::now(),
+                        );
+                        crate::window::tray_unavailable(window);
+                    }
+                }
+            }
+            self.placement.check(window, false);
+        }
+        while let Ok(action) = self.tray_receiver.try_recv() {
+            self.handle_tray(action, ctx, window.as_deref());
+        }
+        if let Some(tray) = &self.tray {
+            tray.set_paused(self.player.paused);
+        }
+        self.expire_error(Instant::now());
+        // Also check topology when hidden/occluded; avoid an animation loop in that state.
+        ctx.request_repaint_after(Duration::from_secs(1));
+    }
+
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         self.show_ui(ui);
     }
@@ -281,6 +396,7 @@ mod tests {
             [icon.width as usize, icon.height as usize],
             &icon.rgba,
         );
+        let (tray_sender, tray_receiver) = sync_channel(32);
         BuddyApp {
             engine: Engine::embedded().unwrap(),
             player: Player::default(),
@@ -292,6 +408,12 @@ mod tests {
             menu_open: false,
             speech_draft: "Hoi von den Tests!".into(),
             error: None,
+            last_render_error: None,
+            tray: None,
+            tray_attempted: false,
+            tray_sender,
+            tray_receiver,
+            placement: PlacementGuard::default(),
         }
     }
     fn frame(
@@ -475,5 +597,145 @@ mod tests {
                 .contains(&egui::ViewportCommand::Close)
         );
         output.drop_without_applying_deltas();
+    }
+
+    #[test]
+    fn errors_expire_and_successful_actions_clear_them() {
+        let ctx = egui::Context::default();
+        let mut app = app(&ctx);
+        let now = Instant::now();
+        app.report_error("Testfehler".into(), now);
+        app.expire_error(now + Duration::from_secs(5));
+        assert!(app.error.is_some());
+        app.expire_error(now + Duration::from_secs(6));
+        assert!(app.error.is_none());
+        app.play("unknown-state", "");
+        assert!(app.error.is_some());
+        app.play("hallo", "Hoi!");
+        assert!(app.error.is_none());
+    }
+
+    #[test]
+    fn rendering_failure_keeps_drag_menu_and_quit_available() {
+        let ctx = egui::Context::default();
+        let mut app = app(&ctx);
+        // Remove the idle pose to exercise the actual fallible rendering path.
+        let pose = app.player.pose(&app.engine, &app.settings).unwrap();
+        app.engine.atlas.frames.remove(&pose.frame);
+        app.player.paused = true;
+        let output = frame(&ctx, &mut app, 0.0, vec![]);
+        let pos = text_rect(&output, "Beni").center();
+        let deadline = app.error.as_ref().unwrap().until;
+        output.drop_without_applying_deltas();
+        frame(
+            &ctx,
+            &mut app,
+            0.1,
+            vec![
+                egui::Event::PointerMoved(pos),
+                egui::Event::PointerButton {
+                    pos,
+                    button: egui::PointerButton::Primary,
+                    pressed: true,
+                    modifiers: Default::default(),
+                },
+            ],
+        )
+        .drop_without_applying_deltas();
+        let output = frame(
+            &ctx,
+            &mut app,
+            0.2,
+            vec![egui::Event::PointerMoved(pos + egui::vec2(30.0, 0.0))],
+        );
+        assert!(
+            output.viewport_output[&egui::ViewportId::ROOT]
+                .commands
+                .contains(&egui::ViewportCommand::StartDrag)
+        );
+        assert_eq!(app.error.as_ref().unwrap().until, deadline);
+        output.drop_without_applying_deltas();
+        frame(
+            &ctx,
+            &mut app,
+            0.3,
+            vec![egui::Event::PointerButton {
+                pos: pos + egui::vec2(30.0, 0.0),
+                button: egui::PointerButton::Primary,
+                pressed: false,
+                modifiers: Default::default(),
+            }],
+        )
+        .drop_without_applying_deltas();
+        app.expire_error(deadline);
+        let output = frame(&ctx, &mut app, 0.4, vec![]);
+        assert!(
+            app.error.is_none(),
+            "persistent draw errors must not restart the timer"
+        );
+        let menu = text_rect(&output, "Menü").center();
+        output.drop_without_applying_deltas();
+        click(&ctx, &mut app, menu, 0.5).drop_without_applying_deltas();
+        assert!(app.menu_open);
+        app.menu_open = false;
+        let output = frame(&ctx, &mut app, 0.6, vec![]);
+        let quit = text_rect(&output, "Beenden").center();
+        output.drop_without_applying_deltas();
+        let output = click(&ctx, &mut app, quit, 0.7);
+        assert!(
+            output.viewport_output[&egui::ViewportId::ROOT]
+                .commands
+                .contains(&egui::ViewportCommand::Close)
+        );
+        output.drop_without_applying_deltas();
+    }
+
+    #[test]
+    fn tray_actions_work_without_a_render_pass() {
+        let ctx = egui::Context::default();
+        let mut app = app(&ctx);
+        let mut native_frame = eframe::Frame::_new_kittest();
+        for action in [
+            Action::Hide,
+            Action::Show,
+            Action::Recover,
+            Action::Pause,
+            Action::Settings,
+            Action::Quit,
+        ] {
+            app.tray_sender.try_send(action).unwrap();
+            let output = ctx.run_logic(&egui::RawInput::default(), |ctx| {
+                eframe::App::logic(&mut app, ctx, &mut native_frame);
+            });
+            match action {
+                Action::Show | Action::Recover | Action::Settings => {
+                    let commands = &output.viewport_commands[&egui::ViewportId::ROOT];
+                    for command in [
+                        egui::ViewportCommand::Visible(true),
+                        egui::ViewportCommand::Minimized(false),
+                        egui::ViewportCommand::Focus,
+                    ] {
+                        assert!(commands.contains(&command));
+                    }
+                    if action == Action::Settings {
+                        assert!(app.menu_open);
+                    }
+                }
+                Action::Hide => assert!(
+                    output.viewport_commands[&egui::ViewportId::ROOT]
+                        .contains(&egui::ViewportCommand::Visible(false))
+                ),
+                Action::Quit => assert!(
+                    output.viewport_commands[&egui::ViewportId::ROOT]
+                        .contains(&egui::ViewportCommand::Close)
+                ),
+                Action::Pause => assert!(app.player.paused),
+            }
+        }
+        app.tray_sender.try_send(Action::Pause).unwrap();
+        let _ = ctx.run_logic(&egui::RawInput::default(), |ctx| {
+            eframe::App::logic(&mut app, ctx, &mut native_frame);
+        });
+        assert!(!app.player.paused);
     }
 }

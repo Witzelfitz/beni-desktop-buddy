@@ -5,17 +5,18 @@
 - Erledigt: GUI-Abhängigkeiten, committete Lockfiles und erfolgreiche Tests, Clippy und Release-Builds auf macOS, Windows und Linux.
 - Erledigt: nativer macOS-Start, Transparenz und PNG-Alpha; egui-UI-Tests für Menü, Nachricht, Pause/Fortsetzen, reduzierte Bewegung, Dragging und Beenden.
 - Offen: alle Animationen und Persistenz manuell auf dem Desktop prüfen.
-- Monitorwechsel und hohe Pixeldichte prüfen; einen verlorenen Fensterstand wiederherstellen können.
+- Erledigt: verlorene Fensterposition beim Start und nach Monitorwechsel korrigieren, Rückholen auf den Hauptbildschirm. Physische Monitorwechsel und gemischte Pixeldichten bleiben manuell zu prüfen.
 - Windows, Linux/X11 und Wayland separat prüfen und Ergebnisse dokumentieren.
 
 Abnahme: Ein echter Build läuft auf dem Desktop und besteht die manuelle Testmatrix.
 
 ## 2 · Ein zuverlässiger Buddy
 
-- Tray-Menü mit Anzeigen, Verbergen, Pause, Einstellungen und Beenden.
+- Erledigt: Tray-Menü mit Anzeigen, Zurückholen, Verbergen, Pause, Einstellungen und Beenden.
+- Erledigt: zeitlich begrenzte Fehleranzeige und weiter bedienbare Ersatzfläche bei Zeichenfehlern.
 - Click-through für transparente Flächen mit einer verlässlichen Rückholmöglichkeit.
 - Globale Rückhol-/Pause-Aktion, Benutzerwahl für Hotkeys.
-- Grössenwahl und sicheres Begrenzen auf den sichtbaren Arbeitsbereich.
+- Grössenwahl; Arbeitsbereich wird bereits beim Start und nach Monitorwechsel berücksichtigt.
 - OS-Einstellung für reduzierte Bewegung berücksichtigen.
 - CPU-/GPU-Verbrauch über einen längeren Idle-Lauf messen, Hintergrundlast weiter reduzieren.
 
