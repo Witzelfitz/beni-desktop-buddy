@@ -14,6 +14,7 @@ Abnahme: Ein echter Build läuft auf dem Desktop und besteht die manuelle Testma
 
 - Erledigt: Tray-Menü mit Anzeigen, Zurückholen, Verbergen, Pause, Einstellungen und Beenden.
 - Erledigt: zeitlich begrenzte Fehleranzeige und weiter bedienbare Ersatzfläche bei Zeichenfehlern.
+- Erledigt: Bedienleiste startet eingeklappt und lässt sich per Klick auf Beni oder Escape wieder zuklappen, ohne laufende Statusmeldungen zu ersetzen.
 - Click-through für transparente Flächen mit einer verlässlichen Rückholmöglichkeit.
 - Globale Rückhol-/Pause-Aktion, Benutzerwahl für Hotkeys.
 - Grössenwahl; Arbeitsbereich wird bereits beim Start und nach Monitorwechsel berücksichtigt.

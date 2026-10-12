@@ -4,9 +4,9 @@ Mini-Beni als nativer Desktop-Buddy in Rust: ein animierter Begleiter auf dem De
 
 Die native Rust-Grundlage ist auf macOS gestartet und visuell geprüft. Tests, Clippy und Release-Builds bestehen in GitHub Actions auf macOS, Windows und Linux.
 
-<img src="docs/images/macos-buddy.png" alt="Beni als nativer macOS-Desktop-Buddy mit Sprechblase und Bedienleiste" width="340">
+<img src="docs/images/macos-buddy.png" alt="Beni als nativer macOS-Desktop-Buddy mit eingeklappter Bedienleiste" width="340">
 
-<img src="docs/images/macos-status.png" alt="Beni zeigt eine lokale Statusmeldung mit Quellenname und Daumen-hoch-Geste" width="340">
+<img src="docs/images/macos-status.png" alt="Beni zeigt eine lokale Statusmeldung mit Quellenname und Daumen-hoch-Geste bei aufgeklappter Bedienleiste" width="340">
 
 ## Aktueller Stand
 
@@ -50,9 +50,10 @@ Linux-Desktop-/Compositor-Verhalten muss separat abgenommen werden. Ein erfolgre
 | Aktion | Bedienung |
 | --- | --- |
 | Beni verschieben | Beni mit der linken Maustaste ziehen |
+| Bedienleiste auf-/zuklappen | Beni anklicken; beim Start ist die Leiste eingeklappt |
 | Beni anzeigen / ausblenden | «Beni» in der Menüleiste → «Beni anzeigen» / «Beni ausblenden» |
 | Verlorenen Beni zurückholen | «Beni» in der Menüleiste → «Beni zurückholen» (Hauptbildschirm) |
-| Begrüssen | Beni oder «Hoi!» anklicken |
+| Begrüssen | Bedienleiste aufklappen → «Hoi!» |
 | Pause/Fortsetzen | «Pause» / «Weiter» |
 | Animation auswählen | «Menü» → Animation |
 | Energie, Tempo, Spiegelung | «Menü» |
@@ -60,10 +61,12 @@ Linux-Desktop-/Compositor-Verhalten muss separat abgenommen werden. Ein erfolgre
 | Eigene Sprechblase | Nachricht im Menü eingeben; lange Texte scrollen; Blase anklicken oder mit × schliessen |
 | Status von lokalen Programmen | «Menü» → «Statusmeldungen empfangen», danach CLI `notify` oder `run` |
 | Vordergrunddarstellung | «Menü» → «Immer im Vordergrund» |
-| Menü schliessen | Escape |
+| Menü und Bedienleiste schliessen | Escape oder Beni erneut anklicken |
 | Beenden | «Beenden» im Fenster oder Tray; Alt/Option + Q bei fokussiertem Buddy-Fenster |
 
-15 Desktoptests prüfen UI-Ereignisse, Fehlerablauf, Bedienbarkeit bei Zeichenfehlern, Tray-Aktionen ohne Zeichnen und Fensterpositionen. Fenster-/Compositor-Verhalten auf Windows/Linux sowie die vollständige manuelle Abnahme bleiben separat zu prüfen.
+Die Bedienleiste erscheint erst nach einem Klick auf Beni. Ein weiterer Klick oder Escape klappt sie wieder zu und schliesst offene Einstellungen. Benis Grösse und Position bleiben beim Auf-/Zuklappen gleich; aktive Statusmeldungen behalten Text, Quelle, Geste und Anzeigedauer. Ziehen klappt die Leiste nicht auf. Das Tray-Menü ist auch bei eingeklappter Bedienung verfügbar.
+
+17 Desktoptests prüfen UI-Ereignisse, ein-/ausgeklappte Bedienung, Fehlerablauf, Bedienbarkeit bei Zeichenfehlern, Tray-Aktionen ohne Zeichnen und Fensterpositionen. Fenster-/Compositor-Verhalten auf Windows/Linux sowie die vollständige manuelle Abnahme bleiben separat zu prüfen.
 
 Das Tray-Menü bietet auch Pause/Fortsetzen und Einstellungen. Gespeicherte Positionen werden beim Start und nach Änderungen der Bildschirme geprüft; vollständig verlorene Fenster werden automatisch zurückgeholt. Auf macOS berücksichtigt dies Menüleiste, Dock und Retina-Punkte. Eine Fehlermeldung verschwindet nach sechs Sekunden oder bei einer erfolgreichen Aktion; bei einem Zeichenfehler bleibt eine bedienbare Ersatzfläche sichtbar.
 
