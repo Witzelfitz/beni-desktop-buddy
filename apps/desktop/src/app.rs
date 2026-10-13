@@ -30,6 +30,7 @@ pub struct BuddyApp {
     message_until: Instant,
     message_source: Option<String>,
     active_remote: bool,
+    do_not_disturb: bool,
     ipc_enabled: bool,
     server: Option<buddy_ipc::Server>,
     hidden: bool,
@@ -88,6 +89,7 @@ impl BuddyApp {
             message_until: Instant::now() + Duration::from_secs(10),
             message_source: None,
             active_remote: false,
+            do_not_disturb: Self::load_do_not_disturb(cc.storage),
             ipc_enabled: cc
                 .storage
                 .and_then(|s| eframe::get_value(s, "status-receiving"))
@@ -134,7 +136,8 @@ impl BuddyApp {
         self.active_remote = false;
     }
     fn deliver_status(&mut self, visible: bool, now: Instant) {
-        if !visible
+        if self.do_not_disturb
+            || !visible
             || self.menu_open
             || self.error.is_some()
             || (self.active_remote && now < self.message_until)
@@ -148,6 +151,23 @@ impl BuddyApp {
             self.message_until = now
                 + Duration::from_millis(reading_time_ms(&message.text).min(delivery.remaining_ms));
             self.active_remote = true;
+        }
+    }
+    fn load_do_not_disturb(storage: Option<&dyn eframe::Storage>) -> bool {
+        storage
+            .and_then(|s| eframe::get_value(s, "do-not-disturb"))
+            .unwrap_or(false)
+    }
+    fn set_do_not_disturb(&mut self, enabled: bool, now: Instant) {
+        self.do_not_disturb = enabled;
+        if enabled && self.active_remote {
+            self.message_until = now;
+            self.message_source = None;
+            self.active_remote = false;
+            // Keep animation pause and errors independent of status delivery.
+            let paused = self.player.paused;
+            let _ = self.player.play(&self.engine, "warten", true);
+            self.player.paused = paused;
         }
     }
     fn speech(&mut self, ui: &mut egui::Ui, now: Instant) {
@@ -401,6 +421,11 @@ impl BuddyApp {
                 ui.separator();
                 ui.checkbox(&mut self.ipc_enabled, "Statusmeldungen empfangen");
                 ui.small("Lokale Programme können Beni Meldungen schicken.");
+                let mut quiet = self.do_not_disturb;
+                if ui.checkbox(&mut quiet, "Nicht stören").changed() {
+                    self.set_do_not_disturb(quiet, Instant::now());
+                }
+                ui.small("Pausiert Statusanzeigen. Meldungen verfallen weiterhin.");
                 let message = ui.add(
                     egui::TextEdit::singleline(&mut self.speech_draft)
                         .hint_text("Benis Nachricht")
@@ -448,6 +473,10 @@ impl BuddyApp {
         ui.vertical_centered(|ui| {
             ui.add_space(8.0);
             self.speech(ui, now);
+            if self.do_not_disturb {
+                let hint = ui.small("Nicht stören ist aktiv");
+                self.hit_map.add_rect(hint.rect, 0.0);
+            }
             // Keep Beni's size and position stable when the controls toggle.
             let stage_height = (ui.available_height() - 52.0).max(100.0);
             let (_, stage) = ui.allocate_space(Vec2::new(ui.available_width(), stage_height));
@@ -500,6 +529,9 @@ impl BuddyApp {
                 ctx.send_viewport_cmd(egui::ViewportCommand::Visible(false));
             }
             Action::Pause => self.player.paused = !self.player.paused,
+            Action::DoNotDisturb => {
+                self.set_do_not_disturb(!self.do_not_disturb, Instant::now());
+            }
             Action::Quit => ctx.send_viewport_cmd(egui::ViewportCommand::Close),
         }
     }
@@ -516,6 +548,7 @@ impl eframe::App for BuddyApp {
                     self.tray_sender.clone(),
                     &self.engine,
                     self.player.paused,
+                    self.do_not_disturb,
                 ) {
                     Ok(tray) => self.tray = Some(tray),
                     Err(error) => {
@@ -561,6 +594,7 @@ impl eframe::App for BuddyApp {
         self.deliver_status(visible && !occluded, Instant::now());
         if let Some(tray) = &self.tray {
             tray.set_paused(self.player.paused);
+            tray.set_do_not_disturb(self.do_not_disturb);
         }
         self.expire_error(Instant::now());
         // Also check topology when hidden/occluded; avoid an animation loop in that state.
@@ -584,6 +618,7 @@ impl eframe::App for BuddyApp {
         eframe::set_value(storage, "buddy-settings", &self.settings);
         eframe::set_value(storage, "status-receiving", &self.ipc_enabled);
         eframe::set_value(storage, "click-through", &self.click_through);
+        eframe::set_value(storage, "do-not-disturb", &self.do_not_disturb);
         self.size.save(storage);
         self.hotkeys.save(storage);
     }
@@ -628,6 +663,7 @@ mod tests {
             message_until: Instant::now() + Duration::from_secs(10),
             message_source: None,
             active_remote: false,
+            do_not_disturb: false,
             ipc_enabled: false,
             server: None,
             hidden: false,
@@ -1429,6 +1465,7 @@ mod tests {
             Action::Show,
             Action::Recover,
             Action::Pause,
+            Action::DoNotDisturb,
             Action::Settings,
             Action::Quit,
         ] {
@@ -1459,6 +1496,7 @@ mod tests {
                         .contains(&egui::ViewportCommand::Close)
                 ),
                 Action::Pause => assert!(app.player.paused),
+                Action::DoNotDisturb => assert!(app.do_not_disturb),
             }
         }
         app.tray_sender.try_send(Action::Pause).unwrap();
@@ -1529,6 +1567,125 @@ mod tests {
             click(&ctx, &mut app, close, 0.3).drop_without_applying_deltas();
             assert!(app.message_until <= Instant::now());
         }
+    }
+
+    #[test]
+    fn quiet_mode_defaults_off_and_round_trips_without_changing_receiving_or_pause() {
+        let ctx = egui::Context::default();
+        let mut app = app(&ctx);
+        let mut storage = TestStorage::default();
+        assert!(!BuddyApp::load_do_not_disturb(None));
+        assert!(!BuddyApp::load_do_not_disturb(Some(&storage)));
+        storage.0.insert("do-not-disturb".into(), "broken".into());
+        assert!(!BuddyApp::load_do_not_disturb(Some(&storage)));
+        app.ipc_enabled = true;
+        app.player.paused = true;
+        for quiet in [true, false] {
+            app.set_do_not_disturb(quiet, Instant::now());
+            eframe::App::save(&mut app, &mut storage);
+            assert_eq!(BuddyApp::load_do_not_disturb(Some(&storage)), quiet);
+            assert!(app.ipc_enabled && app.player.paused);
+        }
+    }
+
+    #[test]
+    fn quiet_mode_dismisses_remote_speech_but_preserves_errors_and_manual_actions() {
+        let ctx = egui::Context::default();
+        let mut app = app(&ctx);
+        app.play("jubeln", "Erfolg");
+        app.active_remote = true;
+        app.message_source = Some("test".into());
+        app.player.paused = true;
+        let now = Instant::now();
+        app.report_error("Testfehler".into(), now);
+        app.set_do_not_disturb(true, now);
+        assert!(!app.active_remote);
+        assert!(app.message_until <= now);
+        assert!(app.message_source.is_none());
+        assert_eq!(app.player.state(), "warten");
+        assert!(app.player.paused);
+        assert_eq!(app.error.as_ref().unwrap().message, "Testfehler");
+        app.play("hallo", "Hoi von mir");
+        let deadline = app.message_until;
+        app.set_do_not_disturb(true, Instant::now());
+        assert_eq!(app.message, "Hoi von mir");
+        assert_eq!(app.message_until, deadline);
+        assert_eq!(app.player.state(), "hallo");
+        assert!(!app.hidden);
+    }
+
+    #[test]
+    fn quiet_mode_has_accessible_controls_and_a_visible_hint_at_every_size() {
+        for size in BuddySize::ALL {
+            let ctx = egui::Context::default();
+            ctx.enable_accesskit();
+            ctx.all_styles_mut(|style| style.animation_time = 0.0);
+            let mut app = app(&ctx);
+            app.size = size;
+            app.menu_open = true;
+            frame(&ctx, &mut app, 0.0, vec![]).drop_without_applying_deltas();
+            let output = frame(&ctx, &mut app, 0.1, vec![]);
+            let checkbox = accesskit_node(&output, "Nicht stören").0;
+            output.drop_without_applying_deltas();
+            frame(&ctx, &mut app, 0.2, vec![accessible_click(checkbox)])
+                .drop_without_applying_deltas();
+            assert!(app.do_not_disturb);
+            app.menu_open = false;
+            app.controls_open = true;
+            app.dismiss_speech(Instant::now());
+            let output = frame(&ctx, &mut app, 0.3, vec![]);
+            for label in ["Nicht stören ist aktiv", "Hoi!", "Pause", "Menü", "Beenden"] {
+                let rect = text_rect(&output, label);
+                assert!(
+                    rect.min.y >= 0.0 && rect.max.y <= size.dimensions().y,
+                    "{label}: {rect:?}"
+                );
+            }
+            output.drop_without_applying_deltas();
+        }
+    }
+
+    #[test]
+    fn quiet_mode_holds_all_priorities_and_expires_old_statuses_before_resuming() {
+        use buddy_core::notifications::{Notification, Priority};
+        let endpoint = common::TestEndpoint::new();
+        let ctx = egui::Context::default();
+        let mut app = app(&ctx);
+        app.server = Some(buddy_ipc::Server::start_at(endpoint.endpoint.clone(), || {}).unwrap());
+        app.ipc_enabled = true;
+        app.hidden = true;
+        let mut native_frame = eframe::Frame::_new_kittest();
+        app.tray_sender.try_send(Action::DoNotDisturb).unwrap();
+        let _ = ctx.run_logic(&egui::RawInput::default(), |ctx| {
+            eframe::App::logic(&mut app, ctx, &mut native_frame);
+        });
+        assert!(app.do_not_disturb && app.hidden);
+        for (text, priority, ttl_s) in [
+            ("Normal", Priority::Normal, 30),
+            ("Wichtig", Priority::High, 30),
+            ("Veraltet", Priority::High, 1),
+        ] {
+            let mut message = Notification::new(text);
+            message.priority = priority;
+            message.ttl_s = ttl_s;
+            buddy_ipc::notify(&endpoint.endpoint, message).unwrap();
+        }
+        app.hidden = false;
+        app.deliver_status(true, Instant::now());
+        assert!(!app.active_remote);
+        assert_eq!(app.server.as_ref().unwrap().pending(), 3);
+        std::thread::sleep(Duration::from_millis(1100));
+        app.tray_sender.try_send(Action::DoNotDisturb).unwrap();
+        let _ = ctx.run_logic(&egui::RawInput::default(), |ctx| {
+            eframe::App::logic(&mut app, ctx, &mut native_frame);
+        });
+        assert!(!app.do_not_disturb);
+        assert_eq!(app.message, "Wichtig");
+        assert_eq!(app.server.as_ref().unwrap().pending(), 1);
+        app.dismiss_speech(Instant::now());
+        app.deliver_status(true, Instant::now());
+        assert_eq!(app.message, "Normal");
+        assert_eq!(app.server.as_ref().unwrap().pending(), 0);
     }
 
     #[test]

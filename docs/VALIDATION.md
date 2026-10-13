@@ -165,6 +165,19 @@ Gespeichert wird ausschliesslich die akzeptierte Hotkey-Konfiguration unter `glo
 
 Linux/X11-Korrektur vor dem Merge: Der native CI-Test zeigte, dass `global-hotkey` 0.8.0 `XUngrabKey` puffert und ohne weiteren Request nicht an den Server sendet. Blosses Warten löst das nicht. Das Linux-Backend führt nach der Freigabe einen zweiten, idempotenten Unregister-Aufruf aus: Dessen Keyboard-Mapping-Roundtrip auf derselben Verbindung bestätigt die erste Freigabe am Server. Der native Test verwendet Benis Backend und prüft zusätzlich Rücknahme eines Kandidaten bei Konflikt, Erhalt des bisherigen Paars und Freigabe beim Drop. macOS und Windows verwenden weiterhin ihre bisherigen Freigabepfade.
 
+## Nicht stören · 13. Oktober 2026
+
+- PASS: `./scripts/check.sh --desktop`: 69 Rusttests (27 Root, 42 Desktop), 11 Integrationstests, Formatierung, Clippy ohne Warnungen, Asset-/Icon-Prüfung und Debug-Build.
+- PASS: ausgeschalteter Standardzustand, sichere Behandlung beschädigter Speicherung und Speicherung beider Schalterzustände. IPC-Empfang und Animationspause bleiben unabhängig.
+- PASS: laufende Remote-Blase wird beim Einschalten geschlossen und die Geste auf «warten» gesetzt; eine vorhandene Animationspause bleibt erhalten. Fehleranzeigen und manuell ausgelöste Nachrichten bleiben bedienbar.
+- PASS: Checkbox über Accessibility-Aktion in allen drei Grössen bedient; Modushinweis und Bedienleiste innerhalb des Fensters. Tray-Aktionen funktionieren im Logikpfad auch bei verstecktem Fenster ohne Zeichendurchlauf.
+- PASS: echter lokaler Listener nimmt Meldungen beider Prioritäten bei aktivem Modus an. Nach Ablauf einer kurzen TTL und Ausschalten des Modus kommen nur die übrigen gültigen Meldungen in Prioritätsreihenfolge zur Anzeige.
+- PASS: natives macOS-Release-Bundle ad hoc signiert und streng geprüft. Echtes Tray schaltet den Modus, Buddy bleibt sichtbar; hohe und normale IPC-Meldung warten. Beim Ausschalten erscheint die gültige Meldung, die abgelaufene bleibt aus. Erneutes Einschalten schliesst die aktive Statusblase.
+- PASS: aktiviertes «Nicht stören» nach echtem, geordnetem Neustart wiederhergestellt. Die native Accessibility-Checkbox schaltet den Modus wieder aus. Vorhandene Grössenwahl «Klein», reduzierte Bewegung, Durchklicken, Vordergrund und Empfang bleiben erhalten; Hotkeys bleiben ausgeschaltet. Abschliessende echte IPC-Meldung angezeigt, «Nicht stören» aus, Bedienung eingeklappt.
+- NOT_RUN: native Windows-/Linux-Desktop-Abnahme. Die gemeinsame Desktop-Implementierung benötigt keine neue Plattform-API; CI prüft die Änderung separat.
+
+Persistiert wird der Schalter `do-not-disturb`, keine Meldungsinhalte. Die bestehende begrenzte IPC-Warteschlange mit laufender TTL bleibt zuständig; hohe Priorität umgeht den Modus nicht. Animationskern, Statusprotokoll und Codex-Hook-Konfiguration bleiben unverändert.
+
 ## Sparsamere GitHub Actions · 13. Oktober 2026
 
 - PASS: `actionlint .github/workflows/ci.yml` und `git diff --check`. Ausschliesslich Workflow und Dokumentation geändert; Rust-Code und Lockfiles unverändert.

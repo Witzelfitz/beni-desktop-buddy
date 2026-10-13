@@ -12,6 +12,7 @@ pub enum Action {
     Recover,
     Hide,
     Pause,
+    DoNotDisturb,
     Settings,
     Quit,
 }
@@ -22,6 +23,7 @@ impl Action {
             "beni-recover" => Some(Self::Recover),
             "beni-hide" => Some(Self::Hide),
             "beni-pause" => Some(Self::Pause),
+            "beni-do-not-disturb" => Some(Self::DoNotDisturb),
             "beni-settings" => Some(Self::Settings),
             "beni-quit" => Some(Self::Quit),
             _ => None,
@@ -31,6 +33,7 @@ impl Action {
 pub struct Tray {
     _icon: TrayIcon,
     pause: CheckMenuItem,
+    do_not_disturb: CheckMenuItem,
 }
 impl Tray {
     pub fn new(
@@ -38,12 +41,15 @@ impl Tray {
         sender: SyncSender<Action>,
         engine: &Engine,
         paused: bool,
+        quiet: bool,
     ) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
         let menu = Menu::new();
         let show = MenuItem::with_id("beni-show", "Beni anzeigen", true, None);
         let recover = MenuItem::with_id("beni-recover", "Beni zurückholen", true, None);
         let hide = MenuItem::with_id("beni-hide", "Beni ausblenden", true, None);
         let pause = CheckMenuItem::with_id("beni-pause", "Animation pausieren", true, paused, None);
+        let do_not_disturb =
+            CheckMenuItem::with_id("beni-do-not-disturb", "Nicht stören", true, quiet, None);
         let settings = MenuItem::with_id("beni-settings", "Einstellungen", true, None);
         let quit = MenuItem::with_id("beni-quit", "Beenden", true, None);
         menu.append_items(&[
@@ -52,6 +58,7 @@ impl Tray {
             &hide,
             &PredefinedMenuItem::separator(),
             &pause,
+            &do_not_disturb,
             &settings,
             &PredefinedMenuItem::separator(),
             &quit,
@@ -72,10 +79,17 @@ impl Tray {
                 ctx.request_repaint();
             }
         }));
-        Ok(Self { _icon: icon, pause })
+        Ok(Self {
+            _icon: icon,
+            pause,
+            do_not_disturb,
+        })
     }
     pub fn set_paused(&self, paused: bool) {
         self.pause.set_checked(paused);
+    }
+    pub fn set_do_not_disturb(&self, quiet: bool) {
+        self.do_not_disturb.set_checked(quiet);
     }
 }
 fn avatar_icon(engine: &Engine) -> Result<Icon, Box<dyn std::error::Error + Send + Sync>> {

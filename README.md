@@ -66,6 +66,7 @@ Linux-Desktop-/Compositor-Verhalten muss separat abgenommen werden. Ein erfolgre
 | Hintergrund durchklickbar | Standardmässig aktiv; im Menü abschaltbar. Beni, sichtbare Bedienleiste und Sprechblasen bleiben anklickbar |
 | Eigene Sprechblase | Nachricht im Menü eingeben; lange Texte scrollen; Blase anklicken oder mit × schliessen |
 | Status von lokalen Programmen | «Menü» → «Statusmeldungen empfangen», danach CLI `notify` oder `run` |
+| Statusanzeigen pausieren | «Menü» oder Tray → «Nicht stören» |
 | Vordergrunddarstellung | «Menü» → «Immer im Vordergrund» |
 | Menü und Bedienleiste schliessen | Escape oder Beni erneut anklicken |
 | Beenden | «Beenden» im Fenster oder Tray; Alt/Option + Q bei fokussiertem Buddy-Fenster |
@@ -74,7 +75,7 @@ Die Bedienleiste erscheint erst nach einem Klick auf Beni. Ein weiterer Klick od
 
 Die native Accessibility-Anbindung über [eframes AccessKit-Feature](https://docs.rs/eframe/0.36.2/eframe/#feature-flags) ist aktiviert. Beni wird als beschrifteter Button mit Auf-/Zuklappzustand dargestellt; die Sprechblase hat einen benannten Schliessen-Knopf, und das Nachrichtenfeld einen festen Namen. Tab, Eingabe und Leertaste bedienen auch die eingeklappte Leiste. Eine vollständige Abnahme mit VoiceOver, NVDA und Orca bleibt separat zu prüfen.
 
-38 Desktoptests prüfen UI-Ereignisse, Grössenwahl und Speicherung, Hotkey-Eingaben, Konflikte, Ereignisse und Abschalten, Eingabegeometrie samt PNG-Alpha/DPI, Accessibility-Baum und Aktionen, Tastaturbedienung, ein-/ausgeklappte Bedienung, Fehlerablauf, Bedienbarkeit bei Zeichenfehlern, Tray-Aktionen ohne Zeichnen und Fensterpositionen. Fenster-/Compositor-Verhalten auf Windows/Linux sowie die vollständige manuelle Abnahme bleiben separat zu prüfen.
+42 Desktoptests prüfen UI-Ereignisse, Grössenwahl und Speicherung, Hotkey-Eingaben, Konflikte, Ereignisse und Abschalten, «Nicht stören» mit echten IPC-Meldungen, Eingabegeometrie samt PNG-Alpha/DPI, Accessibility-Baum und Aktionen, Tastaturbedienung, ein-/ausgeklappte Bedienung, Fehlerablauf, Bedienbarkeit bei Zeichenfehlern, Tray-Aktionen ohne Zeichnen und Fensterpositionen. Fenster-/Compositor-Verhalten auf Windows/Linux sowie die vollständige manuelle Abnahme bleiben separat zu prüfen.
 
 «Klein» verwendet eine Zeichenfläche von 300 × 360 Punkten, «Mittel» die bisherige Grösse von 340 × 440 und «Gross» 420 × 560. Schrift und Bedienelemente behalten ihre Grösse; das Einstellungsmenü passt in das jeweilige Fenster und lässt sich scrollen. Aktive Meldungen behalten beim Wechsel Text, Quelle, Geste und Anzeigedauer. Fehlende oder beschädigte Grösseneinstellungen fallen auf «Mittel» zurück. Nach einer Vergrösserung wird die Fensterposition erneut geprüft; unter Wayland bestimmt weiterhin der Compositor die Platzierung.
 
@@ -83,6 +84,8 @@ Das Tray-Menü bietet auch Pause/Fortsetzen und Einstellungen. Gespeicherte Posi
 Unter Linux braucht das Tray einen StatusNotifier-Host (KSNI, beispielsweise in KDE oder über eine passende GNOME-Erweiterung). Unter Wayland bestimmt der Compositor die Fensterposition; das Begrenzen und gezielte Zurückholen auf den Hauptbildschirm ist dort nicht garantiert. Wenn das Erstellen des Tray fehlschlägt, erhält das Fenster eine normale Titelleiste; auf macOS erscheint zusätzlich ein Dock-Eintrag.
 
 Die Sprechblase passt ihre Höhe an, bietet bei langen Texten Scrollen und eine Anzeigedauer nach Lesezeit (4–30 Sekunden, bei Statusmeldungen zusätzlich durch TTL begrenzt). Sie zeigt Text ohne Audioausgabe. Einzelaktionen kehren nach einem Durchlauf zu «warten» zurück. Einstellungen werden lokal gespeichert. Idle zeichnet mit bis zu 15 fps, aktive Gesten mit bis zu 30 fps; Pause und reduzierte Bewegung mit bis zu 4 fps.
+
+«Nicht stören» ist anfangs ausgeschaltet und wird über Neustarts gespeichert. Der Modus schliesst eine laufende Statusblase und pausiert neue Statusanzeigen aller Prioritäten. Beni bleibt sichtbar und bedienbar; eigene Nachrichten, Animationspause und Fehleranzeigen bleiben unabhängig. Ein sichtbarer Hinweis und der Haken im Tray zeigen den Modus an. Die lokale IPC bleibt bei eingeschaltetem Empfang erreichbar: Meldungen warten in der bestehenden begrenzten Warteschlange, ihre TTL läuft weiter. Nach dem Ausschalten zeigt Beni nur noch gültige Meldungen in der üblichen Reihenfolge. Ein CLI-Erfolg bedeutet weiterhin «angenommen», nicht «bereits angezeigt».
 
 Transparente Flächen leiten Mausklicks an das darunterliegende Fenster weiter. Die Eingabegeometrie folgt der gezeichneten Beni-Silhouette, Sprechblase, Bedienleiste und Einstellungen. Auf macOS stellen passive Mausbewegungsereignisse das Fenster vor dem nächsten Klick passend um; Tastaturereignisse werden dafür nicht überwacht. Windows verwendet Fensterregionen, Linux X11 Input Shapes und Wayland Oberflächen-Eingaberegionen. Ohne verfügbares Tray oder bei nativen Fehlern bleibt die normale Fensterbedienung erhalten. Autostart bleibt offen.
 
