@@ -16,6 +16,7 @@ struct TransientError {
 pub struct BuddyApp {
     engine: Engine,
     player: Player,
+    idle: crate::idle::Idle,
     texture: TextureHandle,
     atlas_alpha: Vec<u8>,
     hit_map: crate::hit_map::HitMap,
@@ -79,6 +80,7 @@ impl BuddyApp {
         Ok(Self {
             engine,
             player,
+            idle: crate::idle::Idle::default(),
             texture,
             atlas_alpha: image.pixels.iter().map(|pixel| pixel.a()).collect(),
             hit_map: crate::hit_map::HitMap::default(),
@@ -122,6 +124,7 @@ impl BuddyApp {
             self.report_error(e.to_string(), Instant::now());
             return;
         }
+        self.idle.reset();
         self.error = None;
         self.message = message.chars().take(400).collect();
         self.message_until = Instant::now() + Duration::from_millis(reading_time_ms(&self.message));
@@ -153,7 +156,9 @@ impl BuddyApp {
         }
         let mut delay = if self.motion.reduced(self.settings.reduced_motion) || self.player.paused {
             housekeeping
-        } else if self.player.state() == "warten" {
+        } else if self.player.state() == "warten"
+            || (self.history_player.is_none() && self.idle.owns(&self.player))
+        {
             Duration::from_millis(1000 / 15)
         } else {
             Duration::from_millis(1000 / 30)
@@ -544,6 +549,7 @@ impl BuddyApp {
         self.hit_map.reset(ctx.content_rect().size());
         let now = Instant::now();
         let delta = now.duration_since(self.last_tick).as_secs_f64() * 1000.0;
+        let occluded = ctx.input(|i| i.viewport().occluded.unwrap_or(false));
         self.last_tick = now;
         self.expire_error(now);
         if let Err(e) = self
@@ -552,6 +558,25 @@ impl BuddyApp {
         {
             self.report_error(e.to_string(), Instant::now());
             self.settings = self.settings.clone().sanitize();
+        }
+        // Reading suspends the idle scheduler along with its saved Player.
+        if self.history_player.is_none() {
+            let enabled = !self.motion.reduced(self.settings.reduced_motion)
+                && !self.menu_open
+                && !self.controls_open
+                && !self.hidden
+                && !occluded
+                && now >= self.message_until
+                && self.error.is_none();
+            if let Err(error) = self.idle.advance(
+                &self.engine,
+                &mut self.player,
+                delta.min(1000.0),
+                self.settings.speed,
+                enabled,
+            ) {
+                self.report_error(error.to_string(), now);
+            }
         }
         let quit = ctx.input(|i| i.modifiers.alt && i.key_pressed(egui::Key::Q));
         if quit {
@@ -592,7 +617,6 @@ impl BuddyApp {
             ctx.send_viewport_cmd(egui::ViewportCommand::InnerSize(self.size.dimensions()));
             self.size_pending = false;
         }
-        let occluded = ctx.input(|i| i.viewport().occluded.unwrap_or(false));
         ctx.request_repaint_after(self.repaint_delay(now, !self.hidden && !occluded));
     }
 }
@@ -743,6 +767,7 @@ mod tests {
         BuddyApp {
             engine: Engine::embedded().unwrap(),
             player: Player::default(),
+            idle: crate::idle::Idle::default(),
             texture: ctx.load_texture("test-atlas", image, egui::TextureOptions::LINEAR),
             atlas_alpha: icon
                 .rgba
@@ -799,6 +824,117 @@ mod tests {
             |ui| app.show_ui(ui),
         )
     }
+    #[test]
+    fn quiet_idle_reuses_existing_gestures_without_speech_and_yields_to_manual_actions() {
+        let ctx = egui::Context::default();
+        ctx.enable_accesskit();
+        let mut app = app(&ctx);
+        app.message_until = Instant::now();
+        let original_message = app.message.clone();
+        let deadline = app.message_until;
+        for index in 0..18 {
+            app.last_tick = Instant::now() - Duration::from_secs(1);
+            frame(&ctx, &mut app, index as f64, vec![]).drop_without_applying_deltas();
+        }
+        assert_eq!(app.player.state(), "nachdenken");
+        assert!(app.idle.owns(&app.player));
+        assert_eq!(
+            app.repaint_delay(Instant::now(), true),
+            Duration::from_millis(66)
+        );
+        assert_eq!(app.message, original_message);
+        assert_eq!(app.message_until, deadline);
+        assert!(!app.active_remote);
+        let mut output = frame(&ctx, &mut app, 18.0, vec![]);
+        output.textures_delta.clear();
+        assert_eq!(
+            accesskit_node(&output, "Beni: Bedienleiste aufklappen")
+                .1
+                .description(),
+            Some("Animation: Denken")
+        );
+        app.play("daumen", "Build fertig");
+        assert!(!app.idle.owns(&app.player));
+        assert_eq!(app.player.state(), "daumen");
+        assert_eq!(app.message, "Build fertig");
+        assert_eq!(
+            app.repaint_delay(Instant::now(), true),
+            Duration::from_millis(33)
+        );
+    }
+
+    #[test]
+    fn idle_gestures_respect_motion_pause_controls_hidden_speech_and_errors() {
+        for blocked in [
+            "manual-reduction",
+            "system-reduction",
+            "pause",
+            "menu",
+            "controls",
+            "hidden",
+            "speech",
+            "error",
+        ] {
+            let ctx = egui::Context::default();
+            let mut app = app(&ctx);
+            app.message_until = Instant::now();
+            match blocked {
+                "manual-reduction" => app.settings.reduced_motion = true,
+                "system-reduction" => app.motion.system = Some(true),
+                "pause" => app.player.paused = true,
+                "menu" => app.menu_open = true,
+                "controls" => app.controls_open = true,
+                "hidden" => app.hidden = true,
+                "speech" => app.message_until = Instant::now() + Duration::from_secs(60),
+                "error" => app.report_error("Hinweis".into(), Instant::now()),
+                _ => unreachable!(),
+            }
+            for index in 0..20 {
+                app.last_tick = Instant::now() - Duration::from_secs(1);
+                frame(&ctx, &mut app, index as f64, vec![]).drop_without_applying_deltas();
+            }
+            assert_eq!(app.player.state(), "warten", "blocked by {blocked}");
+        }
+    }
+
+    #[test]
+    fn reading_history_suspends_and_restores_an_idle_gesture_and_its_pause() {
+        let ctx = egui::Context::default();
+        let mut app = app(&ctx);
+        app.message_until = Instant::now();
+        app.idle
+            .advance(&app.engine, &mut app.player, 18_000.0, 1.0, true)
+            .unwrap();
+        app.player.advance(&app.engine, 500.0, 1.0).unwrap();
+        app.open_history();
+        for index in 0..5 {
+            app.last_tick = Instant::now() - Duration::from_secs(1);
+            frame(&ctx, &mut app, index as f64, vec![]).drop_without_applying_deltas();
+        }
+        app.player.paused = true;
+        app.close_history();
+        assert_eq!(app.player.state(), "nachdenken");
+        assert_eq!(app.player.elapsed_ms(), 500.0);
+        assert!(app.player.paused && app.idle.owns(&app.player));
+        assert_eq!(
+            app.repaint_delay(Instant::now(), true),
+            Duration::from_secs(1)
+        );
+        app.player.paused = false;
+        app.player.advance(&app.engine, 10_000.0, 1.0).unwrap();
+        app.idle
+            .advance(&app.engine, &mut app.player, 0.0, 1.0, true)
+            .unwrap();
+        app.idle
+            .advance(&app.engine, &mut app.player, 18_000.0, 1.0, true)
+            .unwrap();
+        assert_eq!(
+            app.player.state(),
+            "drehen",
+            "resume the existing playlist rather than start it again"
+        );
+    }
+
     #[test]
     fn system_motion_changes_pose_and_budget_without_changing_manual_settings_or_playback() {
         let ctx = egui::Context::default();

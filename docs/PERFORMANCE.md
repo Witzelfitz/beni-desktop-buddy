@@ -2,7 +2,7 @@
 
 ## Zeichenbudget
 
-Die normale Warteschleife enthält sichtbare Bewegung und bleibt bei bis zu 15 Bildern pro Sekunde. Aktive Gesten und «Denken» im Meldungsverlauf behalten bis zu 30 Bilder pro Sekunde. Bei Pause oder «Weniger Bewegung» ist die Pose statisch: Es bleibt eine Aktualisierung pro Sekunde für Fensterposition, Verlaufsalter und das Ende einzelner Gesten. Sichtbare Blasen und Fehler planen zusätzlich ihren Ablaufzeitpunkt ein. Eingaben, IPC, Tray und Hotkeys können unabhängig davon sofort neu zeichnen lassen; egui darf auch für Hover, Texteingabe und Scrollen zusätzliche Bilder anfordern.
+Die normale Warteschleife und ihre gelegentlichen, vorhandenen SDK-Idle-Gesten bleiben bei bis zu 15 Bildern pro Sekunde. Manuell oder durch Meldungen ausgelöste Gesten und «Denken» im Meldungsverlauf behalten bis zu 30 Bilder pro Sekunde. Bei Pause oder «Weniger Bewegung» ist die Pose statisch: Es bleibt eine Aktualisierung pro Sekunde für Fensterposition, Verlaufsalter und das Ende einzelner Gesten. Sichtbare Blasen und Fehler planen zusätzlich ihren Ablaufzeitpunkt ein. Eingaben, IPC, Tray und Hotkeys können unabhängig davon sofort neu zeichnen lassen; egui darf auch für Hover, Texteingabe und Scrollen zusätzliche Bilder anfordern.
 
 Ausgeblendete, minimierte und als verdeckt gemeldete Fenster erhalten nur den Sekundentakt für die App-Logik. eframe führt bei unsichtbaren Fenstern keine Zeichenphase aus. Die App beendet diesen Takt bewusst nicht, damit sie nach Monitorwechseln wieder erreichbar bleibt.
 

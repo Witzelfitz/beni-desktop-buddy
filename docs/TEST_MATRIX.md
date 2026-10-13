@@ -28,6 +28,7 @@ Nativer Start, Transparenz und die sichtbare Bedienleiste wurden auf macOS gepr�
 | Pause / Tempo / reduzierte Bewegung | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |
 | Systemeinstellung zur Bewegung lesen / Übergehen / Speicherung | PASS | NOT_RUN | NOT_RUN | NOT_RUN |
 | Globalen OS-Schalter im laufenden Buddy ändern | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |
+| Sichtbare Idle-Bewegung aus vorhandenen SDK-Animationen | PASS | NOT_RUN | NOT_RUN | NOT_RUN |
 | Menü / eigene Sprechblase | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |
 | Bedienleiste: eingeklappter Start / Klick auf Beni / Escape | PASS | NOT_RUN | NOT_RUN | NOT_RUN |
 | Grössenwahl Klein / Mittel / Gross, Neustart und Durchklicken | PASS | NOT_RUN | NOT_RUN | NOT_RUN |
