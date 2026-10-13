@@ -1,5 +1,7 @@
 # Roadmap
 
+Der verbindliche nächste Arbeitsabschnitt steht im [Masterplan für Distribution, Updates und KI](MASTERPLAN.md). Nächster Implementierungsschritt: R1, Release-Vertrag und Versionierung; davor die öffentliche Freigabe vorbereiten. Den Plan bei jeder Fortsetzung lesen und nach jedem abgeschlossenen PR aktualisieren.
+
 ## 1 · Desktop-Abnahme und erster Build
 
 - Erledigt: GUI-Abhängigkeiten, committete Lockfiles und erfolgreiche Tests, Clippy und Release-Builds auf macOS, Windows und Linux.
@@ -46,6 +48,6 @@ Abnahme: Zeit und Ereignisse sind testbar; Nachrichten sind begrenzt; externe St
 - Erledigt: macOS-Entwicklungsbundle ad hoc signieren und streng prüfen. Developer-ID-Signierung und Notarisierung sowie Windows-Signierung bleiben offen.
 - Reproduzierbare Releases aus freigegebenen Tags.
 - Optionaler, bewusst aktivierter Autostart.
-- Updatekonzept erst nach den ersten stabilen Builds festlegen.
+- Geplant: Installer, Downloadseite, signierte Updates über das Menüleistensymbol und KI-Ersteinrichtung gemäss [Masterplan](MASTERPLAN.md).
 
 Abnahme: Pakete werden auf sauberen Geräten installiert und sauber deinstalliert; Signaturen und Updateverhalten sind geprüft.

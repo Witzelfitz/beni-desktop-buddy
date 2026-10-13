@@ -10,13 +10,17 @@ Die native Rust-Grundlage ist auf macOS gestartet und visuell geprüft. Tests, C
 
 <img src="docs/images/macos-status.png" alt="Beni zeigt eine lokale Statusmeldung mit Quellenname und Daumen-hoch-Geste bei aufgeklappter Bedienleiste" width="340">
 
+## Masterplan
+
+[Der verbindliche Masterplan](docs/MASTERPLAN.md) hält die nächsten Schritte fest: öffentliche Releases, Installer, `mini.witzelfitz.io/download` im getrennten Beni-Allrounder-Repo, Updates über das Menüleistensymbol und freiwillige Ersteinrichtung für Ollama, Claude und OpenAI. Nächster Implementierungsschritt ist der Release-Vertrag und die Versionierung.
+
 ## Aktueller Stand
 
 - **Implementiert und getestet:** unabhängiger Rust-Animationskern, 44 Posen, 20 Animationen, SDK-kompatible Bewegung, Aliase, One-shot → Idle, Pause, Tempo, Spiegelung, reduzierte Bewegung und Asset-Validierung.
 - **Auf macOS gebaut und gestartet:** Desktop-App mit egui/eframe, transparentem Fenster, Verschieben per Ziehen, Sprechblase, Animationsmenü, Einstellungen und lokalem Speichern der Einstellungen/Fensterposition.
 - **Lokale Statusmeldungen:** opt-in, begrenzte Warteschlange, einfache Gestenregeln, CLI `notify` und `run`, Unix-Socket auf macOS/Linux und benutzergeschützte Named Pipe auf Windows.
 - **CI bestanden:** Kern, CLI und Desktop auf macOS, Windows und Linux. Download-Artefakte, macOS-App-Bundle, Roadmap und manuelle Abnahmeliste sind vorhanden.
-- **GitHub:** [Witzelfitz/beni-desktop-buddy](https://github.com/Witzelfitz/beni-desktop-buddy), privat.
+- **GitHub:** [Witzelfitz/beni-desktop-buddy](https://github.com/Witzelfitz/beni-desktop-buddy).
 
 Kein WebView und kein JavaScript zur Laufzeit: Der bestehende Beni-Animationsansatz wird in Rust berechnet und aus dem originalen PNG-Atlas gezeichnet. Grafik und Daten sind im Binary eingebettet.
 
@@ -161,3 +165,5 @@ docs/                       Architektur, Roadmap, GitHub-Anleitung, Abnahme, Pr�
 - [Rechte und Asset-Herkunft](LICENSE.md)
 
 Technische Referenzen: [eframe 0.36.2](https://docs.rs/eframe/0.36.2/eframe/), [transparentes Fenster](https://docs.rs/egui/0.36.2/egui/viewport/struct.ViewportBuilder.html#method.with_transparent), [native Fensteraktionen](https://docs.rs/egui/0.36.2/egui/viewport/enum.ViewportCommand.html).
+
+Der eigenständige Rust-Code steht unter [MIT](LICENSE-MIT). Beni-Grafiken, Figur, App-Icon und importierte Ursprungsdaten behalten [gesonderte Rechte](LICENSE.md).
