@@ -18,11 +18,14 @@ global-hotkey = "=0.8.0"
 
 [target.'cfg(target_os = "macos")'.dependencies]
 objc2 = "=0.6.5"
-objc2-app-kit = { version = "=0.3.2", default-features = false, features = ["NSScreen", "NSEvent", "block2", "NSApplication", "NSRunningApplication"] }
+objc2-app-kit = { version = "=0.3.2", default-features = false, features = ["NSScreen", "NSEvent", "block2", "NSApplication", "NSRunningApplication", "NSWorkspace", "NSAccessibility"] }
 block2 = "=0.6.2"
 
 [target.'cfg(target_os = "windows")'.dependencies]
-windows-sys = { version = "=0.61.2", features = ["Win32_Foundation", "Win32_Graphics_Gdi"] }
+windows-sys = { version = "=0.61.2", features = ["Win32_Foundation", "Win32_Graphics_Gdi", "Win32_UI_WindowsAndMessaging"] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+zbus = "=5.19.0"
 
 [profile.release]
 lto = "thin"

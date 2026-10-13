@@ -27,6 +27,8 @@ pub struct BuddyApp {
     history: crate::history::History,
     history_player: Option<Player>,
     settings: Settings,
+    motion: crate::motion::MotionPreference,
+    system_motion: crate::motion::SystemMotion,
     last_tick: Instant,
     message: String,
     message_until: Instant,
@@ -83,6 +85,8 @@ impl BuddyApp {
             input: crate::input::InputGuard::default(),
             click_through: cc.storage.and_then(|s| eframe::get_value(s, "click-through")).unwrap_or(true),
             settings,
+            motion: crate::motion::MotionPreference::load(cc.storage),
+            system_motion: crate::motion::SystemMotion::start(),
             size: BuddySize::load(cc.storage),
             size_pending: true,
             hotkeys: crate::hotkeys::Hotkeys::load(cc.storage),
@@ -147,7 +151,7 @@ impl BuddyApp {
         if !visible {
             return housekeeping;
         }
-        let mut delay = if self.settings.reduced_motion || self.player.paused {
+        let mut delay = if self.motion.reduced(self.settings.reduced_motion) || self.player.paused {
             housekeeping
         } else if self.player.state() == "warten" {
             Duration::from_millis(1000 / 15)
@@ -313,7 +317,9 @@ impl BuddyApp {
         ui.add_space((78.0 - (ui.cursor().min.y - top)).max(0.0));
     }
     fn avatar_mesh(&self, stage: Rect) -> Result<egui::Mesh, buddy_core::BuddyError> {
-        let pose = self.player.pose(&self.engine, &self.settings)?;
+        let mut effective = self.settings.clone();
+        effective.reduced_motion = self.motion.reduced(self.settings.reduced_motion);
+        let pose = self.player.pose(&self.engine, &effective)?;
         let corners = self
             .engine
             .corners(self.player.state(), &pose, self.settings.mirrored)?;
@@ -481,6 +487,8 @@ impl BuddyApp {
                 ui.add(egui::Slider::new(&mut self.settings.energy, 0.0..=1.0).text("Energie"));
                 ui.add(egui::Slider::new(&mut self.settings.speed, 0.25..=3.0).text("Tempo"));
                 ui.checkbox(&mut self.settings.reduced_motion, "Weniger Bewegung");
+                ui.checkbox(&mut self.motion.follow_system, "Systemeinstellung beachten");
+                ui.small(self.motion.status());
                 ui.checkbox(&mut self.settings.mirrored, "Beni spiegeln");
                 if ui
                     .checkbox(&mut self.click_through, "Hintergrund durchklickbar")
@@ -625,6 +633,9 @@ impl BuddyApp {
 }
 impl eframe::App for BuddyApp {
     fn logic(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+        if let Some(value) = self.system_motion.poll(ctx, Instant::now()) {
+            self.motion.system = value;
+        }
         let window = frame.winit_window().cloned();
         if let Some(window) = window.as_deref() {
             self.hotkeys.sync(ctx, window);
@@ -704,6 +715,7 @@ impl eframe::App for BuddyApp {
     }
     fn save(&mut self, storage: &mut dyn eframe::Storage) {
         eframe::set_value(storage, "buddy-settings", &self.settings);
+        self.motion.save(storage);
         eframe::set_value(storage, "status-receiving", &self.ipc_enabled);
         eframe::set_value(storage, "click-through", &self.click_through);
         eframe::set_value(storage, "do-not-disturb", &self.do_not_disturb);
@@ -748,6 +760,8 @@ mod tests {
             history: crate::history::History::default(),
             history_player: None,
             settings: Settings::default(),
+            motion: crate::motion::MotionPreference::load(None),
+            system_motion: crate::motion::SystemMotion::default(),
             last_tick: Instant::now(),
             message: "Hoi aus der Test-Sprechblase!".into(),
             message_until: Instant::now() + Duration::from_secs(10),
@@ -785,6 +799,118 @@ mod tests {
             |ui| app.show_ui(ui),
         )
     }
+    #[test]
+    fn system_motion_changes_pose_and_budget_without_changing_manual_settings_or_playback() {
+        let ctx = egui::Context::default();
+        let mut app = app(&ctx);
+        app.player.play(&app.engine, "denken", false).unwrap();
+        app.player.advance(&app.engine, 537.0, 1.0).unwrap();
+        let elapsed = app.player.elapsed_ms();
+        let deadline = app.message_until;
+        let stage = Rect::from_min_size(egui::Pos2::ZERO, egui::vec2(320.0, 300.0));
+        let positions = |app: &BuddyApp| {
+            app.avatar_mesh(stage)
+                .unwrap()
+                .vertices
+                .iter()
+                .map(|v| v.pos)
+                .collect::<Vec<_>>()
+        };
+        let moving = positions(&app);
+        app.motion.system = Some(true);
+        let reduced = positions(&app);
+        assert_ne!(moving, reduced);
+        assert_eq!(
+            app.repaint_delay(Instant::now(), true),
+            Duration::from_secs(1)
+        );
+        assert!(!app.settings.reduced_motion);
+        assert_eq!(app.player.state(), "nachdenken");
+        assert_eq!(app.player.elapsed_ms(), elapsed);
+        assert_eq!(app.message_until, deadline);
+        assert!(!app.player.paused);
+        app.motion.follow_system = false;
+        assert_eq!(positions(&app), moving);
+        assert_eq!(
+            app.repaint_delay(Instant::now(), true),
+            Duration::from_millis(33)
+        );
+        app.motion.follow_system = true;
+        app.motion.system = Some(false);
+        assert_eq!(positions(&app), moving);
+        app.settings.reduced_motion = true;
+        assert_eq!(positions(&app), reduced);
+        app.motion.system = None;
+        assert_eq!(
+            positions(&app),
+            reduced,
+            "unavailable OS must preserve manual reduction"
+        );
+    }
+
+    #[test]
+    fn motion_preferences_migrate_and_save_without_persisting_system_state() {
+        let ctx = egui::Context::default();
+        let mut app = app(&ctx);
+        let mut storage = TestStorage::default();
+        assert!(crate::motion::MotionPreference::load(None).follow_system);
+        for invalid in ["bad", "1", "\"false\""] {
+            eframe::Storage::set_string(&mut storage, "follow-system-motion", invalid.into());
+            assert!(crate::motion::MotionPreference::load(Some(&storage)).follow_system);
+        }
+        app.motion.system = Some(true);
+        eframe::App::save(&mut app, &mut storage);
+        let saved: Settings = eframe::get_value(&storage, "buddy-settings").unwrap();
+        assert!(
+            !saved.reduced_motion,
+            "OS preference must never overwrite manual choice"
+        );
+        app.motion.follow_system = false;
+        eframe::App::save(&mut app, &mut storage);
+        let loaded = crate::motion::MotionPreference::load(Some(&storage));
+        assert!(!loaded.follow_system);
+        assert_eq!(loaded.system, None);
+        assert!(loaded.reduced(true));
+        assert!(!loaded.reduced(false));
+    }
+
+    #[test]
+    fn system_motion_toggle_is_accessible_and_preserves_a_paused_history_at_every_size() {
+        for size in BuddySize::ALL {
+            let ctx = egui::Context::default();
+            ctx.all_styles_mut(|style| style.animation_time = 0.0);
+            let mut app = app(&ctx);
+            app.size = size;
+            app.motion.system = Some(true);
+            app.controls_open = true;
+            app.menu_open = true;
+            ctx.enable_accesskit();
+            frame(&ctx, &mut app, 0.0, vec![]).drop_without_applying_deltas();
+            let mut output = frame(&ctx, &mut app, 0.05, vec![]);
+            output.textures_delta.clear();
+            assert_eq!(
+                accesskit_node(&output, "Systemeinstellung beachten")
+                    .1
+                    .role(),
+                egui::accesskit::Role::CheckBox
+            );
+            text_rect(&output, "System: Weniger Bewegung ist aktiv.");
+            let pos = text_rect(&output, "Systemeinstellung beachten").center();
+            output.drop_without_applying_deltas();
+            click(&ctx, &mut app, pos, 0.1).drop_without_applying_deltas();
+            assert!(!app.motion.follow_system);
+            app.open_history();
+            app.player.paused = true;
+            app.motion.system = Some(false);
+            let mut output = frame(&ctx, &mut app, 0.2, vec![]);
+            output.textures_delta.clear();
+            text_rect(&output, "Meldungsverlauf (0)");
+            output.drop_without_applying_deltas();
+            assert_eq!(app.player.state(), "nachdenken");
+            assert!(app.player.paused && app.history_player.is_some());
+        }
+    }
+
     #[test]
     fn settled_ui_sleeps_for_static_poses_and_keeps_animated_budgets() {
         for (reduced, paused, state, expected) in [
@@ -1274,6 +1400,7 @@ mod tests {
         let output = frame(&ctx, &mut app, 0.1, vec![]);
         for label in [
             "Weniger Bewegung",
+            "Systemeinstellung beachten",
             "Beni spiegeln",
             "Statusmeldungen empfangen",
         ] {

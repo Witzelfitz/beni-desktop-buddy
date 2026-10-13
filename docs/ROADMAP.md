@@ -20,7 +20,7 @@ Abnahme: Ein echter Build läuft auf dem Desktop und besteht die manuelle Testma
 - Erledigt: freiwillig aktivierte, gespeicherte globale Rückhol-/Pause-Hotkeys mit frei wählbaren Kombinationen, Eingabe-/Konfliktprüfung und Wiederholungsschutz auf macOS/Windows/X11. Wayland-Portal-Unterstützung bleibt offen.
 - Erledigt: gespeicherte Grössenwahl «Klein», «Mittel», «Gross» mit lesbarer Bedienung, angepasstem Einstellungsmenü und erneuter Positionsprüfung nach Grössenänderungen.
 - Erledigt: gespeichertes «Nicht stören» im Menü und Tray; Statusanzeigen aller Prioritäten pausieren, während TTL und Empfang weiterlaufen.
-- OS-Einstellung für reduzierte Bewegung berücksichtigen.
+- Erledigt: Systemeinstellung für reduzierte Bewegung auf macOS/Windows und über Linux-Desktop-Portale berücksichtigen, mit gespeicherter Ausnahmemöglichkeit und unveränderter manueller Auswahl. Native Windows-/Linux-Abnahme und ein realer Wechsel der globalen OS-Einstellung bleiben offen.
 - Erledigt: unnötige Zeichenanforderungen bei Pause und reduzierter Bewegung von vier auf eine pro Sekunde reduzieren, mit separaten Textfristen und direktem IPC-Wecken; kurze CPU-/Wakeup-Vergleichsmessung auf macOS dokumentieren.
 - Offen: CPU-/GPU-Verbrauch über einen längeren Idle-Lauf messen, Akkuverbrauch und native Windows-/Linux-Last prüfen.
 
