@@ -1,6 +1,6 @@
 # Roadmap
 
-Der verbindliche nächste Arbeitsabschnitt steht im [Masterplan für Distribution, Updates und KI](MASTERPLAN.md). Nächster Implementierungsschritt: R1, Release-Vertrag und Versionierung; davor die öffentliche Freigabe vorbereiten. Den Plan bei jeder Fortsetzung lesen und nach jedem abgeschlossenen PR aktualisieren.
+Der verbindliche nächste Arbeitsabschnitt steht im [Masterplan für Distribution, Updates und KI](MASTERPLAN.md). Die öffentliche Freigabe (R0) ist abgeschlossen. Nächster Implementierungsschritt: R1, Release-Vertrag und Versionierung. Den Plan bei jeder Fortsetzung lesen und nach jedem abgeschlossenen PR aktualisieren.
 
 ## 1 · Desktop-Abnahme und erster Build
 

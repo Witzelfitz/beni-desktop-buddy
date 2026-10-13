@@ -19,6 +19,8 @@ Ein musterbasierter Scan kann unbekannte Geheimnisformate oder andere vertraulic
 
 Quellcode, enthaltene Grafiken, Git-Verlauf, PRs sowie Actions-Historie und Logs werden öffentlich zugänglich. Vorhandene Kopien und Forks lassen sich durch eine spätere Rückkehr zu privat nicht zurückholen. Die gesonderten Rechte an Beni bleiben bestehen; Sichtbarkeit und Open-Source-Lizenz sind getrennte Entscheidungen.
 
-Die tatsächliche GitHub-Sichtbarkeit muss nach dem Umschalten per API bestätigt werden. Eine öffentliche Freigabe stellt noch keinen Installer bereit. Release-Vertrag, signierte Pakete und Update-Feeds folgen gemäss Masterplan; die aktuellen Actions-Archive bleiben Entwicklungsartefakte.
+PASS: Nach dem Merge von PR #21 am 13. Oktober 2026 wurde das Desktop-Repo öffentlich gestellt. GitHub bestätigt `PUBLIC`; ein anonymer API-Aufruf liefert HTTP 200 und `private: false`. Beni-Allrounder ist weiterhin `PRIVATE`.
+
+Eine öffentliche Freigabe stellt noch keinen Installer bereit. Release-Vertrag, signierte Pakete und Update-Feeds folgen gemäss Masterplan; die aktuellen Actions-Archive bleiben Entwicklungsartefakte.
 
 Referenzen: [Gitleaks 8.30.1](https://github.com/gitleaks/gitleaks/releases/tag/v8.30.1), [GitHub-Sichtbarkeit](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/setting-repository-visibility), [GitHub-Lizenzen](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/licensing-a-repository).
