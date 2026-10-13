@@ -157,14 +157,21 @@ impl BuddyApp {
                 ui.visuals_mut().override_text_color = Some(Color32::from_rgb(28, 41, 35));
                 ui.horizontal(|ui| {
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        dismiss = ui
+                        let close = ui
                             .add(
                                 egui::Button::new("×")
                                     .small()
                                     .fill(Color32::from_rgb(220, 231, 205)),
                             )
-                            .on_hover_text("Nachricht schliessen")
-                            .clicked();
+                            .on_hover_text("Nachricht schliessen");
+                        close.widget_info(|| {
+                            egui::WidgetInfo::labeled(
+                                egui::WidgetType::Button,
+                                close.enabled(),
+                                "Nachricht schliessen",
+                            )
+                        });
+                        dismiss = close.clicked();
                         let source = if self.error.is_some() {
                             "Hinweis"
                         } else {
@@ -187,7 +194,9 @@ impl BuddyApp {
                     });
             })
             .response
-            .interact(Sense::click());
+            // The labelled close button provides keyboard and screenreader access.
+            // Clicking the background remains a pointer-only shortcut.
+            .interact(Sense::CLICK);
         if dismiss || response.clicked() {
             self.dismiss_speech(now);
         }
@@ -232,6 +241,20 @@ impl BuddyApp {
                 self.menu_open = false;
             }
         }
+        response.widget_info(|| {
+            egui::WidgetInfo::labeled(
+                egui::WidgetType::Button,
+                response.enabled(),
+                if self.controls_open {
+                    "Beni: Bedienleiste zuklappen"
+                } else {
+                    "Beni: Bedienleiste aufklappen"
+                },
+            )
+        });
+        ui.ctx().accesskit_node_builder(response.id, |node| {
+            node.set_expanded(self.controls_open);
+        });
         response.on_hover_text(if self.controls_open {
             "Ziehen: verschieben · Klicken: Bedienung zuklappen"
         } else {
@@ -343,11 +366,14 @@ impl BuddyApp {
                 ui.separator();
                 ui.checkbox(&mut self.ipc_enabled, "Statusmeldungen empfangen");
                 ui.small("Lokale Programme können Beni Meldungen schicken.");
-                ui.add(
+                let message = ui.add(
                     egui::TextEdit::singleline(&mut self.speech_draft)
                         .hint_text("Benis Nachricht")
                         .char_limit(400),
                 );
+                ctx.accesskit_node_builder(message.id, |node| {
+                    node.set_label("Benis Nachricht");
+                });
                 if ui.button("Beni zeigt die Nachricht").clicked() {
                     let message = self.speech_draft.clone();
                     self.play("reden", &message);
@@ -637,6 +663,149 @@ mod tests {
                 modifiers: Default::default(),
             }],
         )
+    }
+    fn accesskit_node<'a>(
+        output: &'a egui::FullOutput,
+        label: &str,
+    ) -> (egui::accesskit::NodeId, &'a egui::accesskit::Node) {
+        let update = output
+            .platform_output
+            .accesskit_update
+            .as_ref()
+            .expect("accessibility tree");
+        update
+            .nodes
+            .iter()
+            .find(|(_, node)| node.label() == Some(label))
+            .map(|(id, node)| (*id, node))
+            .unwrap_or_else(|| panic!("accessible node missing: {label}"))
+    }
+    fn accessible_click(target: egui::accesskit::NodeId) -> egui::Event {
+        egui::Event::AccessKitActionRequest(egui::accesskit::ActionRequest {
+            action: egui::accesskit::Action::Click,
+            target_tree: egui::accesskit::TreeId::ROOT,
+            target_node: target,
+            data: None,
+        })
+    }
+    #[test]
+    fn accessible_avatar_and_close_button_have_names_and_work_without_a_pointer() {
+        use egui::accesskit::{Action, Role};
+        let ctx = egui::Context::default();
+        ctx.enable_accesskit();
+        let mut app = app(&ctx);
+        let output = frame(&ctx, &mut app, 0.0, vec![]);
+        let (avatar, node) = accesskit_node(&output, "Beni: Bedienleiste aufklappen");
+        assert_eq!(node.role(), Role::Button);
+        assert_eq!(node.is_expanded(), Some(false));
+        assert!(node.supports_action(Action::Focus));
+        assert!(node.supports_action(Action::Click));
+        let (close, node) = accesskit_node(&output, "Nachricht schliessen");
+        assert_eq!(node.role(), Role::Button);
+        assert!(node.supports_action(Action::Click));
+        assert_controls_hidden(&output);
+        output.drop_without_applying_deltas();
+
+        let output = frame(&ctx, &mut app, 0.1, vec![accessible_click(avatar)]);
+        assert!(app.controls_open);
+        let (_, node) = accesskit_node(&output, "Beni: Bedienleiste zuklappen");
+        assert_eq!(node.is_expanded(), Some(true));
+        for label in ["Hoi!", "Pause", "Menü", "Beenden"] {
+            assert_eq!(accesskit_node(&output, label).1.role(), Role::Button);
+        }
+        output.drop_without_applying_deltas();
+
+        frame(&ctx, &mut app, 0.2, vec![accessible_click(close)]).drop_without_applying_deltas();
+        assert!(app.message_until <= Instant::now());
+        let output = frame(&ctx, &mut app, 0.3, vec![accessible_click(avatar)]);
+        assert!(!app.controls_open);
+        assert_eq!(
+            accesskit_node(&output, "Beni: Bedienleiste aufklappen")
+                .1
+                .is_expanded(),
+            Some(false)
+        );
+        assert_controls_hidden(&output);
+        output.drop_without_applying_deltas();
+    }
+    #[test]
+    fn tab_enter_and_space_operate_the_collapsed_avatar_without_dragging() {
+        let ctx = egui::Context::default();
+        ctx.enable_accesskit();
+        let mut app = app(&ctx);
+        app.dismiss_speech(Instant::now());
+        let output = frame(&ctx, &mut app, 0.0, vec![]);
+        let avatar = accesskit_node(&output, "Beni: Bedienleiste aufklappen").0;
+        output.drop_without_applying_deltas();
+        for (i, key) in [egui::Key::Tab, egui::Key::Enter, egui::Key::Space]
+            .into_iter()
+            .enumerate()
+        {
+            let time = 0.1 + i as f64 * 0.1;
+            let output = frame(
+                &ctx,
+                &mut app,
+                time,
+                vec![egui::Event::Key {
+                    key,
+                    physical_key: None,
+                    pressed: true,
+                    repeat: false,
+                    modifiers: Default::default(),
+                }],
+            );
+            assert_eq!(
+                output
+                    .platform_output
+                    .accesskit_update
+                    .as_ref()
+                    .unwrap()
+                    .focus,
+                avatar
+            );
+            assert_eq!(app.controls_open, key == egui::Key::Enter);
+            assert!(
+                !output.viewport_output[&egui::ViewportId::ROOT]
+                    .commands
+                    .contains(&egui::ViewportCommand::StartDrag)
+            );
+            output.drop_without_applying_deltas();
+            frame(
+                &ctx,
+                &mut app,
+                time + 0.01,
+                vec![egui::Event::Key {
+                    key,
+                    physical_key: None,
+                    pressed: false,
+                    repeat: false,
+                    modifiers: Default::default(),
+                }],
+            )
+            .drop_without_applying_deltas();
+        }
+    }
+    #[test]
+    fn accessible_settings_expose_named_controls_and_message_input() {
+        use egui::accesskit::Role;
+        let ctx = egui::Context::default();
+        ctx.enable_accesskit();
+        let mut app = app(&ctx);
+        app.menu_open = true;
+        // egui sizes the settings window on its initial pass.
+        frame(&ctx, &mut app, 0.0, vec![]).drop_without_applying_deltas();
+        let output = frame(&ctx, &mut app, 0.1, vec![]);
+        for label in [
+            "Weniger Bewegung",
+            "Beni spiegeln",
+            "Statusmeldungen empfangen",
+        ] {
+            assert_eq!(accesskit_node(&output, label).1.role(), Role::CheckBox);
+        }
+        let (_, input) = accesskit_node(&output, "Benis Nachricht");
+        assert_eq!(input.role(), Role::TextInput);
+        assert_eq!(input.value(), Some(app.speech_draft.as_str()));
+        output.drop_without_applying_deltas();
     }
     #[test]
     fn avatar_click_toggles_controls_without_replacing_a_status_or_moving_beni() {
