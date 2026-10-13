@@ -155,7 +155,9 @@ def make_bundle(destination, architecture, identity, binaries=None):
     with (destination / "Contents/Info.plist").open("wb") as stream:
         plistlib.dump(info, stream, sort_keys=False)
     run(["plutil", "-lint", str(destination / "Contents/Info.plist")], "Bundle-Plist prüfen")
-    for source in binaries:
+    # Signing the main executable can make codesign inspect the entire surrounding app.
+    # Sign nested helpers first; x86_64 linkers do not provide arm64's implicit ad-hoc signature.
+    for source in sorted(binaries, key=lambda path: path.name == "beni-desktop-buddy"):
         executable = macos / source.name
         sign(executable, identity, executable=True)
         verify_signature(executable, production=identity != "-")
