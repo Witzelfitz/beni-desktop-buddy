@@ -29,6 +29,8 @@ Nativer Start, Transparenz und die sichtbare Bedienleiste wurden auf macOS gepr�
 | Systemeinstellung zur Bewegung lesen / Übergehen / Speicherung | PASS | NOT_RUN | NOT_RUN | NOT_RUN |
 | Globalen OS-Schalter im laufenden Buddy ändern | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |
 | Sichtbare Idle-Bewegung aus vorhandenen SDK-Animationen | PASS | NOT_RUN | NOT_RUN | NOT_RUN |
+| Fokus-/Pausen-Timer: Start / Unterbrechen / Fortsetzen / Abbrechen | PASS | NOT_RUN | NOT_RUN | NOT_RUN |
+| Timer-Abschluss bei verborgenem Buddy / Nicht stören / Verlauf | PASS | NOT_RUN | NOT_RUN | NOT_RUN |
 | Einstellungsfenster: Tray / Buddy, Grösse, Schliessen / erneut öffnen | PASS | NOT_RUN | NOT_RUN | NOT_RUN |
 | Einstellungen: native AX-Aktionen und IPC während geöffnetem Fenster | PASS | NOT_RUN | NOT_RUN | NOT_RUN |
 | Menü / eigene Sprechblase | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |
@@ -69,3 +71,5 @@ Die Accessibility-Anbindung wurde im neuen macOS-Release-Bundle über die native
 Das separate Einstellungsfenster wurde am 13. Oktober 2026 im ad hoc signierten macOS-Bundle über AX-Aktionen und CGWindow-Geometrie geprüft. Das 520 × 680-Punkte-Fenster (712 Punkte inklusive Titelleiste) lässt sich über Buddy und Menüleistensymbol öffnen, mit Footer oder Titelleiste schliessen und danach erneut öffnen. Verkleinern auf 380 × 360 Punkte sowie die Grössenwahl bei Beni beeinflussen jeweils nur das richtige Fenster. «Immer im Vordergrund» verändert nur Benis Fensterebene. Durchklicken bleibt für den Buddy aktiv; die separaten Checkboxen sind bedienbar. Eine echte IPC-Meldung erscheint bei geöffneten Einstellungen. Zuklappen der Buddy-Leiste lässt das Fenster bestehen. Die ursprünglichen Einstellungen und Benis Position wurden nach der Prüfung wiederhergestellt. Native Windows-/Linux- und vollständige Screenreader-Abnahme bleiben NOT_RUN.
 
 Bei ausgeblendetem Buddy bleibt das separate Fenster im nativen Mac-Test bedienbar: «Beni spiegeln» lässt sich umschalten und zurücksetzen. Tray «Einstellungen» zeigt Beni wieder und fokussiert das bereits offene Fenster.
+
+Der lokale Timer wurde am 13. Oktober 2026 im signierten macOS-Bundle über ausschliesslich eigene AX-Aktionen geprüft: Fokusdauer auf eine Minute setzen, Pausentimer starten/abbrechen, Fokus starten, Restzeit unterbrechen und wieder fortsetzen. Mit geschlossenen Einstellungen, ausgeblendetem Buddy und aktivem «Nicht stören» endet die reale einminütige Fokuszeit. Der Abschluss erscheint mit Quelle `timer` im Verlauf. Nach Schliessen des Verlaufs und Deaktivieren von «Nicht stören» zeigt Beni die wartende Blase und die vorhandene Geste «Daumen hoch». «Timer zurücksetzen» und Wiederherstellen der Vorgaben 25/5 Minuten wurden geprüft. Ein laufender Pausentimer wird durch App-Beenden beendet und nach Neustart nicht fortgesetzt; nur die Minuten bleiben gespeichert. Vorherige Buddy-Einstellungen und Fensterposition bleiben erhalten. Native Windows-/Linux- und Standby-Abnahme sind NOT_RUN.

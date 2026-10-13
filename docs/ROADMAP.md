@@ -29,7 +29,8 @@ Abnahme: Beni lässt sich jederzeit wiederfinden und beenden, blockiert die Arbe
 
 ## 3 · Nützliche Reaktionen
 
-- Lokale Erinnerungen und Fokus-/Pausen-Timer.
+- Erledigt: lokaler Fokus-/Pausen-Timer mit wählbarer Dauer, Unterbrechen/Fortsetzen/Abbrechen, bestehenden Abschlussgesten und Sitzungsverlauf; unabhängig von IPC und Animationspause.
+- Offen: weitere lokale Erinnerungen.
 - Ereignisse wie `thinking`, `speaking`, `success` auf bestehende Animationsnamen abbilden.
 - Erledigt: dynamische, scrollbar und schliessbar dargestellte Sprechblasen mit Lesedauer und TTL. Kleine Szenen aus mehreren Gesten bleiben offen.
 - Erledigt: standardmässig ausgeschaltete lokale Status-IPC auf macOS/Linux/Windows, CLI notify/run und Integrationsvorlagen; begrenzte Nachrichten, TTL, Prioritäten und Gestenregeln.
