@@ -252,3 +252,15 @@ Die Bedienelemente liegen in einem eigenen, dekorierten und skalierbaren nativen
 - PASS: bei über Tray ausgeblendetem Buddy bleibt das separate Fenster bedienbar; Spiegelung aus/an und Rückkehr über Tray «Einstellungen» geprüft.
 - PASS: zusätzlicher Glow-Viewport braucht einen eigenen nativen AccessKit-Adapter. Der unveränderte Bibliothekspfad lieferte nur die OS-Titelleiste; der dokumentierte [lokale Patch](../vendor/eframe/BENI_PATCH.md) initialisiert den Adapter für jedes neue Fenster vor dem Anzeigen. Alle übrigen Upstream-Quelltexte, Versionen und Abhängigkeiten bleiben erhalten.
 - NOT_RUN: vollständige VoiceOver-/NVDA-/Orca-Bedienung, native Windows-/Linux-Fensterabnahme, visuelle Bewertung durch den Nutzer. Plattformbuilds und gemeinsame UI-Prüfungen werden im einzigen PR-CI-Lauf geprüft.
+
+## Lokaler Fokus-/Pausen-Timer · 13. Oktober 2026
+
+«Fokus & Pause» im separaten Einstellungsfenster bietet eine einzelne, ausdrücklich gestartete Fokus- oder Pausenphase. Dauer 1–180 Minuten, standardmässig 25/5; Unterbrechen, Fortsetzen und Abbrechen halten Timer und Avatar-Pause auseinander. Abschluss über bestehende SDK-Gesten und denselben Anzeige-/Verlaufspfad. Kern, IPC-Vertrag, Hooks, Assets, Abhängigkeiten und CI bleiben unverändert.
+
+- PASS: `./scripts/check.sh --desktop`: 102 lokale Rusttests (29 Root, 73 Desktop), 11 Python-Integrationstests, beide Formatierungen und Clippy-Prüfungen, Assets/Icons und Desktop-Debug-Build. Alle 480 originalen Referenzposen unverändert.
+- PASS: explizite monotone Zeit, exakte Grenzen und einmaliger Abschluss für beide Phasen, verbleibende Zeit bei Unterbrechung, Abbruch/Neustart ohne alte Anzeige, verspätete Verarbeitung und 120-Sekunden-Frist. Konfiguration wird pro Feld geprüft; beschädigte Werte fallen zurück, laufende Timer werden nicht gespeichert.
+- PASS: Child-Viewport-AccessKit-Aktionen für Start/Unterbrechen/Fortsetzen/Abbrechen beider Phasen. Avatar-Pause bleibt erhalten. Abschluss ohne IPC, mit reduzierter Bewegung und im Logic-Pfad ohne UI. Bestehendes statisches Sekundenbudget bleibt erhalten.
+- PASS: verpasste Timer-Abschlüsse bleiben im begrenzten Sitzungsverlauf. Anzeige wartet bei Nicht stören, verborgenem Fenster, Lesen, Fehlern und bestehender Blase; IPC hat Vorrang. Alte Timer-Blase verfällt, Verlauf bleibt. Keine wiederholte Abschlussmeldung.
+- PASS: finales macOS-Release-Bundle ad hoc signiert und streng geprüft. Reale einminütige Fokuszeit samt verstecktem Buddy und Nicht stören; Verlauf, spätere Blase und Originalgeste «Daumen hoch» über native AX-Aktionen bestätigt. Pausentimer gestartet/abgebrochen, Restzeit unterbrochen/fortgesetzt, Vorgaben wiederhergestellt.
+- PASS: native App mit laufendem Pausentimer beendet und neu gestartet: Timer aus, 25/5-Minuten-Vorgabe gespeichert. Ursprüngliche Einstellungen und Position beibehalten.
+- NOT_RUN: native Windows-/Linux-Abnahme, Standby-Verhalten und vollständige Screenreader-Ausgabe. Plattformbuilds und gemeinsame Tests werden im einzigen PR-CI-Lauf geprüft.

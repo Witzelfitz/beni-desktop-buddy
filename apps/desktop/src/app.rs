@@ -26,6 +26,7 @@ pub struct BuddyApp {
     size_pending: bool,
     hotkeys: crate::hotkeys::Hotkeys,
     history: crate::history::History,
+    timer: crate::timer::Timer,
     history_player: Option<Player>,
     settings: Settings,
     motion: crate::motion::MotionPreference,
@@ -34,7 +35,7 @@ pub struct BuddyApp {
     message: String,
     message_until: Instant,
     message_source: Option<String>,
-    active_remote: bool,
+    active_status: bool,
     do_not_disturb: bool,
     ipc_enabled: bool,
     server: Option<buddy_ipc::Server>,
@@ -94,12 +95,13 @@ impl BuddyApp {
             size_pending: true,
             hotkeys: crate::hotkeys::Hotkeys::load(cc.storage),
             history: crate::history::History::default(),
+            timer: crate::timer::Timer::load(cc.storage),
             history_player: None,
             last_tick: Instant::now(),
             message: "Hoi! Ich bin Beni. Klick mich für die Bedienung an oder zieh mich an deinen Lieblingsplatz.".into(),
             message_until: Instant::now() + Duration::from_secs(10),
             message_source: None,
-            active_remote: false,
+            active_status: false,
             do_not_disturb: Self::load_do_not_disturb(cc.storage),
             ipc_enabled: cc
                 .storage
@@ -131,7 +133,7 @@ impl BuddyApp {
         self.message = message.chars().take(400).collect();
         self.message_until = Instant::now() + Duration::from_millis(reading_time_ms(&self.message));
         self.message_source = None;
-        self.active_remote = false;
+        self.active_status = false;
     }
     fn report_error(&mut self, message: String, now: Instant) {
         self.error = Some(TransientError {
@@ -147,7 +149,7 @@ impl BuddyApp {
     fn dismiss_speech(&mut self, now: Instant) {
         self.error = None;
         self.message_until = now;
-        self.active_remote = false;
+        self.active_status = false;
     }
     fn repaint_delay(&self, now: Instant, visible: bool) -> Duration {
         // Keep the once-per-second topology check, history ages and reduced-motion
@@ -179,7 +181,7 @@ impl BuddyApp {
             || !visible
             || self.history_player.is_some()
             || self.error.is_some()
-            || (self.active_remote && now < self.message_until)
+            || (self.active_status && now < self.message_until)
         {
             return;
         }
@@ -191,7 +193,30 @@ impl BuddyApp {
             self.message_source = Some(message.source);
             self.message_until = now
                 + Duration::from_millis(reading_time_ms(&message.text).min(delivery.remaining_ms));
-            self.active_remote = true;
+            self.active_status = true;
+            return;
+        }
+        // A local timer notice waits for all visible speech, including manual text.
+        if now >= self.message_until
+            && let Some(phase) = self.timer.take_notice(now)
+        {
+            let paused = self.player.paused;
+            self.play(phase.animation(), phase.message());
+            self.player.paused = paused;
+            self.message_source = Some("timer".into());
+            self.message_until = now + Duration::from_millis(reading_time_ms(phase.message()));
+            self.active_status = true;
+        }
+    }
+    fn advance_timer(&mut self, now: Instant) {
+        if let Some((phase, _deadline)) = self.timer.tick(now) {
+            let mut message = buddy_core::notifications::Notification::new(phase.message());
+            message.state = Some(phase.animation().into());
+            message.source = "timer".into();
+            self.history.extend([buddy_ipc::ReceivedNotification {
+                message,
+                received_at: now,
+            }]);
         }
     }
     fn collect_history(&mut self) {
@@ -243,10 +268,10 @@ impl BuddyApp {
     }
     fn set_do_not_disturb(&mut self, enabled: bool, now: Instant) {
         self.do_not_disturb = enabled;
-        if enabled && self.active_remote {
+        if enabled && self.active_status {
             self.message_until = now;
             self.message_source = None;
-            self.active_remote = false;
+            self.active_status = false;
             // Keep animation pause and errors independent of status delivery.
             let player = self.history_player.as_mut().unwrap_or(&mut self.player);
             let paused = player.paused;
@@ -528,6 +553,7 @@ impl BuddyApp {
         if ui.button("Verlauf öffnen").clicked() {
             self.open_history();
         }
+        self.timer.ui(ui, Instant::now());
         ui.separator();
         ui.label("Welche Animation soll ich zeigen?");
         let states: Vec<_> = self
@@ -763,6 +789,7 @@ impl eframe::App for BuddyApp {
             }
         }
         self.collect_history();
+        self.advance_timer(Instant::now());
         if !self.ipc_enabled {
             self.stop_receiving();
         }
@@ -807,6 +834,7 @@ impl eframe::App for BuddyApp {
         eframe::set_value(storage, "do-not-disturb", &self.do_not_disturb);
         self.size.save(storage);
         self.hotkeys.save(storage);
+        self.timer.save(storage);
     }
 }
 
@@ -845,6 +873,7 @@ mod tests {
             size_pending: true,
             hotkeys: crate::hotkeys::Hotkeys::load(None),
             history: crate::history::History::default(),
+            timer: crate::timer::Timer::default(),
             history_player: None,
             settings: Settings::default(),
             motion: crate::motion::MotionPreference::load(None),
@@ -853,7 +882,7 @@ mod tests {
             message: "Hoi aus der Test-Sprechblase!".into(),
             message_until: Instant::now() + Duration::from_secs(10),
             message_source: None,
-            active_remote: false,
+            active_status: false,
             do_not_disturb: false,
             ipc_enabled: false,
             server: None,
@@ -1104,7 +1133,7 @@ mod tests {
         )
         .unwrap();
         app.deliver_status(true, Instant::now());
-        assert!(app.active_remote && app.menu_open);
+        assert!(app.active_status && app.menu_open);
         assert_eq!(app.message, "Build grün");
         app.controls_open = true;
         app.player.paused = true;
@@ -1114,6 +1143,169 @@ mod tests {
         click(&ctx, &mut app, avatar.center(), 0.1).drop_without_applying_deltas();
         assert!(!app.controls_open);
         assert!(app.menu_open && app.player.paused);
+    }
+    #[test]
+    fn local_timer_records_and_displays_once_without_ipc_and_preserves_animation_pause() {
+        let ctx = egui::Context::default();
+        let mut app = app(&ctx);
+        let now = Instant::now();
+        app.player.paused = true;
+        app.settings.reduced_motion = true;
+        app.timer.start(crate::timer::Phase::Focus, now);
+        let deadline = now + Duration::from_secs(1500);
+        app.advance_timer(deadline);
+        app.advance_timer(deadline + Duration::from_secs(1));
+        assert_eq!(app.history.len(), 1);
+        assert!(app.server.is_none() && !app.ipc_enabled);
+        app.deliver_status(true, deadline);
+        assert_eq!(app.message, crate::timer::Phase::Focus.message());
+        assert_eq!(app.player.state(), "daumen");
+        assert!(app.player.paused && app.active_status);
+        assert_eq!(app.message_source.as_deref(), Some("timer"));
+        app.dismiss_speech(deadline);
+        let expired = app.message_until;
+        app.deliver_status(true, deadline + Duration::from_secs(1));
+        assert_eq!(app.message_until, expired, "no repeated completion");
+        app.set_do_not_disturb(true, deadline);
+        assert!(app.player.paused);
+    }
+
+    #[test]
+    fn timer_notices_wait_for_visibility_quiet_history_errors_and_existing_speech() {
+        for blocked in ["hidden", "quiet", "history", "error", "speech", "status"] {
+            let ctx = egui::Context::default();
+            let mut app = app(&ctx);
+            let now = Instant::now();
+            app.timer.start(crate::timer::Phase::Break, now);
+            let deadline = now + Duration::from_secs(300);
+            app.message_until = now;
+            app.advance_timer(deadline);
+            match blocked {
+                "quiet" => app.set_do_not_disturb(true, deadline),
+                "history" => app.open_history(),
+                "error" => app.report_error("Hinweis".into(), deadline),
+                "speech" => app.message_until = deadline + Duration::from_secs(30),
+                "status" => {
+                    app.message_until = deadline + Duration::from_secs(30);
+                    app.active_status = true;
+                }
+                _ => {}
+            }
+            let message = app.message.clone();
+            app.deliver_status(blocked != "hidden", deadline);
+            assert_eq!(app.message, message, "{blocked}");
+            assert_eq!(app.history.len(), 1, "{blocked}");
+            app.set_do_not_disturb(false, deadline);
+            app.close_history();
+            app.expire_error(deadline + Duration::from_secs(10));
+            app.dismiss_speech(deadline);
+            app.deliver_status(true, deadline + Duration::from_secs(10));
+            assert_eq!(
+                app.message,
+                crate::timer::Phase::Break.message(),
+                "{blocked}"
+            );
+            assert_eq!(app.player.state(), "idee");
+        }
+    }
+
+    #[test]
+    fn queued_ipc_precedes_timer_and_stale_timer_remains_only_in_history() {
+        let endpoint = common::TestEndpoint::new();
+        let ctx = egui::Context::default();
+        let mut app = app(&ctx);
+        app.server = Some(buddy_ipc::Server::start_at(endpoint.endpoint.clone(), || {}).unwrap());
+        buddy_ipc::notify(
+            &endpoint.endpoint,
+            buddy_core::notifications::Notification::new("Build grün vor Timer"),
+        )
+        .unwrap();
+        let now = Instant::now();
+        // The timer's end is now; IPC keeps its real transport clock and TTL.
+        app.timer
+            .start(crate::timer::Phase::Break, now - Duration::from_secs(300));
+        app.collect_history();
+        app.advance_timer(now);
+        app.message_until = now;
+        app.deliver_status(true, now);
+        assert_eq!(app.message, "Build grün vor Timer");
+        assert_eq!(app.history.len(), 2);
+        app.deliver_status(true, now + Duration::from_secs(1));
+        assert_eq!(app.message, "Build grün vor Timer");
+        app.dismiss_speech(now);
+        app.deliver_status(true, now + Duration::from_secs(120));
+        assert_eq!(
+            app.message, "Build grün vor Timer",
+            "expired timer cannot replace it"
+        );
+        assert_eq!(app.history.len(), 2);
+        app.history.clear();
+        assert_eq!(app.history.len(), 0);
+    }
+
+    #[test]
+    fn native_timer_controls_start_pause_resume_and_cancel_without_changing_avatar_pause() {
+        let ctx = egui::Context::default();
+        let rig = NativeSettings::new(&ctx);
+        let mut app = app(&ctx);
+        app.open_settings(&ctx);
+        app.player.paused = true;
+        for (index, label) in [
+            "Fokus & Pause",
+            "Fokus starten",
+            "Timer unterbrechen",
+            "Timer fortsetzen",
+            "Timer abbrechen",
+            "Pause starten",
+            "Timer abbrechen",
+        ]
+        .into_iter()
+        .enumerate()
+        {
+            frame(&ctx, &mut app, index as f64, vec![]).drop_without_applying_deltas();
+            let event = {
+                let output = rig.output.borrow();
+                let output = output.as_ref().unwrap();
+                accessible_click(accesskit_node(output, label).0)
+            };
+            rig.input.borrow_mut().events = vec![event];
+            frame(&ctx, &mut app, index as f64 + 0.1, vec![]).drop_without_applying_deltas();
+            rig.input.borrow_mut().events.clear();
+            assert!(app.player.paused && app.menu_open);
+        }
+        assert!(
+            app.timer
+                .tick(Instant::now() + Duration::from_secs(10000))
+                .is_none()
+        );
+        assert_eq!(
+            app.history.len(),
+            0,
+            "cancelled sessions do not create completions"
+        );
+    }
+
+    #[test]
+    fn timer_advances_in_logic_without_ui_and_keeps_static_housekeeping_budget() {
+        let ctx = egui::Context::default();
+        let mut app = app(&ctx);
+        app.hidden = true;
+        app.settings.reduced_motion = true;
+        let now = Instant::now();
+        app.timer
+            .start(crate::timer::Phase::Break, now - Duration::from_secs(300));
+        let mut native_frame = eframe::Frame::_new_kittest();
+        let _ = ctx.run_logic(&egui::RawInput::default(), |ctx| {
+            eframe::App::logic(&mut app, ctx, &mut native_frame);
+        });
+        assert_eq!(app.history.len(), 1);
+        assert!(!app.active_status);
+        assert_eq!(app.repaint_delay(now, false), Duration::from_secs(1));
+        assert_eq!(app.repaint_delay(now, true), Duration::from_secs(1));
+        app.hidden = false;
+        app.message_until = now;
+        app.deliver_status(true, now);
+        assert_eq!(app.message, crate::timer::Phase::Break.message());
     }
     #[test]
     fn quiet_idle_reuses_existing_gestures_without_speech_and_yields_to_manual_actions() {
@@ -1135,7 +1327,7 @@ mod tests {
         );
         assert_eq!(app.message, original_message);
         assert_eq!(app.message_until, deadline);
-        assert!(!app.active_remote);
+        assert!(!app.active_status);
         let mut output = frame(&ctx, &mut app, 18.0, vec![]);
         output.textures_delta.clear();
         assert_eq!(
@@ -1625,7 +1817,7 @@ mod tests {
         let mut app = app(&ctx);
         app.play("daumen", "Build grün");
         app.message_source = Some("codex-test".into());
-        app.active_remote = true;
+        app.active_status = true;
         app.player.paused = true;
         app.menu_open = true;
         let until = app.message_until;
@@ -1670,7 +1862,7 @@ mod tests {
             assert_eq!(app.message_source.as_deref(), Some("codex-test"));
             assert_eq!(app.message_until, until);
             assert_eq!(app.player.state(), "daumen");
-            assert!(app.active_remote && app.player.paused);
+            assert!(app.active_status && app.player.paused);
             output.drop_without_applying_deltas();
         }
     }
@@ -1845,7 +2037,7 @@ mod tests {
         app.play("daumen", "Build grün");
         app.player.paused = true;
         app.message_source = Some("codex-test".into());
-        app.active_remote = true;
+        app.active_status = true;
         let deadline = app.message_until;
         let output = frame(&ctx, &mut app, 0.0, vec![]);
         assert!(!app.controls_open);
@@ -1873,7 +2065,7 @@ mod tests {
         assert_eq!(app.message, "Build grün");
         assert_eq!(app.message_source.as_deref(), Some("codex-test"));
         assert_eq!(app.message_until, deadline);
-        assert!(app.active_remote);
+        assert!(app.active_status);
         output.drop_without_applying_deltas();
     }
     #[test]
@@ -2315,13 +2507,13 @@ mod tests {
         let ctx = egui::Context::default();
         let mut app = app(&ctx);
         app.play("jubeln", "Erfolg");
-        app.active_remote = true;
+        app.active_status = true;
         app.message_source = Some("test".into());
         app.player.paused = true;
         let now = Instant::now();
         app.report_error("Testfehler".into(), now);
         app.set_do_not_disturb(true, now);
-        assert!(!app.active_remote);
+        assert!(!app.active_status);
         assert!(app.message_until <= now);
         assert!(app.message_source.is_none());
         assert_eq!(app.player.state(), "warten");
@@ -2394,7 +2586,7 @@ mod tests {
         }
         app.hidden = false;
         app.deliver_status(true, Instant::now());
-        assert!(!app.active_remote);
+        assert!(!app.active_status);
         assert_eq!(app.server.as_ref().unwrap().pending(), 3);
         std::thread::sleep(Duration::from_millis(1100));
         app.tray_sender.try_send(Action::DoNotDisturb).unwrap();
@@ -2417,7 +2609,7 @@ mod tests {
         app.play("jubeln", "Build fertig");
         app.player.advance(&app.engine, 100.0, 1.0).unwrap();
         app.message_source = Some("build".into());
-        app.active_remote = true;
+        app.active_status = true;
         let deadline = app.message_until;
         app.open_history();
         assert_eq!(app.player.state(), "nachdenken");
@@ -2438,14 +2630,14 @@ mod tests {
         app.close_history();
         assert_eq!(app.player.state(), "jubeln");
         assert_eq!(app.player.elapsed_ms(), 100.0);
-        assert!(app.player.paused && app.active_remote);
+        assert!(app.player.paused && app.active_status);
         assert_eq!(app.message_until, deadline);
         assert_eq!(app.message_source.as_deref(), Some("build"));
         app.open_history();
         assert!(app.player.paused, "an existing pause stays active");
         app.set_do_not_disturb(true, Instant::now());
         assert_eq!(app.player.state(), "nachdenken");
-        assert!(!app.active_remote);
+        assert!(!app.active_status);
         app.close_history();
         assert_eq!(app.player.state(), "warten");
         assert!(app.player.paused);
@@ -2598,7 +2790,7 @@ mod tests {
         logic(&mut app, &mut native_frame);
         assert_eq!(app.history.len(), 2);
         assert_eq!(app.server.as_ref().unwrap().pending(), 1);
-        assert!(!app.active_remote);
+        assert!(!app.active_status);
         app.tray_sender.try_send(Action::History).unwrap();
         logic(&mut app, &mut native_frame);
         assert!(!app.hidden);
@@ -2643,7 +2835,7 @@ mod tests {
         app.close_history();
         logic(&mut app, &mut native_frame);
         assert!(
-            app.player.paused && app.active_remote,
+            app.player.paused && app.active_status,
             "resuming status delivery must not lift the reading pause"
         );
         app.ipc_enabled = false;
@@ -2690,7 +2882,7 @@ mod tests {
         let _ = ctx.run_logic(&egui::RawInput::default(), |ctx| {
             eframe::App::logic(&mut app, ctx, &mut native_frame);
         });
-        assert!(app.active_remote && app.player.paused);
+        assert!(app.active_status && app.player.paused);
         let output = frame(&ctx, &mut app, 0.2, vec![]);
         text_rect(&output, "Build grün nach Pause");
         output.drop_without_applying_deltas();

@@ -9,6 +9,7 @@ mod motion;
 mod placement;
 mod settings_window;
 mod size;
+mod timer;
 mod tray;
 mod window;
 
