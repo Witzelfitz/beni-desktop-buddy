@@ -122,7 +122,14 @@ impl Backend for Native {
         self.0.register(key).map_err(|e| e.to_string())
     }
     fn unregister(&mut self, key: HotKey) -> Result<(), String> {
-        self.0.unregister(key).map_err(|e| e.to_string())
+        self.0.unregister(key).map_err(|e| e.to_string())?;
+        // global-hotkey 0.8.0 buffers XUngrabKey without flushing it. A second,
+        // idempotent unregister performs a keyboard-mapping round trip on that
+        // same connection before sending another harmless ungrab. That confirms
+        // the first release at the server, including rollback while we stay alive.
+        #[cfg(target_os = "linux")]
+        self.0.unregister(key).map_err(|e| e.to_string())?;
+        Ok(())
     }
 }
 #[derive(Debug)]
@@ -703,8 +710,8 @@ mod tests {
     #[test]
     #[ignore = "requires a real X11 server; CI runs this in Xvfb"]
     fn native_x11_hotkey_registration_conflicts_and_release() {
-        let first = global_hotkey::GlobalHotKeyManager::new().unwrap();
-        let second = global_hotkey::GlobalHotKeyManager::new().unwrap();
+        let mut first = Native::new().unwrap();
+        let mut second = Native::new().unwrap();
         let key = "Ctrl+Alt+B".parse::<HotKey>().unwrap();
         first.register(key).unwrap();
         assert!(
@@ -712,20 +719,30 @@ mod tests {
             "occupied global hotkey must be rejected"
         );
         first.unregister(key).unwrap();
-        // The X11 backend acknowledges the command before its buffered ungrab
-        // reaches the server. Wait for that native release, with a hard limit.
-        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(1);
-        loop {
-            match second.register(key) {
-                Ok(()) => break,
-                Err(global_hotkey::Error::AlreadyRegistered(_))
-                    if std::time::Instant::now() < deadline =>
-                {
-                    std::thread::sleep(std::time::Duration::from_millis(20));
-                }
-                Err(error) => panic!("released X11 hotkey remained unavailable: {error}"),
-            }
-        }
+        second.register(key).unwrap();
         second.unregister(key).unwrap();
+        let mut registry = Registry {
+            backend: first,
+            keys: Vec::new(),
+        };
+        let old = keys("Ctrl+Alt+B", "Ctrl+Alt+P");
+        let next = keys("Ctrl+Alt+R", "Ctrl+Alt+S");
+        registry.replace(old).unwrap();
+        second.register(next[1]).unwrap();
+        assert!(registry.replace(next).unwrap_err().preserved);
+        assert!(
+            second.register(old[0]).is_err(),
+            "old pair must remain owned"
+        );
+        second
+            .register(next[0])
+            .expect("rolled-back candidate must be free");
+        second.unregister(next[0]).unwrap();
+        second.unregister(next[1]).unwrap();
+        drop(registry);
+        second
+            .register(old[0])
+            .expect("dropped registry must release its keys");
+        second.unregister(old[0]).unwrap();
     }
 }
