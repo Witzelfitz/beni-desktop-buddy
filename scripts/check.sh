@@ -2,6 +2,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 python3 scripts/release.py check-versions
+python3 scripts/check-macos-packaging.py
 if [[ -n "${BENI_RELEASE_PYTHON:-}" ]]; then
   "$BENI_RELEASE_PYTHON" scripts/check-release.py
 else

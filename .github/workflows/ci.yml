@@ -55,6 +55,8 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libxkbcommon-dev libxkbcommon-x11-dev libwayland-dev libx11-dev libxext-dev libxi-dev libxrandr-dev libxcursor-dev libgl1-mesa-dev xvfb xauth weston
       - name: Release version consistency
         run: python scripts/release.py check-versions
+      - name: macOS packaging policy tests
+        run: python scripts/check-macos-packaging.py
       - name: Release schema and regression tests
         if: runner.os == 'Linux'
         run: |
