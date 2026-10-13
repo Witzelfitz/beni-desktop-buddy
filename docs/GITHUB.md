@@ -17,6 +17,6 @@ cargo run --manifest-path apps/desktop/Cargo.toml --locked
 
 ## Distribution und öffentlicher Zugriff
 
-Der [Masterplan](MASTERPLAN.md) legt öffentliche GitHub Releases als bevorzugte Downloadquelle fest. Der Nutzer hat die öffentliche Freigabe des Desktop-Repositories zur Vereinfachung der Distribution erlaubt und MIT für den Rust-Code mit gesonderten Beni-Rechten gewählt. Vor einer Sichtbarkeitsänderung werden Git-Verlauf, Actions-Logs und veröffentlichte Inhalte geprüft; die tatsächliche Sichtbarkeit wird danach per GitHub-API bestätigt. Das getrennte Website-Repository Beni-Allrounder wird dadurch nicht veröffentlicht.
+Der [Masterplan](MASTERPLAN.md) legt öffentliche GitHub Releases als bevorzugte Downloadquelle fest. Der Nutzer hat die öffentliche Freigabe des Desktop-Repositories zur Vereinfachung der Distribution erlaubt und MIT für den Rust-Code mit gesonderten Beni-Rechten gewählt. Das Desktop-Repo ist seit dem 13. Oktober 2026 öffentlich; GitHub-API und anonymer Zugriff bestätigen die Freigabe. Die vorausgehende Prüfung ist im [Prüfbericht](PUBLICATION_REVIEW.md) dokumentiert. Das getrennte Website-Repository Beni-Allrounder bleibt privat.
 
 Actions-Artefakte bleiben Entwicklungsdownloads. Öffentliche Installer und Update-Feeds folgen erst mit den entsprechenden Schritten des Masterplans.
