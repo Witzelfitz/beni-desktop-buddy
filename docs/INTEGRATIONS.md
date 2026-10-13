@@ -4,6 +4,8 @@ Beni starten und im Menü **«Statusmeldungen empfangen» einschalten**. Die Ein
 
 **«Nicht stören»** im Menü oder Tray hält Statusanzeigen zurück, während Beni sichtbar bleibt. Der Modus wird gespeichert und schliesst eine laufende Statusblase. Die CLI und Hooks können bei aktiviertem Empfang weiter Meldungen senden; «angenommen» bestätigt die Aufnahme in die begrenzte Warteschlange. Die TTL läuft weiter. Nach dem Ausschalten erscheinen nur noch gültige Meldungen, auch hohe Priorität übergeht «Nicht stören» nicht.
 
+Verpasste Meldungen findest du unter **«Verlauf öffnen»** im Menü oder **«Meldungsverlauf»** im Tray. Dort bleiben die letzten 100 angenommenen Meldungen bis zum Leeren oder Beenden nachlesbar, auch nach Ablauf ihrer TTL. Während des Nachlesens denkt Beni; neue Statusblasen warten, ihre TTL läuft weiter. Der Verlauf bleibt ausschliesslich im Arbeitsspeicher.
+
 ## CLI finden
 
 Die Download-Pakete enthalten Desktop-App, `beni-buddy-cli`, Wrapper und Hook-Vorlage. Im macOS-Bundle liegt die CLI unter `Beni Buddy.app/Contents/MacOS/beni-buddy-cli`, die Vorlagen unter `Contents/Resources/integrations`. Unter Windows/Linux liegen CLI und Desktopprogramm nebeneinander.

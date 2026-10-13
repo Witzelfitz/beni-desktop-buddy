@@ -24,6 +24,8 @@ pub struct BuddyApp {
     size: BuddySize,
     size_pending: bool,
     hotkeys: crate::hotkeys::Hotkeys,
+    history: crate::history::History,
+    history_player: Option<Player>,
     settings: Settings,
     last_tick: Instant,
     message: String,
@@ -84,6 +86,8 @@ impl BuddyApp {
             size: BuddySize::load(cc.storage),
             size_pending: true,
             hotkeys: crate::hotkeys::Hotkeys::load(cc.storage),
+            history: crate::history::History::default(),
+            history_player: None,
             last_tick: Instant::now(),
             message: "Hoi! Ich bin Beni. Klick mich für die Bedienung an oder zieh mich an deinen Lieblingsplatz.".into(),
             message_until: Instant::now() + Duration::from_secs(10),
@@ -109,6 +113,7 @@ impl BuddyApp {
         })
     }
     fn play(&mut self, state: &str, message: &str) {
+        self.close_history();
         if let Err(e) = self.player.play(&self.engine, state, true) {
             self.report_error(e.to_string(), Instant::now());
             return;
@@ -139,6 +144,7 @@ impl BuddyApp {
         if self.do_not_disturb
             || !visible
             || self.menu_open
+            || self.history_player.is_some()
             || self.error.is_some()
             || (self.active_remote && now < self.message_until)
         {
@@ -146,11 +152,55 @@ impl BuddyApp {
         }
         if let Some(delivery) = self.server.as_ref().and_then(|s| s.pop()) {
             let message = delivery.message;
+            let paused = self.player.paused;
             self.play(message.state.as_deref().unwrap_or("reden"), &message.text);
+            self.player.paused = paused;
             self.message_source = Some(message.source);
             self.message_until = now
                 + Duration::from_millis(reading_time_ms(&message.text).min(delivery.remaining_ms));
             self.active_remote = true;
+        }
+    }
+    fn collect_history(&mut self) {
+        if let Some(server) = &self.server {
+            self.history.extend(server.drain_received());
+        }
+    }
+    fn stop_receiving(&mut self) {
+        if let Some(server) = self.server.take() {
+            self.history.extend(server.stop_and_drain());
+        }
+    }
+    fn open_history(&mut self) {
+        self.collect_history();
+        self.menu_open = false;
+        self.controls_open = true;
+        if self.history_player.is_some() {
+            return;
+        }
+        let previous = self.player.clone();
+        if let Err(error) = self.player.play(&self.engine, "denken", false) {
+            self.report_error(error.to_string(), Instant::now());
+            return;
+        }
+        self.player.paused = previous.paused;
+        self.history_player = Some(previous);
+    }
+    fn close_history(&mut self) {
+        if let Some(mut previous) = self.history_player.take() {
+            previous.paused = self.player.paused;
+            self.player = previous;
+        }
+    }
+    fn history_ui(&mut self, ui: &mut egui::Ui, now: Instant) {
+        let (rect, action) = self.history.ui(ui, now);
+        self.hit_map.add_rect(rect, 14.0);
+        if action.clear {
+            self.collect_history();
+            self.history.clear();
+        }
+        if action.close {
+            self.close_history();
         }
     }
     fn load_do_not_disturb(storage: Option<&dyn eframe::Storage>) -> bool {
@@ -165,9 +215,10 @@ impl BuddyApp {
             self.message_source = None;
             self.active_remote = false;
             // Keep animation pause and errors independent of status delivery.
-            let paused = self.player.paused;
-            let _ = self.player.play(&self.engine, "warten", true);
-            self.player.paused = paused;
+            let player = self.history_player.as_mut().unwrap_or(&mut self.player);
+            let paused = player.paused;
+            let _ = player.play(&self.engine, "warten", true);
+            player.paused = paused;
         }
     }
     fn speech(&mut self, ui: &mut egui::Ui, now: Instant) {
@@ -275,6 +326,7 @@ impl BuddyApp {
             self.controls_open = !self.controls_open;
             if !self.controls_open {
                 self.menu_open = false;
+                self.close_history();
             }
         }
         response.widget_info(|| {
@@ -290,6 +342,9 @@ impl BuddyApp {
         });
         ui.ctx().accesskit_node_builder(response.id, |node| {
             node.set_expanded(self.controls_open);
+            if let Some(animation) = self.engine.animations.get(self.player.state()) {
+                node.set_description(format!("Animation: {}", animation.label));
+            }
         });
         response.on_hover_text(if self.controls_open {
             "Ziehen: verschieben · Klicken: Bedienung zuklappen"
@@ -344,6 +399,7 @@ impl BuddyApp {
                         self.player.paused = !self.player.paused;
                     }
                     if ui.button("Menü").clicked() {
+                        self.close_history();
                         self.menu_open = !self.menu_open;
                     }
                     if ui.button("Beenden").clicked() {
@@ -367,6 +423,10 @@ impl BuddyApp {
             .vscroll(true)
             .collapsible(false)
             .show(ctx, |ui| {
+                if ui.button("Verlauf öffnen").clicked() {
+                    self.open_history();
+                }
+                ui.separator();
                 ui.label("Welche Animation soll ich zeigen?");
                 let states: Vec<_> = self
                     .engine
@@ -444,7 +504,7 @@ impl BuddyApp {
         if let Some(response) = response {
             self.hit_map.add_rect(response.response.rect, 0.0);
         }
-        self.menu_open = open;
+        self.menu_open = open && self.history_player.is_none();
     }
 }
 impl BuddyApp {
@@ -469,18 +529,29 @@ impl BuddyApp {
         if ctx.input(|i| i.key_pressed(egui::Key::Escape)) {
             self.menu_open = false;
             self.controls_open = false;
+            self.close_history();
         }
         ui.vertical_centered(|ui| {
             ui.add_space(8.0);
-            self.speech(ui, now);
+            if self.history_player.is_none() {
+                self.speech(ui, now);
+            }
             if self.do_not_disturb {
                 let hint = ui.small("Nicht stören ist aktiv");
                 self.hit_map.add_rect(hint.rect, 0.0);
             }
             // Keep Beni's size and position stable when the controls toggle.
-            let stage_height = (ui.available_height() - 52.0).max(100.0);
+            let history_height = if self.history_player.is_some() {
+                180.0
+            } else {
+                0.0
+            };
+            let stage_height = (ui.available_height() - 52.0 - history_height).max(100.0);
             let (_, stage) = ui.allocate_space(Vec2::new(ui.available_width(), stage_height));
             self.paint_avatar(ui, stage);
+            if self.history_player.is_some() {
+                self.history_ui(ui, now);
+            }
             if self.controls_open {
                 self.controls(ui);
             }
@@ -512,7 +583,7 @@ impl BuddyApp {
         window: Option<&winit::window::Window>,
     ) {
         match action {
-            Action::Show | Action::Recover | Action::Settings => {
+            Action::Show | Action::Recover | Action::Settings | Action::History => {
                 self.hidden = false;
                 ctx.send_viewport_cmd(egui::ViewportCommand::Visible(true));
                 ctx.send_viewport_cmd(egui::ViewportCommand::Minimized(false));
@@ -521,7 +592,10 @@ impl BuddyApp {
                     crate::window::restore(window, &mut self.placement, action == Action::Recover);
                 }
                 if action == Action::Settings {
+                    self.close_history();
                     self.menu_open = true;
+                } else if action == Action::History {
+                    self.open_history();
                 }
             }
             Action::Hide => {
@@ -578,11 +652,12 @@ impl eframe::App for BuddyApp {
                 }
             }
         }
+        self.collect_history();
         if !self.ipc_enabled {
-            self.server = None;
+            self.stop_receiving();
         }
         if let Some(error) = self.server.as_ref().and_then(|s| s.take_error()) {
-            self.server = None;
+            self.stop_receiving();
             self.ipc_enabled = false;
             self.report_error(format!("Statusmeldungen: {error}"), Instant::now());
         }
@@ -657,6 +732,8 @@ mod tests {
             size: BuddySize::default(),
             size_pending: true,
             hotkeys: crate::hotkeys::Hotkeys::load(None),
+            history: crate::history::History::default(),
+            history_player: None,
             settings: Settings::default(),
             last_tick: Instant::now(),
             message: "Hoi aus der Test-Sprechblase!".into(),
@@ -1467,6 +1544,7 @@ mod tests {
             Action::Pause,
             Action::DoNotDisturb,
             Action::Settings,
+            Action::History,
             Action::Quit,
         ] {
             app.tray_sender.try_send(action).unwrap();
@@ -1474,7 +1552,7 @@ mod tests {
                 eframe::App::logic(&mut app, ctx, &mut native_frame);
             });
             match action {
-                Action::Show | Action::Recover | Action::Settings => {
+                Action::Show | Action::Recover | Action::Settings | Action::History => {
                     let commands = &output.viewport_commands[&egui::ViewportId::ROOT];
                     for command in [
                         egui::ViewportCommand::Visible(true),
@@ -1485,6 +1563,9 @@ mod tests {
                     }
                     if action == Action::Settings {
                         assert!(app.menu_open);
+                    } else if action == Action::History {
+                        assert!(app.history_player.is_some());
+                        assert_eq!(app.player.state(), "nachdenken");
                     }
                 }
                 Action::Hide => assert!(
@@ -1686,6 +1767,252 @@ mod tests {
         app.deliver_status(true, Instant::now());
         assert_eq!(app.message, "Normal");
         assert_eq!(app.server.as_ref().unwrap().pending(), 0);
+    }
+
+    #[test]
+    fn reading_history_loops_thinking_and_restores_animation_and_pause_without_replacing_speech() {
+        let ctx = egui::Context::default();
+        let mut app = app(&ctx);
+        app.play("jubeln", "Build fertig");
+        app.player.advance(&app.engine, 100.0, 1.0).unwrap();
+        app.message_source = Some("build".into());
+        app.active_remote = true;
+        let deadline = app.message_until;
+        app.open_history();
+        assert_eq!(app.player.state(), "nachdenken");
+        app.player.advance(&app.engine, 100_000.0, 1.0).unwrap();
+        assert_eq!(
+            app.player.state(),
+            "nachdenken",
+            "reading loops the gesture"
+        );
+        let time = app.player.elapsed_ms();
+        app.open_history();
+        assert_eq!(
+            app.player.elapsed_ms(),
+            time,
+            "reopening must not restart it"
+        );
+        app.player.paused = true;
+        app.close_history();
+        assert_eq!(app.player.state(), "jubeln");
+        assert_eq!(app.player.elapsed_ms(), 100.0);
+        assert!(app.player.paused && app.active_remote);
+        assert_eq!(app.message_until, deadline);
+        assert_eq!(app.message_source.as_deref(), Some("build"));
+        app.open_history();
+        assert!(app.player.paused, "an existing pause stays active");
+        app.set_do_not_disturb(true, Instant::now());
+        assert_eq!(app.player.state(), "nachdenken");
+        assert!(!app.active_remote);
+        app.close_history();
+        assert_eq!(app.player.state(), "warten");
+        assert!(app.player.paused);
+        app.open_history();
+        app.play("hallo", "Eigene Nachricht");
+        assert!(app.history_player.is_none());
+        assert_eq!(app.player.state(), "hallo");
+        app.open_history();
+        frame(
+            &ctx,
+            &mut app,
+            0.0,
+            vec![egui::Event::Key {
+                key: egui::Key::Escape,
+                physical_key: None,
+                pressed: true,
+                repeat: false,
+                modifiers: Default::default(),
+            }],
+        )
+        .drop_without_applying_deltas();
+        assert!(app.history_player.is_none());
+        assert!(!app.controls_open && !app.menu_open);
+        assert_eq!(app.player.state(), "hallo");
+    }
+
+    #[test]
+    fn history_opens_from_accessible_menu_and_scrolls_long_text_at_all_sizes() {
+        for size in BuddySize::ALL {
+            let ctx = egui::Context::default();
+            ctx.enable_accesskit();
+            ctx.all_styles_mut(|style| style.animation_time = 0.0);
+            let mut app = app(&ctx);
+            app.size = size;
+            app.do_not_disturb = true;
+            app.menu_open = true;
+            let text = format!("{}Ende", "WWW ".repeat(69));
+            let mut message = buddy_core::notifications::Notification::new(&text);
+            message.source = "W".repeat(48);
+            message.priority = buddy_core::notifications::Priority::High;
+            app.history.extend([buddy_ipc::ReceivedNotification {
+                message,
+                received_at: Instant::now(),
+            }]);
+            frame(&ctx, &mut app, 0.0, vec![]).drop_without_applying_deltas();
+            let output = frame(&ctx, &mut app, 0.1, vec![]);
+            let open = accesskit_node(&output, "Verlauf öffnen").0;
+            output.drop_without_applying_deltas();
+            frame(&ctx, &mut app, 0.2, vec![accessible_click(open)]).drop_without_applying_deltas();
+            assert!(app.history_player.is_some());
+            assert!(!app.menu_open);
+            assert_eq!(app.player.state(), "nachdenken");
+            let mut output = frame(&ctx, &mut app, 0.3, vec![]);
+            output.textures_delta.clear();
+            assert_eq!(
+                accesskit_node(&output, "Beni: Bedienleiste zuklappen")
+                    .1
+                    .description(),
+                Some("Animation: Denken")
+            );
+            for label in [
+                "Meldungsverlauf (1)",
+                "Leeren",
+                "Hoi!",
+                "Pause",
+                "Menü",
+                "Beenden",
+            ] {
+                let rect = text_rect(&output, label);
+                assert!(
+                    rect.min.y >= 0.0 && rect.max.y <= size.dimensions().y,
+                    "{size:?} {label}: {rect:?}"
+                );
+                assert!(
+                    app.hit_map.contains(rect.center()),
+                    "history/controls must remain clickable"
+                );
+            }
+            let avatar = avatar_rect(&output, &app);
+            assert!(
+                avatar.height() > 0.0
+                    && avatar.max.y < text_rect(&output, "Meldungsverlauf (1)").min.y
+            );
+            let (before, clip) = output
+                .shapes
+                .iter()
+                .find_map(|s| find_text(&s.shape, &text).map(|r| (r, s.clip_rect)))
+                .unwrap();
+            assert!(
+                before.max.y > clip.max.y,
+                "{size:?}: long text must require scrolling: {before:?} / {clip:?}"
+            );
+            output.drop_without_applying_deltas();
+            frame(
+                &ctx,
+                &mut app,
+                0.4,
+                vec![
+                    egui::Event::PointerMoved(clip.center()),
+                    egui::Event::MouseWheel {
+                        phase: egui::TouchPhase::Move,
+                        unit: egui::MouseWheelUnit::Point,
+                        delta: egui::vec2(0.0, -2000.0),
+                        modifiers: Default::default(),
+                    },
+                ],
+            )
+            .drop_without_applying_deltas();
+            let output = frame(&ctx, &mut app, 0.5, vec![]);
+            let (after, clip) = output
+                .shapes
+                .iter()
+                .find_map(|s| find_text(&s.shape, &text).map(|r| (r, s.clip_rect)))
+                .unwrap();
+            assert!(
+                after.max.y <= clip.max.y + 1.0,
+                "last line must be reachable"
+            );
+            let close = accesskit_node(&output, "Verlauf schliessen").0;
+            output.drop_without_applying_deltas();
+            frame(&ctx, &mut app, 0.6, vec![accessible_click(close)])
+                .drop_without_applying_deltas();
+            assert!(app.history_player.is_none());
+            assert_eq!(app.player.state(), "warten");
+        }
+    }
+
+    #[test]
+    fn history_keeps_hidden_quiet_expired_receipts_and_clears_without_consuming_delivery() {
+        use buddy_core::notifications::Notification;
+        let endpoint = common::TestEndpoint::new();
+        let ctx = egui::Context::default();
+        ctx.enable_accesskit();
+        let mut app = app(&ctx);
+        app.server = Some(buddy_ipc::Server::start_at(endpoint.endpoint.clone(), || {}).unwrap());
+        app.ipc_enabled = true;
+        app.hidden = true;
+        app.do_not_disturb = true;
+        let mut expired = Notification::new("Kurzfristig");
+        expired.ttl_s = 1;
+        buddy_ipc::notify(&endpoint.endpoint, expired).unwrap();
+        buddy_ipc::notify(&endpoint.endpoint, Notification::new("Bleibt im Verlauf")).unwrap();
+        std::thread::sleep(Duration::from_millis(1100));
+        let mut native_frame = eframe::Frame::_new_kittest();
+        let logic = |app: &mut BuddyApp, frame: &mut eframe::Frame| {
+            let _ = ctx.run_logic(&egui::RawInput::default(), |ctx| {
+                eframe::App::logic(app, ctx, frame)
+            });
+        };
+        logic(&mut app, &mut native_frame);
+        assert_eq!(app.history.len(), 2);
+        assert_eq!(app.server.as_ref().unwrap().pending(), 1);
+        assert!(!app.active_remote);
+        app.tray_sender.try_send(Action::History).unwrap();
+        logic(&mut app, &mut native_frame);
+        assert!(!app.hidden);
+        let output = frame(&ctx, &mut app, 0.0, vec![]);
+        assert!(
+            text_rect(&output, "Bleibt im Verlauf").min.y < text_rect(&output, "Kurzfristig").min.y,
+            "newest receipt is shown first"
+        );
+        output.drop_without_applying_deltas();
+        buddy_ipc::notify(&endpoint.endpoint, Notification::new("Neu beim Lesen")).unwrap();
+        logic(&mut app, &mut native_frame);
+        logic(&mut app, &mut native_frame);
+        assert_eq!(app.history.len(), 3, "receipts are collected once");
+        assert_eq!(app.player.state(), "nachdenken");
+        assert_eq!(app.server.as_ref().unwrap().pending(), 2);
+        let mut storage = TestStorage::default();
+        eframe::App::save(&mut app, &mut storage);
+        assert!(
+            storage
+                .0
+                .values()
+                .all(|v| !v.contains("Bleibt im Verlauf") && !v.contains("Neu beim Lesen"))
+        );
+        let output = frame(&ctx, &mut app, 0.1, vec![]);
+        let clear = accesskit_node(&output, "Leeren").0;
+        output.drop_without_applying_deltas();
+        buddy_ipc::notify(&endpoint.endpoint, Notification::new("Noch gepuffert")).unwrap();
+        frame(&ctx, &mut app, 0.2, vec![accessible_click(clear)]).drop_without_applying_deltas();
+        logic(&mut app, &mut native_frame);
+        assert_eq!(
+            app.history.len(),
+            0,
+            "clear includes receipts still in the server buffer"
+        );
+        assert_eq!(app.server.as_ref().unwrap().pending(), 3);
+        let output = frame(&ctx, &mut app, 0.3, vec![]);
+        text_rect(&output, "Hier erscheinen deine Statusmeldungen.");
+        output.drop_without_applying_deltas();
+        buddy_ipc::notify(&endpoint.endpoint, Notification::new("Beim Abschalten")).unwrap();
+        app.player.paused = true;
+        app.set_do_not_disturb(false, Instant::now());
+        app.close_history();
+        logic(&mut app, &mut native_frame);
+        assert!(
+            app.player.paused && app.active_remote,
+            "resuming status delivery must not lift the reading pause"
+        );
+        app.ipc_enabled = false;
+        logic(&mut app, &mut native_frame);
+        assert!(app.server.is_none());
+        assert_eq!(
+            app.history.len(),
+            1,
+            "turning off reception keeps the last receipt"
+        );
     }
 
     #[test]

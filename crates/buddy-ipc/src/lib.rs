@@ -2,4 +2,4 @@
 mod endpoint;
 mod transport;
 pub use endpoint::Endpoint;
-pub use transport::{Ack, ClientError, Server, notify};
+pub use transport::{Ack, ClientError, MAX_RECENT_MESSAGES, ReceivedNotification, Server, notify};
