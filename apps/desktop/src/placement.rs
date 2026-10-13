@@ -88,6 +88,24 @@ mod tests {
         );
     }
     #[test]
+    fn enlarged_buddy_is_kept_on_its_current_monitor() {
+        let s = screen(0.0, 0.0);
+        let small = Bounds {
+            x: 1120.0,
+            y: 530.0,
+            width: 300.0,
+            height: 360.0,
+        };
+        assert_eq!(recovered_position(small, &[s], false), None);
+        let large = Bounds {
+            width: 420.0,
+            height: 560.0,
+            ..small
+        };
+        let [x, y] = recovered_position(large, &[s], false).unwrap();
+        assert!(s.contains(Bounds { x, y, ..large }));
+    }
+    #[test]
     fn disconnected_monitor_is_recovered() {
         let w = buddy(1700.0, 140.0);
         assert_eq!(

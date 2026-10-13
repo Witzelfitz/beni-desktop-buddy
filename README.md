@@ -60,6 +60,7 @@ Linux-Desktop-/Compositor-Verhalten muss separat abgenommen werden. Ein erfolgre
 | Pause/Fortsetzen | «Pause» / «Weiter» |
 | Animation auswählen | «Menü» → Animation |
 | Energie, Tempo, Spiegelung | «Menü» |
+| Beni-Grösse | «Menü» → «Klein», «Mittel» oder «Gross»; die Auswahl bleibt nach Neustart erhalten |
 | Weniger Bewegung | «Menü» → «Weniger Bewegung» |
 | Hintergrund durchklickbar | Standardmässig aktiv; im Menü abschaltbar. Beni, sichtbare Bedienleiste und Sprechblasen bleiben anklickbar |
 | Eigene Sprechblase | Nachricht im Menü eingeben; lange Texte scrollen; Blase anklicken oder mit × schliessen |
@@ -72,7 +73,9 @@ Die Bedienleiste erscheint erst nach einem Klick auf Beni. Ein weiterer Klick od
 
 Die native Accessibility-Anbindung über [eframes AccessKit-Feature](https://docs.rs/eframe/0.36.2/eframe/#feature-flags) ist aktiviert. Beni wird als beschrifteter Button mit Auf-/Zuklappzustand dargestellt; die Sprechblase hat einen benannten Schliessen-Knopf, und das Nachrichtenfeld einen festen Namen. Tab, Eingabe und Leertaste bedienen auch die eingeklappte Leiste. Eine vollständige Abnahme mit VoiceOver, NVDA und Orca bleibt separat zu prüfen.
 
-24 Desktoptests prüfen UI-Ereignisse, Eingabegeometrie samt PNG-Alpha/DPI, Accessibility-Baum und Aktionen, Tastaturbedienung, ein-/ausgeklappte Bedienung, Fehlerablauf, Bedienbarkeit bei Zeichenfehlern, Tray-Aktionen ohne Zeichnen und Fensterpositionen. Fenster-/Compositor-Verhalten auf Windows/Linux sowie die vollständige manuelle Abnahme bleiben separat zu prüfen.
+28 Desktoptests prüfen UI-Ereignisse, Grössenwahl und Speicherung, Eingabegeometrie samt PNG-Alpha/DPI, Accessibility-Baum und Aktionen, Tastaturbedienung, ein-/ausgeklappte Bedienung, Fehlerablauf, Bedienbarkeit bei Zeichenfehlern, Tray-Aktionen ohne Zeichnen und Fensterpositionen. Fenster-/Compositor-Verhalten auf Windows/Linux sowie die vollständige manuelle Abnahme bleiben separat zu prüfen.
+
+«Klein» verwendet eine Zeichenfläche von 300 × 360 Punkten, «Mittel» die bisherige Grösse von 340 × 440 und «Gross» 420 × 560. Schrift und Bedienelemente behalten ihre Grösse; das Einstellungsmenü passt in das jeweilige Fenster und lässt sich scrollen. Aktive Meldungen behalten beim Wechsel Text, Quelle, Geste und Anzeigedauer. Fehlende oder beschädigte Grösseneinstellungen fallen auf «Mittel» zurück. Nach einer Vergrösserung wird die Fensterposition erneut geprüft; unter Wayland bestimmt weiterhin der Compositor die Platzierung.
 
 Das Tray-Menü bietet auch Pause/Fortsetzen und Einstellungen. Gespeicherte Positionen werden beim Start und nach Änderungen der Bildschirme geprüft; vollständig verlorene Fenster werden automatisch zurückgeholt. Auf macOS berücksichtigt dies Menüleiste, Dock und Retina-Punkte. Eine Fehlermeldung verschwindet nach sechs Sekunden oder bei einer erfolgreichen Aktion; bei einem Zeichenfehler bleibt eine bedienbare Ersatzfläche sichtbar.
 

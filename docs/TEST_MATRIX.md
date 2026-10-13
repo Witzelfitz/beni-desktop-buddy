@@ -28,6 +28,7 @@ Nativer Start, Transparenz und die sichtbare Bedienleiste wurden auf macOS gepr�
 | Pause / Tempo / reduzierte Bewegung | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |
 | Menü / eigene Sprechblase | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |
 | Bedienleiste: eingeklappter Start / Klick auf Beni / Escape | PASS | NOT_RUN | NOT_RUN | NOT_RUN |
+| Grössenwahl Klein / Mittel / Gross, Neustart und Durchklicken | PASS | NOT_RUN | NOT_RUN | NOT_RUN |
 | Transparenter Hintergrund / Avatar / Bedienleiste / Blase anklickbar | PASS | NOT_RUN | NOT_RUN | NOT_RUN |
 | Native Accessibility-API: beschrifteter Beni / Aktionen | PASS | NOT_RUN | NOT_RUN | NOT_RUN |
 | Vollständige Screenreader-Bedienung (VoiceOver / NVDA / Orca) | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |

@@ -1,4 +1,5 @@
 use crate::{
+    size::BuddySize,
     tray::{Action, Tray},
     window::PlacementGuard,
 };
@@ -20,6 +21,8 @@ pub struct BuddyApp {
     hit_map: crate::hit_map::HitMap,
     input: crate::input::InputGuard,
     click_through: bool,
+    size: BuddySize,
+    size_pending: bool,
     settings: Settings,
     last_tick: Instant,
     message: String,
@@ -76,6 +79,8 @@ impl BuddyApp {
             input: crate::input::InputGuard::default(),
             click_through: cc.storage.and_then(|s| eframe::get_value(s, "click-through")).unwrap_or(true),
             settings,
+            size: BuddySize::load(cc.storage),
+            size_pending: true,
             last_tick: Instant::now(),
             message: "Hoi! Ich bin Beni. Klick mich für die Bedienung an oder zieh mich an deinen Lieblingsplatz.".into(),
             message_until: Instant::now() + Duration::from_secs(10),
@@ -332,12 +337,11 @@ impl BuddyApp {
             return;
         }
         let mut open = true;
+        let available = ctx.content_rect().size() - Vec2::splat(24.0);
         let response = egui::Window::new("Benis Einstellungen")
             .open(&mut open)
             .fixed_pos([12.0, 12.0])
-            .default_width(296.0)
-            .resizable(false)
-            .max_height(360.0)
+            .fixed_size([available.x, available.y.min(360.0)])
             .vscroll(true)
             .collapsible(false)
             .show(ctx, |ui| {
@@ -361,6 +365,14 @@ impl BuddyApp {
                         }
                     });
                 ui.separator();
+                ui.label("Beni-Grösse");
+                ui.horizontal(|ui| {
+                    for size in BuddySize::ALL {
+                        if ui.radio_value(&mut self.size, size, size.label()).changed() {
+                            self.size_pending = true;
+                        }
+                    }
+                });
                 ui.add(egui::Slider::new(&mut self.settings.energy, 0.0..=1.0).text("Energie"));
                 ui.add(egui::Slider::new(&mut self.settings.speed, 0.25..=3.0).text("Tempo"));
                 ui.checkbox(&mut self.settings.reduced_motion, "Weniger Bewegung");
@@ -442,6 +454,10 @@ impl BuddyApp {
             }
         });
         self.menu(&ctx);
+        if self.size_pending {
+            ctx.send_viewport_cmd(egui::ViewportCommand::InnerSize(self.size.dimensions()));
+            self.size_pending = false;
+        }
         let occluded = ctx.input(|i| i.viewport().occluded.unwrap_or(false));
         if !occluded {
             // Fixed budget: idle 15 fps, active 30 fps, reduced motion / pause 4 fps.
@@ -561,6 +577,7 @@ impl eframe::App for BuddyApp {
         eframe::set_value(storage, "buddy-settings", &self.settings);
         eframe::set_value(storage, "status-receiving", &self.ipc_enabled);
         eframe::set_value(storage, "click-through", &self.click_through);
+        self.size.save(storage);
     }
 }
 
@@ -594,6 +611,8 @@ mod tests {
             hit_map: crate::hit_map::HitMap::default(),
             input: crate::input::InputGuard::default(),
             click_through: true,
+            size: BuddySize::default(),
+            size_pending: true,
             settings: Settings::default(),
             last_tick: Instant::now(),
             message: "Hoi aus der Test-Sprechblase!".into(),
@@ -623,10 +642,7 @@ mod tests {
     ) -> egui::FullOutput {
         ctx.run_ui(
             egui::RawInput {
-                screen_rect: Some(Rect::from_min_size(
-                    egui::Pos2::ZERO,
-                    egui::vec2(340.0, 440.0),
-                )),
+                screen_rect: Some(Rect::from_min_size(egui::Pos2::ZERO, app.size.dimensions())),
                 time: Some(time),
                 events,
                 ..Default::default()
@@ -730,6 +746,150 @@ mod tests {
             target_node: target,
             data: None,
         })
+    }
+    #[derive(Default)]
+    struct TestStorage(std::collections::HashMap<String, String>);
+    impl eframe::Storage for TestStorage {
+        fn get_string(&self, key: &str) -> Option<String> {
+            self.0.get(key).cloned()
+        }
+        fn set_string(&mut self, key: &str, value: String) {
+            self.0.insert(key.into(), value);
+        }
+        fn remove_string(&mut self, key: &str) {
+            self.0.remove(key);
+        }
+        fn flush(&mut self) {}
+    }
+    #[test]
+    fn size_persistence_preserves_settings_and_rejects_invalid_values() {
+        let ctx = egui::Context::default();
+        let mut app = app(&ctx);
+        let mut storage = TestStorage::default();
+        assert_eq!(BuddySize::load(None), BuddySize::Medium);
+        assert_eq!(BuddySize::load(Some(&storage)), BuddySize::Medium);
+        app.settings.energy = 0.45;
+        app.ipc_enabled = true;
+        for size in BuddySize::ALL {
+            app.size = size;
+            eframe::App::save(&mut app, &mut storage);
+            assert_eq!(BuddySize::load(Some(&storage)), size);
+            assert_eq!(
+                eframe::get_value::<Settings>(&storage, "buddy-settings")
+                    .unwrap()
+                    .energy,
+                0.45
+            );
+            assert_eq!(
+                eframe::get_value::<bool>(&storage, "status-receiving"),
+                Some(true)
+            );
+        }
+        for value in ["\"huge\"", "\"SMALL\"", "123", "not-valid-ron", "\"NaN\""] {
+            eframe::Storage::set_string(&mut storage, "buddy-size", value.into());
+            assert_eq!(BuddySize::load(Some(&storage)), BuddySize::Medium);
+        }
+    }
+    #[test]
+    fn size_selection_resizes_once_without_replacing_a_status() {
+        let ctx = egui::Context::default();
+        ctx.enable_accesskit();
+        ctx.all_styles_mut(|style| style.animation_time = 0.0);
+        let mut app = app(&ctx);
+        app.play("daumen", "Build grün");
+        app.message_source = Some("codex-test".into());
+        app.active_remote = true;
+        app.player.paused = true;
+        app.menu_open = true;
+        let until = app.message_until;
+        let output = frame(&ctx, &mut app, 0.0, vec![]);
+        assert!(
+            output.viewport_output[&egui::ViewportId::ROOT]
+                .commands
+                .contains(&egui::ViewportCommand::InnerSize(
+                    BuddySize::Medium.dimensions()
+                ))
+        );
+        output.drop_without_applying_deltas();
+        for (i, size) in [BuddySize::Small, BuddySize::Large, BuddySize::Medium]
+            .into_iter()
+            .enumerate()
+        {
+            let t = 1.0 + i as f64;
+            let output = frame(&ctx, &mut app, t, vec![]);
+            let target = text_rect(&output, size.label()).center();
+            output.drop_without_applying_deltas();
+            let output = click(&ctx, &mut app, target, t + 0.1);
+            assert_eq!(app.size, size);
+            assert!(
+                output.viewport_output[&egui::ViewportId::ROOT]
+                    .commands
+                    .contains(&egui::ViewportCommand::InnerSize(size.dimensions()))
+            );
+            output.drop_without_applying_deltas();
+            let output = frame(&ctx, &mut app, t + 0.2, vec![]);
+            assert_eq!(
+                accesskit_node(&output, size.label()).1.toggled(),
+                Some(egui::accesskit::Toggled::True)
+            );
+            assert!(
+                !output.viewport_output[&egui::ViewportId::ROOT]
+                    .commands
+                    .iter()
+                    .any(|cmd| matches!(cmd, egui::ViewportCommand::InnerSize(_)))
+            );
+            assert!(app.menu_open);
+            assert_eq!(app.message, "Build grün");
+            assert_eq!(app.message_source.as_deref(), Some("codex-test"));
+            assert_eq!(app.message_until, until);
+            assert_eq!(app.player.state(), "daumen");
+            assert!(app.active_remote && app.player.paused);
+            output.drop_without_applying_deltas();
+        }
+    }
+    #[test]
+    fn all_sizes_keep_controls_settings_and_input_regions_reachable() {
+        let mut previous_area = 0.0;
+        for size in BuddySize::ALL {
+            let ctx = egui::Context::default();
+            ctx.enable_accesskit();
+            let mut app = app(&ctx);
+            app.size = size;
+            app.player.paused = true;
+            app.controls_open = true;
+            let output = frame(&ctx, &mut app, 0.0, vec![]);
+            let avatar = avatar_rect(&output, &app);
+            let screen = Rect::from_min_size(egui::Pos2::ZERO, size.dimensions());
+            assert!(screen.contains_rect(avatar));
+            assert!(avatar.area() > previous_area);
+            previous_area = avatar.area();
+            assert!(app.hit_map.contains(avatar.center()));
+            assert!(!app.hit_map.contains(egui::pos2(2.0, 2.0)));
+            for label in ["Hoi!", "Weiter", "Menü", "Beenden", "×"] {
+                let rect = text_rect(&output, label);
+                assert!(screen.contains_rect(rect), "{size:?}: {label} {rect:?}");
+                assert!(app.hit_map.contains(rect.center()));
+            }
+            output.drop_without_applying_deltas();
+            app.menu_open = true;
+            frame(&ctx, &mut app, 0.1, vec![]).drop_without_applying_deltas();
+            let output = frame(&ctx, &mut app, 0.2, vec![]);
+            let bounds = accesskit_node(&output, "Benis Einstellungen")
+                .1
+                .bounds()
+                .unwrap();
+            assert!(bounds.x0 >= 0.0 && bounds.y0 >= 0.0);
+            assert!(
+                bounds.x1 <= f64::from(screen.max.x) && bounds.y1 <= f64::from(screen.max.y),
+                "{size:?}: {bounds:?}"
+            );
+            for choice in BuddySize::ALL {
+                let rect = text_rect(&output, choice.label());
+                assert!(screen.contains_rect(rect));
+                assert!(app.hit_map.contains(rect.center()));
+            }
+            output.drop_without_applying_deltas();
+        }
     }
     #[test]
     fn accessible_avatar_and_close_button_have_names_and_work_without_a_pointer() {
@@ -970,25 +1130,44 @@ mod tests {
     }
     #[test]
     fn pointer_clicks_open_menu_change_motion_and_show_speech() {
-        let ctx = egui::Context::default();
-        let mut app = app(&ctx);
-        app.controls_open = true;
-        let output = frame(&ctx, &mut app, 0.0, vec![]);
-        let pos = text_rect(&output, "Menü").center();
-        output.drop_without_applying_deltas();
-        click(&ctx, &mut app, pos, 0.1).drop_without_applying_deltas();
-        assert!(app.menu_open);
-        let output = frame(&ctx, &mut app, 0.2, vec![]);
-        let reduced = text_rect(&output, "Weniger Bewegung").center();
-        output.drop_without_applying_deltas();
-        click(&ctx, &mut app, reduced, 0.3).drop_without_applying_deltas();
-        assert!(app.settings.reduced_motion);
-        let output = frame(&ctx, &mut app, 0.4, vec![]);
-        let send = text_rect(&output, "Beni zeigt die Nachricht").center();
-        output.drop_without_applying_deltas();
-        click(&ctx, &mut app, send, 0.5).drop_without_applying_deltas();
-        assert_eq!(app.player.state(), "reden");
-        assert_eq!(app.message, "Hoi von den Tests!");
+        for size in BuddySize::ALL {
+            let ctx = egui::Context::default();
+            ctx.all_styles_mut(|style| style.animation_time = 0.0);
+            let mut app = app(&ctx);
+            app.size = size;
+            app.controls_open = true;
+            let output = frame(&ctx, &mut app, 0.0, vec![]);
+            let pos = text_rect(&output, "Menü").center();
+            output.drop_without_applying_deltas();
+            click(&ctx, &mut app, pos, 0.1).drop_without_applying_deltas();
+            assert!(app.menu_open);
+            let output = frame(&ctx, &mut app, 0.2, vec![]);
+            let reduced = text_rect(&output, "Weniger Bewegung").center();
+            output.drop_without_applying_deltas();
+            click(&ctx, &mut app, reduced, 0.3).drop_without_applying_deltas();
+            assert!(app.settings.reduced_motion);
+            frame(
+                &ctx,
+                &mut app,
+                0.4,
+                vec![
+                    egui::Event::PointerMoved(egui::pos2(260.0, 300.0)),
+                    egui::Event::MouseWheel {
+                        phase: egui::TouchPhase::Move,
+                        unit: egui::MouseWheelUnit::Point,
+                        delta: egui::vec2(0.0, -2000.0),
+                        modifiers: Default::default(),
+                    },
+                ],
+            )
+            .drop_without_applying_deltas();
+            let output = frame(&ctx, &mut app, 0.45, vec![]);
+            let send = text_rect(&output, "Beni zeigt die Nachricht").center();
+            output.drop_without_applying_deltas();
+            click(&ctx, &mut app, send, 0.5).drop_without_applying_deltas();
+            assert_eq!(app.player.state(), "reden");
+            assert_eq!(app.message, "Hoi von den Tests!");
+        }
     }
     #[test]
     fn dragging_avatar_requests_a_native_window_drag() {
@@ -1217,62 +1396,65 @@ mod tests {
 
     #[test]
     fn long_speech_scrolls_and_can_be_closed_without_hiding_controls() {
-        let ctx = egui::Context::default();
-        ctx.all_styles_mut(|style| style.animation_time = 0.0);
-        let mut app = app(&ctx);
-        app.controls_open = true;
-        let text = "Beni erklärt den nächsten Schritt. ".repeat(11);
-        app.play("reden", &text);
-        app.message_source = Some("W".repeat(48));
-        assert!(app.message_until.duration_since(Instant::now()) > Duration::from_secs(20));
-        let output = frame(&ctx, &mut app, 0.0, vec![]);
-        for label in ["Hoi!", "Pause", "Menü", "Beenden", "×"] {
-            let rect = text_rect(&output, label);
+        for size in BuddySize::ALL {
+            let ctx = egui::Context::default();
+            ctx.all_styles_mut(|style| style.animation_time = 0.0);
+            let mut app = app(&ctx);
+            app.size = size;
+            app.controls_open = true;
+            let text = "Beni erklärt den Schritt.\n".repeat(15);
+            app.play("reden", &text);
+            app.message_source = Some("W".repeat(48));
+            assert!(app.message_until.duration_since(Instant::now()) > Duration::from_secs(20));
+            let output = frame(&ctx, &mut app, 0.0, vec![]);
+            for label in ["Hoi!", "Pause", "Menü", "Beenden", "×"] {
+                let rect = text_rect(&output, label);
+                assert!(
+                    rect.min.y >= 0.0 && rect.max.y <= size.dimensions().y,
+                    "{label}: {rect:?}"
+                );
+            }
+            let (text_rect_before, clip) = output
+                .shapes
+                .iter()
+                .find_map(|s| find_text(&s.shape, &text).map(|r| (r, s.clip_rect)))
+                .unwrap();
             assert!(
-                rect.min.y >= 0.0 && rect.max.y <= 440.0,
-                "{label}: {rect:?}"
+                text_rect_before.max.y > clip.max.y,
+                "long text must have a scroll range"
             );
+            let pos = clip.center();
+            output.drop_without_applying_deltas();
+            frame(
+                &ctx,
+                &mut app,
+                0.1,
+                vec![
+                    egui::Event::PointerMoved(pos),
+                    egui::Event::MouseWheel {
+                        phase: egui::TouchPhase::Move,
+                        unit: egui::MouseWheelUnit::Point,
+                        delta: egui::vec2(0.0, -2000.0),
+                        modifiers: Default::default(),
+                    },
+                ],
+            )
+            .drop_without_applying_deltas();
+            let output = frame(&ctx, &mut app, 0.2, vec![]);
+            let (after, clip) = output
+                .shapes
+                .iter()
+                .find_map(|s| find_text(&s.shape, &text).map(|r| (r, s.clip_rect)))
+                .unwrap();
+            assert!(
+                after.max.y <= clip.max.y + 1.0,
+                "last line must be reachable: {after:?} / {clip:?}"
+            );
+            let close = text_rect(&output, "×").center();
+            output.drop_without_applying_deltas();
+            click(&ctx, &mut app, close, 0.3).drop_without_applying_deltas();
+            assert!(app.message_until <= Instant::now());
         }
-        let (text_rect_before, clip) = output
-            .shapes
-            .iter()
-            .find_map(|s| find_text(&s.shape, &text).map(|r| (r, s.clip_rect)))
-            .unwrap();
-        assert!(
-            text_rect_before.max.y > clip.max.y,
-            "long text must have a scroll range"
-        );
-        let pos = clip.center();
-        output.drop_without_applying_deltas();
-        frame(
-            &ctx,
-            &mut app,
-            0.1,
-            vec![
-                egui::Event::PointerMoved(pos),
-                egui::Event::MouseWheel {
-                    phase: egui::TouchPhase::Move,
-                    unit: egui::MouseWheelUnit::Point,
-                    delta: egui::vec2(0.0, -2000.0),
-                    modifiers: Default::default(),
-                },
-            ],
-        )
-        .drop_without_applying_deltas();
-        let output = frame(&ctx, &mut app, 0.2, vec![]);
-        let (after, clip) = output
-            .shapes
-            .iter()
-            .find_map(|s| find_text(&s.shape, &text).map(|r| (r, s.clip_rect)))
-            .unwrap();
-        assert!(
-            after.max.y <= clip.max.y + 1.0,
-            "last line must be reachable: {after:?} / {clip:?}"
-        );
-        let close = text_rect(&output, "×").center();
-        output.drop_without_applying_deltas();
-        click(&ctx, &mut app, close, 0.3).drop_without_applying_deltas();
-        assert!(app.message_until <= Instant::now());
     }
 
     #[test]
