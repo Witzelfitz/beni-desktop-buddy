@@ -3,6 +3,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 if [[ "$(uname -s)" != "Linux" ]]; then echo "Dieser Check benötigt Linux." >&2; exit 1; fi
 xvfb-run -a env BENI_INPUT_BACKEND=x11 cargo test --manifest-path apps/desktop/Cargo.toml --locked native_linux_input_regions -- --ignored --test-threads=1
+xvfb-run -a cargo test --manifest-path apps/desktop/Cargo.toml --locked native_x11_hotkey_registration_conflicts_and_release -- --ignored --test-threads=1
 beni_runtime="$(mktemp -d)"
 chmod 700 "$beni_runtime"
 env XDG_RUNTIME_DIR="$beni_runtime" weston --backend=headless-backend.so --use-pixman --no-config --socket=beni-input-test --idle-time=0 --log="$beni_runtime/weston.log" &

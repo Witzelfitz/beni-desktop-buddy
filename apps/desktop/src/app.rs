@@ -23,6 +23,7 @@ pub struct BuddyApp {
     click_through: bool,
     size: BuddySize,
     size_pending: bool,
+    hotkeys: crate::hotkeys::Hotkeys,
     settings: Settings,
     last_tick: Instant,
     message: String,
@@ -81,6 +82,7 @@ impl BuddyApp {
             settings,
             size: BuddySize::load(cc.storage),
             size_pending: true,
+            hotkeys: crate::hotkeys::Hotkeys::load(cc.storage),
             last_tick: Instant::now(),
             message: "Hoi! Ich bin Beni. Klick mich für die Bedienung an oder zieh mich an deinen Lieblingsplatz.".into(),
             message_until: Instant::now() + Duration::from_secs(10),
@@ -411,6 +413,7 @@ impl BuddyApp {
                     let message = self.speech_draft.clone();
                     self.play("reden", &message);
                 }
+                self.hotkeys.ui(ui);
                 ui.small("Esc klappt die Bedienung zu. Alt/Option + Q beendet Beni.");
             });
         if let Some(response) = response {
@@ -505,6 +508,7 @@ impl eframe::App for BuddyApp {
     fn logic(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         let window = frame.winit_window().cloned();
         if let Some(window) = window.as_deref() {
+            self.hotkeys.sync(ctx, window);
             if !self.tray_attempted {
                 self.tray_attempted = true;
                 match Tray::new(
@@ -526,6 +530,9 @@ impl eframe::App for BuddyApp {
             self.placement.check(window, false);
         }
         while let Ok(action) = self.tray_receiver.try_recv() {
+            self.handle_tray(action, ctx, window.as_deref());
+        }
+        while let Some(action) = self.hotkeys.pop() {
             self.handle_tray(action, ctx, window.as_deref());
         }
         if window.is_some() && self.ipc_enabled && self.server.is_none() {
@@ -578,6 +585,7 @@ impl eframe::App for BuddyApp {
         eframe::set_value(storage, "status-receiving", &self.ipc_enabled);
         eframe::set_value(storage, "click-through", &self.click_through);
         self.size.save(storage);
+        self.hotkeys.save(storage);
     }
 }
 
@@ -613,6 +621,7 @@ mod tests {
             click_through: true,
             size: BuddySize::default(),
             size_pending: true,
+            hotkeys: crate::hotkeys::Hotkeys::load(None),
             settings: Settings::default(),
             last_tick: Instant::now(),
             message: "Hoi aus der Test-Sprechblase!".into(),
@@ -760,6 +769,71 @@ mod tests {
             self.0.remove(key);
         }
         fn flush(&mut self) {}
+    }
+    #[test]
+    fn hotkey_actions_work_while_hidden_without_a_render_pass() {
+        let ctx = egui::Context::default();
+        let mut app = app(&ctx);
+        app.hidden = true;
+        let mut native_frame = eframe::Frame::_new_kittest();
+        app.hotkeys.test_queue(Action::Pause);
+        let _ = ctx.run_logic(&egui::RawInput::default(), |ctx| {
+            eframe::App::logic(&mut app, ctx, &mut native_frame);
+        });
+        assert!(app.player.paused && app.hidden);
+        app.hotkeys.test_queue(Action::Recover);
+        let output = ctx.run_logic(&egui::RawInput::default(), |ctx| {
+            eframe::App::logic(&mut app, ctx, &mut native_frame);
+        });
+        assert!(!app.hidden);
+        for command in [
+            egui::ViewportCommand::Visible(true),
+            egui::ViewportCommand::Minimized(false),
+            egui::ViewportCommand::Focus,
+        ] {
+            assert!(output.viewport_commands[&egui::ViewportId::ROOT].contains(&command));
+        }
+        app.hotkeys.test_queue(Action::Pause);
+        let _ = ctx.run_logic(&egui::RawInput::default(), |ctx| {
+            eframe::App::logic(&mut app, ctx, &mut native_frame);
+        });
+        assert!(!app.player.paused);
+    }
+    #[test]
+    fn hotkey_preferences_are_opt_in_and_invalid_stored_values_disable_them() {
+        let mut storage = TestStorage::default();
+        let hotkeys = crate::hotkeys::Hotkeys::load(None);
+        hotkeys.save(&mut storage);
+        assert!(
+            !eframe::get_value::<(bool, String, String)>(&storage, "global-hotkeys")
+                .unwrap()
+                .0
+        );
+        for value in [
+            "(true,\"Ctrl+Alt+R\",\"Ctrl+Alt+S\")",
+            "(false,\"F8\",\"F9\")",
+        ] {
+            eframe::Storage::set_string(&mut storage, "global-hotkeys", value.into());
+            crate::hotkeys::Hotkeys::load(Some(&storage)).save(&mut storage);
+            assert_eq!(
+                eframe::Storage::get_string(&storage, "global-hotkeys").unwrap(),
+                value
+            );
+        }
+        for value in [
+            "broken",
+            "(true,\"B\",\"P\")",
+            "(true,\"Ctrl+B\",\"Ctrl+B\")",
+            "(true,\"Ctrl+AudioVolumeMute\",\"F8\")",
+        ] {
+            eframe::Storage::set_string(&mut storage, "global-hotkeys", value.into());
+            crate::hotkeys::Hotkeys::load(Some(&storage)).save(&mut storage);
+            assert!(
+                !eframe::get_value::<(bool, String, String)>(&storage, "global-hotkeys")
+                    .unwrap()
+                    .0
+            );
+        }
     }
     #[test]
     fn size_persistence_preserves_settings_and_rejects_invalid_values() {

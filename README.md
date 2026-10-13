@@ -61,6 +61,7 @@ Linux-Desktop-/Compositor-Verhalten muss separat abgenommen werden. Ein erfolgre
 | Animation auswählen | «Menü» → Animation |
 | Energie, Tempo, Spiegelung | «Menü» |
 | Beni-Grösse | «Menü» → «Klein», «Mittel» oder «Gross»; die Auswahl bleibt nach Neustart erhalten |
+| Globale Tastenkürzel | «Menü» → «Tastenkürzel» → Kombinationen wählen und «Globale Hotkeys aktivieren» |
 | Weniger Bewegung | «Menü» → «Weniger Bewegung» |
 | Hintergrund durchklickbar | Standardmässig aktiv; im Menü abschaltbar. Beni, sichtbare Bedienleiste und Sprechblasen bleiben anklickbar |
 | Eigene Sprechblase | Nachricht im Menü eingeben; lange Texte scrollen; Blase anklicken oder mit × schliessen |
@@ -73,7 +74,7 @@ Die Bedienleiste erscheint erst nach einem Klick auf Beni. Ein weiterer Klick od
 
 Die native Accessibility-Anbindung über [eframes AccessKit-Feature](https://docs.rs/eframe/0.36.2/eframe/#feature-flags) ist aktiviert. Beni wird als beschrifteter Button mit Auf-/Zuklappzustand dargestellt; die Sprechblase hat einen benannten Schliessen-Knopf, und das Nachrichtenfeld einen festen Namen. Tab, Eingabe und Leertaste bedienen auch die eingeklappte Leiste. Eine vollständige Abnahme mit VoiceOver, NVDA und Orca bleibt separat zu prüfen.
 
-28 Desktoptests prüfen UI-Ereignisse, Grössenwahl und Speicherung, Eingabegeometrie samt PNG-Alpha/DPI, Accessibility-Baum und Aktionen, Tastaturbedienung, ein-/ausgeklappte Bedienung, Fehlerablauf, Bedienbarkeit bei Zeichenfehlern, Tray-Aktionen ohne Zeichnen und Fensterpositionen. Fenster-/Compositor-Verhalten auf Windows/Linux sowie die vollständige manuelle Abnahme bleiben separat zu prüfen.
+38 Desktoptests prüfen UI-Ereignisse, Grössenwahl und Speicherung, Hotkey-Eingaben, Konflikte, Ereignisse und Abschalten, Eingabegeometrie samt PNG-Alpha/DPI, Accessibility-Baum und Aktionen, Tastaturbedienung, ein-/ausgeklappte Bedienung, Fehlerablauf, Bedienbarkeit bei Zeichenfehlern, Tray-Aktionen ohne Zeichnen und Fensterpositionen. Fenster-/Compositor-Verhalten auf Windows/Linux sowie die vollständige manuelle Abnahme bleiben separat zu prüfen.
 
 «Klein» verwendet eine Zeichenfläche von 300 × 360 Punkten, «Mittel» die bisherige Grösse von 340 × 440 und «Gross» 420 × 560. Schrift und Bedienelemente behalten ihre Grösse; das Einstellungsmenü passt in das jeweilige Fenster und lässt sich scrollen. Aktive Meldungen behalten beim Wechsel Text, Quelle, Geste und Anzeigedauer. Fehlende oder beschädigte Grösseneinstellungen fallen auf «Mittel» zurück. Nach einer Vergrösserung wird die Fensterposition erneut geprüft; unter Wayland bestimmt weiterhin der Compositor die Platzierung.
 
@@ -83,9 +84,13 @@ Unter Linux braucht das Tray einen StatusNotifier-Host (KSNI, beispielsweise in 
 
 Die Sprechblase passt ihre Höhe an, bietet bei langen Texten Scrollen und eine Anzeigedauer nach Lesezeit (4–30 Sekunden, bei Statusmeldungen zusätzlich durch TTL begrenzt). Sie zeigt Text ohne Audioausgabe. Einzelaktionen kehren nach einem Durchlauf zu «warten» zurück. Einstellungen werden lokal gespeichert. Idle zeichnet mit bis zu 15 fps, aktive Gesten mit bis zu 30 fps; Pause und reduzierte Bewegung mit bis zu 4 fps.
 
-Transparente Flächen leiten Mausklicks an das darunterliegende Fenster weiter. Die Eingabegeometrie folgt der gezeichneten Beni-Silhouette, Sprechblase, Bedienleiste und Einstellungen. Auf macOS stellen passive Mausbewegungsereignisse das Fenster vor dem nächsten Klick passend um; Tastaturereignisse werden dafür nicht überwacht. Windows verwendet Fensterregionen, Linux X11 Input Shapes und Wayland Oberflächen-Eingaberegionen. Ohne verfügbares Tray oder bei nativen Fehlern bleibt die normale Fensterbedienung erhalten. Globale Hotkeys und Autostart bleiben offen.
+Transparente Flächen leiten Mausklicks an das darunterliegende Fenster weiter. Die Eingabegeometrie folgt der gezeichneten Beni-Silhouette, Sprechblase, Bedienleiste und Einstellungen. Auf macOS stellen passive Mausbewegungsereignisse das Fenster vor dem nächsten Klick passend um; Tastaturereignisse werden dafür nicht überwacht. Windows verwendet Fensterregionen, Linux X11 Input Shapes und Wayland Oberflächen-Eingaberegionen. Ohne verfügbares Tray oder bei nativen Fehlern bleibt die normale Fensterbedienung erhalten. Autostart bleibt offen.
 
-Linux-CI prüft Eingaberegionen zusätzlich mit Xvfb und einem separaten Weston-Headless-Server (`bash scripts/check-input-linux.sh`). Das ersetzt keine vollständige Desktop-Abnahme mit einem echten Compositor und gemischter DPI.
+Globale Hotkeys sind bei neuen Installationen ausgeschaltet. Die Vorschläge sind `Ctrl+Alt+B` zum Anzeigen und Zurückholen auf den Hauptbildschirm sowie `Ctrl+Alt+P` zum Pausieren/Fortsetzen der Animation. Du kannst die Texte ändern und mit «Hotkeys übernehmen» anwenden; ohne Aktivierung werden nur die Kombinationen gespeichert. Kombinationen verwenden beispielsweise `Ctrl`, `Alt`/`Option`, `Shift`, `Cmd`/`Super` und eine Taste. `Super` bezeichnet die Windows-/Cmd-Taste; Buchstaben verwenden US-Tastenpositionen (Y/Z bei QWERTZ vertauscht). Einzelne Funktionstasten wie `F8` sind ebenfalls möglich. Normale Tasten brauchen Ctrl, Alt/Option oder Cmd/Super; doppelte Kombinationen und Medientasten werden abgelehnt.
+
+Bei einer belegten neuen Kombination bleiben die bisherigen Hotkeys aktiv. Abschalten gibt die Registrierungen frei; ein gehaltenes Kürzel löst nur einmal aus. Auswahl und Aktivierung bleiben nach Neustart erhalten. [global-hotkey 0.8.0](https://docs.rs/global-hotkey/0.8.0/global_hotkey/) liefert die Ereignisse auf macOS, Windows und Linux/X11. Auf macOS fordert Beni zusätzlich exklusive Carbon-Registrierungen an, damit eine bereits von einer anderen App belegte Kombination als Konflikt erkannt wird. Unter Wayland ist die Funktion deaktiviert und im Menü entsprechend beschriftet; auch XWayland in einer Wayland-Sitzung wird nicht als systemweite Unterstützung ausgegeben. Die App empfängt nur Ereignisse ihrer registrierten Kombinationen und protokolliert keine Tastatureingaben.
+
+Linux-CI prüft Eingaberegionen zusätzlich mit Xvfb und einem separaten Weston-Headless-Server (`bash scripts/check-input-linux.sh`) sowie tatsächliche X11-Hotkey-Registrierung, Konflikterkennung und Freigabe. Das ersetzt keine vollständige Desktop-Abnahme mit einem echten Compositor und gemischter DPI.
 
 ## Entwicklung
 

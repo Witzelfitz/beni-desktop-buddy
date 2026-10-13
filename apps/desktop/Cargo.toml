@@ -14,6 +14,7 @@ buddy-ipc = { path = "../../crates/buddy-ipc" }
 winit = { version = "=0.30.13", default-features = false, features = ["x11", "wayland"] }
 tray-icon = { version = "=0.26.1", default-features = false, features = ["ksni"] }
 eframe = { version = "=0.36.2", default-features = false, features = ["accesskit", "default_fonts", "glow", "x11", "wayland", "persistence"] }
+global-hotkey = "=0.8.0"
 
 [target.'cfg(target_os = "macos")'.dependencies]
 objc2 = "=0.6.5"
