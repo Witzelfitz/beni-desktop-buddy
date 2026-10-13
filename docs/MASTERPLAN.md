@@ -2,7 +2,7 @@
 
 Beni wird als native Rust-App über `https://mini.witzelfitz.io/download` angeboten. Installation, Updates über das Menüleistensymbol und eine freiwillige KI-Einrichtung gehören zum Produkt. Website und Desktop-App bleiben in getrennten Repositories. Dieser Plan ist der verbindliche Arbeitsstand für weitere Sessions; die Umsetzung erfolgt Schritt für Schritt mit eigenen PRs und einer Rückmeldung nach jedem PR.
 
-Stand: 13. Oktober 2026. Bestehende Desktop-Funktionen bis PR #20 sind auf main; die drei Plattformjobs einschliesslich Release-Packaging sind bestanden. Dieser Plan führt noch keine Installer, Update-Feeds oder KI-Verbindungen ein.
+Stand: 13. Oktober 2026. Bestehende Desktop-Funktionen, Release-Vertrag und macOS-Installer-Buildweg sind auf main. Das Apple-Silicon-DMG ist Developer-ID-signiert, notarisiert und lokal installiert; öffentliche Downloads, Update-Feeds und KI-Verbindungen sind noch offen.
 
 ## Festgelegte Entscheidungen
 
@@ -22,13 +22,13 @@ Vor jeder Fortsetzung diesen Plan und die Roadmap lesen, offene PRs und den aktu
 
 Neue Aufgaben auf Branches, keine direkten Folgeänderungen auf main und kein Force-Push. Pro PR eine Rückmeldung mit Link, Verhalten, Prüfung und offenen Abnahmen. Bereits erteilte Freigaben beachten; keine erneute Bestätigung für autorisierte Routinearbeit verlangen.
 
-**Aktueller Schritt: R2, macOS-Installer, ist in PR #25 zur Prüfung vorbereitet.** R1 ist mit PR #23 gemergt und die main-Prüfungen sind grün. Das lokale Apple-Silicon-Test-DMG ist Developer-ID-signiert; echte Notarisierung, Installer-CI und Intel-Abnahme sind noch offen. Als Nächstes Apple-Zugang einrichten und R2 vollständig abnehmen; W1 folgt mit einem wirklich freigegebenen Download.
+**Aktueller Schritt: R2 ist mit PR #25 gemergt; die lokale Apple-Silicon-Installation ist bestanden.** Apple hat App und DMG akzeptiert; Tickets, Signaturen und Gatekeeper sind auch an der aus dem DMG kopierten App geprüft. Der Nutzer bestätigt den Start aus Programme. Als Nächstes verbleiben gezielte Installer-CI und Intel-Abnahme, sichere CI-Zugänge sowie eine belegte Plattform-Mindestversion. W1 folgt mit einem wirklich freigegebenen Download; vor Veröffentlichung fehlen auch die authentifizierten Release-/Update-Metadaten.
 
 | Schritt | Repository | Status | Ergebnis und Abnahme |
 | --- | --- | --- | --- |
 | R0 | Desktop | Erledigt | [PR #21](https://github.com/Witzelfitz/beni-desktop-buddy/pull/21): Masterplan und MIT-Abgrenzung; drei Plattformprüfungen grün. Git-Verlauf und 61 Actions-Logs geprüft, keine erkannten Leaks. Öffentliche Sichtbarkeit per API und anonymem HTTP-Zugriff bestätigt; Beni-Allrounder bleibt privat. [Prüfbericht](PUBLICATION_REVIEW.md). |
 | R1 | Desktop | Erledigt | [PR #23](https://github.com/Witzelfitz/beni-desktop-buddy/pull/23) gemergt; PR-/main-CI auf drei Plattformen grün. [Release-Vertrag](RELEASES.md), JSON-Schema, Stable-/Beta-Beispiele, Offline-Validator, 19 Tests und verbindliche Cargo-Version/Buildnummer. Noch keine veröffentlichten Installer, Feed oder kryptografische Updateprüfung. |
-| R2 | Desktop | Vorbereitet; Abnahme offen | [PR #25](https://github.com/Witzelfitz/beni-desktop-buddy/pull/25): [DMG-Build und Apple-Einrichtung](MACOS_INSTALLER.md), getrennte Architektur-/Test-/Release-Pakete, Developer ID/Runtime/Zeitstempel, Notarisierungs-/Stapling-/Gatekeeper-Pfad, gezielte CI und 23 Tests. Lokales Apple-Silicon-Test-DMG signiert und temporär installiert/geprüft/entfernt. Echte Apple-Notarisierung, CI-Secrets, native Intel-/Fenster-/Alt-OS-Abnahme und öffentliche Veröffentlichung noch offen. |
+| R2 | Desktop | Gemergt; Apple Silicon lokal PASS, weitere Abnahmen offen | [PR #25](https://github.com/Witzelfitz/beni-desktop-buddy/pull/25): [DMG-Build und Apple-Einrichtung](MACOS_INSTALLER.md), getrennte Architektur-/Test-/Release-Pakete, gezielte CI und 23 Tests; PR-Prüfungen auf drei Plattformen grün. Echtes Apple-Silicon-Release-DMG mit Developer ID, Hardened Runtime und Zeitstempeln signiert; App und DMG von Apple akzeptiert, Tickets/Gatekeeper geprüft. Nutzerinstallation unter Programme gestartet und geprüft. CI-Secrets, neue Installer-CI, native Intel-/Alt-OS-Abnahme und öffentliche Veröffentlichung noch offen. |
 | W1 | Beni-Allrounder | Offen | `/download` mit bestehenden Styles/Assets, automatischer Betriebssystem-Vorauswahl und jederzeit manueller Plattform-/Architekturwahl, Version, Grösse, Anforderungen, Anleitung und Release-Notizen. Nur tatsächlich verfügbare Pakete derselben veröffentlichten Metadaten anbieten; keine kopierten Installer im Website-Git. Desktop, Mobil, Erkennung/Rückfall und echte Downloadlinks prüfen. |
 | R3 | Desktop | Offen | macOS-Updates über Tray «Nach Updates suchen …». Sparkle zunächst in einem kleinen Integrationsversuch anbinden. Echtes Update A → B sowie defekte Signatur, Downloadabbruch und nicht schreibbaren Installationsort prüfen. |
 | R4 | Desktop | Offen | Windows-Installer, bevorzugt pro Benutzer, mit Deinstallation und Codesignierung. NSIS und WinSparkle als Ausgangspunkt. Installation, Update und Deinstallation nativ prüfen. |
@@ -78,11 +78,15 @@ Zum Zeitpunkt dieses Plans sind 111 lokale Rusttests (29 Root, 82 Desktop) und 1
 
 - MIT-Abgrenzung und vorhandene Rechte an Beni beibehalten.
 - Git-Verlauf, Actions-Logs und öffentliche Inhalte prüfen; keine Zugangsdaten veröffentlichen. Eine Musterprüfung ist keine Garantie für vollständige Geheimnisfreiheit.
-- Eine lokale Developer-ID-Signieridentität ist gefunden. Passende Team-Zuordnung, Notarisierungszugang und sichere CI-Einrichtung noch verifizieren; im Desktop-Repo sind bislang keine Actions-Secrets konfiguriert.
+- Lokale Developer-ID-Signieridentität und Team-Zuordnung sind durch die echte Apple-Notarisierung bestätigt. Das lokale Schlüsselbundprofil `beni-notary` funktioniert; sichere CI-Einrichtung bleibt offen, im Desktop-Repo sind bislang keine Actions-Secrets konfiguriert.
 - Windows-Signierung und Linux-Paketbasis einrichten. Verfügbare Architekturen und Mindestversionen ausdrücklich benennen.
-- Aktuelle sieben Tage aufbewahrte Actions-Archive sind Entwicklungsartefakte. Release-Installer, Update-Feeds und KI-Adapter sind noch nicht implementiert.
+- Aktuelle sieben Tage aufbewahrte Actions-Archive sind Entwicklungsartefakte. Ein notarisiertes Apple-Silicon-DMG ist lokal vorhanden; öffentliche Release-Installer, Update-Feeds und KI-Adapter sind noch nicht verfügbar.
 
 Diese Voraussetzungen verhindern den Beginn von R1 nicht. Öffentliche Installationspakete werden erst nach den jeweiligen Plattformabnahmen angeboten.
+
+## Lokale Ablage
+
+Das eigenständige Desktop-Repo liegt seit 13. Oktober 2026 unter `~/GitHub/beni-desktop-buddy`; der vorherige Unterordner in `~/Downloads/beni-scrollytelling` wurde vollständig verschoben, einschliesslich Git-Verlauf, Build-Caches und lokalen DMGs. Die GitHub-Verknüpfung bleibt unverändert. Die installierte App unter `/Applications/Beni Buddy.app` und die bestehenden Codex-Hooks unter `~/.codex/hooks/` sind davon unabhängig. Die vier Hook-Befehle bleiben unverändert, damit keine erneute Vertrauensprüfung durch eine geänderte Definition erforderlich wird. Diese Codex-Sitzung bleibt im bisherigen übergeordneten Workspace; neue Entwicklungs-Sitzungen direkt im neuen Repo öffnen.
 
 ## Referenzen
 

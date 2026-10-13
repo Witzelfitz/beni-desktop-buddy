@@ -1,6 +1,6 @@
 # Roadmap
 
-Der verbindliche nächste Arbeitsabschnitt steht im [Masterplan für Distribution, Updates und KI](MASTERPLAN.md). R0/R1 sind abgeschlossen. R2 ist in PR #25 vorbereitet; Notarisierungszugang und native Installer-Abnahmen bleiben vor den öffentlichen Downloads offen. Den Plan bei jeder Fortsetzung lesen und nach jedem abgeschlossenen PR aktualisieren.
+Der verbindliche nächste Arbeitsabschnitt steht im [Masterplan für Distribution, Updates und KI](MASTERPLAN.md). R0/R1 sind abgeschlossen. R2 ist in PR #25 gemergt; die echte Notarisierung und lokale Apple-Silicon-Installation sind bestanden. Installer-CI, Intel-/Alt-OS-Abnahmen und öffentliche Downloads bleiben offen. Den Plan bei jeder Fortsetzung lesen und nach jedem abgeschlossenen PR aktualisieren.
 
 ## 1 · Desktop-Abnahme und erster Build
 
@@ -45,9 +45,9 @@ Abnahme: Zeit und Ereignisse sind testbar; Nachrichten sind begrenzt; externe St
 ## 4 · Installation und Updates
 
 - Erledigt in PR #23: gemeinsamer [Release-Vertrag](RELEASES.md) mit Schema, Stable-/Beta-Beispielen, Offline-Prüfung und verbindlicher Cargo-Version/Buildnummer. Öffentliche Installer und echte Updateprüfung bleiben Folgearbeit.
-- Vorbereitet in PR #25: [macOS-DMG und Release-Buildweg](MACOS_INSTALLER.md) für Apple Silicon/Intel, eindeutige Testpakete und verbindliche Apple-Abnahmen. Lokales Developer-ID-Test-DMG geprüft; Notarisierung und native Intel-Abnahme noch offen.
+- Gemergt in PR #25: [macOS-DMG und Release-Buildweg](MACOS_INSTALLER.md) für Apple Silicon/Intel, eindeutige Testpakete und verbindliche Apple-Abnahmen. Apple-Silicon-App und DMG tatsächlich notarisiert, Tickets und Gatekeeper geprüft; Nutzerinstallation unter Programme startet. CI-Secrets, Installer-CI, native Intel- und Alt-OS-Abnahme noch offen.
 - Erledigt: Beni-App-Icon (PNG/ICNS/ICO), Windows-Exe-Ressource und Linux-Desktop-Vorlage in den plattformspezifischen Paketen.
-- Erledigt: macOS-Entwicklungsbundle ad hoc signieren und streng prüfen. Developer-ID-Signierung und Notarisierung sowie Windows-Signierung bleiben offen.
+- Erledigt: macOS-Entwicklungsbundle ad hoc signieren und streng prüfen; Apple-Silicon-Release mit Developer ID signieren und notarisieren. Windows-Signierung bleibt offen.
 - Reproduzierbare Releases aus freigegebenen Tags.
 - Optionaler, bewusst aktivierter Autostart.
 - Geplant: Installer, Downloadseite, signierte Updates über das Menüleistensymbol und KI-Ersteinrichtung gemäss [Masterplan](MASTERPLAN.md).
