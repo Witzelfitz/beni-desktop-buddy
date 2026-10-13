@@ -27,6 +27,7 @@ pub struct BuddyApp {
     hotkeys: crate::hotkeys::Hotkeys,
     history: crate::history::History,
     timer: crate::timer::Timer,
+    reminders: crate::reminders::Reminders,
     history_player: Option<Player>,
     settings: Settings,
     motion: crate::motion::MotionPreference,
@@ -96,6 +97,7 @@ impl BuddyApp {
             hotkeys: crate::hotkeys::Hotkeys::load(cc.storage),
             history: crate::history::History::default(),
             timer: crate::timer::Timer::load(cc.storage),
+            reminders: crate::reminders::Reminders::default(),
             history_player: None,
             last_tick: Instant::now(),
             message: "Hoi! Ich bin Beni. Klick mich für die Bedienung an oder zieh mich an deinen Lieblingsplatz.".into(),
@@ -196,27 +198,40 @@ impl BuddyApp {
             self.active_status = true;
             return;
         }
-        // A local timer notice waits for all visible speech, including manual text.
-        if now >= self.message_until
-            && let Some(phase) = self.timer.take_notice(now)
-        {
-            let paused = self.player.paused;
-            self.play(phase.animation(), phase.message());
-            self.player.paused = paused;
-            self.message_source = Some("timer".into());
-            self.message_until = now + Duration::from_millis(reading_time_ms(phase.message()));
-            self.active_status = true;
+        // Local notices wait for all visible speech, including manual text.
+        if now >= self.message_until {
+            if let Some(phase) = self.timer.take_notice(now) {
+                self.show_local_notice(phase.message(), phase.animation(), "timer", now);
+            } else if let Some(reminder) = self.reminders.take_notice(now) {
+                self.show_local_notice(&reminder.text, "idee", "erinnerung", now);
+            }
         }
+    }
+    fn show_local_notice(&mut self, text: &str, state: &str, source: &str, now: Instant) {
+        let paused = self.player.paused;
+        self.play(state, text);
+        self.player.paused = paused;
+        self.message_source = Some(source.into());
+        self.message_until = now + Duration::from_millis(reading_time_ms(text));
+        self.active_status = true;
+    }
+    fn record_local_notice(&mut self, text: &str, state: &str, source: &str, now: Instant) {
+        let mut message = buddy_core::notifications::Notification::new(text);
+        message.state = Some(state.into());
+        message.source = source.into();
+        self.history.extend([buddy_ipc::ReceivedNotification {
+            message,
+            received_at: now,
+        }]);
     }
     fn advance_timer(&mut self, now: Instant) {
         if let Some((phase, _deadline)) = self.timer.tick(now) {
-            let mut message = buddy_core::notifications::Notification::new(phase.message());
-            message.state = Some(phase.animation().into());
-            message.source = "timer".into();
-            self.history.extend([buddy_ipc::ReceivedNotification {
-                message,
-                received_at: now,
-            }]);
+            self.record_local_notice(phase.message(), phase.animation(), "timer", now);
+        }
+    }
+    fn advance_reminders(&mut self, now: Instant) {
+        for reminder in self.reminders.tick(now) {
+            self.record_local_notice(&reminder.text, "idee", "erinnerung", now);
         }
     }
     fn collect_history(&mut self) {
@@ -554,6 +569,7 @@ impl BuddyApp {
             self.open_history();
         }
         self.timer.ui(ui, Instant::now());
+        self.reminders.ui(ui, Instant::now());
         ui.separator();
         ui.label("Welche Animation soll ich zeigen?");
         let states: Vec<_> = self
@@ -790,6 +806,7 @@ impl eframe::App for BuddyApp {
         }
         self.collect_history();
         self.advance_timer(Instant::now());
+        self.advance_reminders(Instant::now());
         if !self.ipc_enabled {
             self.stop_receiving();
         }
@@ -874,6 +891,7 @@ mod tests {
             hotkeys: crate::hotkeys::Hotkeys::load(None),
             history: crate::history::History::default(),
             timer: crate::timer::Timer::default(),
+            reminders: crate::reminders::Reminders::default(),
             history_player: None,
             settings: Settings::default(),
             motion: crate::motion::MotionPreference::load(None),
@@ -1308,6 +1326,207 @@ mod tests {
         assert_eq!(app.message, crate::timer::Phase::Break.message());
     }
     #[test]
+    fn reminders_finish_without_ipc_and_leave_the_focus_timer_and_avatar_pause_running() {
+        let ctx = egui::Context::default();
+        let mut app = app(&ctx);
+        let now = Instant::now();
+        app.player.paused = true;
+        app.timer.start(crate::timer::Phase::Focus, now);
+        app.reminders.schedule("Wasser trinken", 1, now).unwrap();
+        app.advance_reminders(now + Duration::from_secs(60));
+        app.advance_reminders(now + Duration::from_secs(61));
+        assert_eq!(app.history.len(), 1);
+        assert!(app.server.is_none() && !app.ipc_enabled);
+        app.message_until = now;
+        app.deliver_status(true, now + Duration::from_secs(60));
+        assert_eq!(app.message, "Wasser trinken");
+        assert_eq!(app.message_source.as_deref(), Some("erinnerung"));
+        assert_eq!(app.player.state(), "idee");
+        assert!(app.player.paused && app.active_status);
+        assert!(app.timer.tick(now + Duration::from_secs(60)).is_none());
+        assert!(app.timer.tick(now + Duration::from_secs(1500)).is_some());
+    }
+
+    #[test]
+    fn reminders_respect_all_delivery_hindrances_and_keep_history() {
+        for blocked in ["hidden", "quiet", "history", "error", "speech", "status"] {
+            let ctx = egui::Context::default();
+            let mut app = app(&ctx);
+            let now = Instant::now();
+            app.reminders
+                .schedule("Kurz aufstehen", 1, now - Duration::from_secs(60))
+                .unwrap();
+            app.advance_reminders(now);
+            app.message_until = now;
+            match blocked {
+                "quiet" => app.set_do_not_disturb(true, now),
+                "history" => app.open_history(),
+                "error" => app.report_error("Hinweis".into(), now),
+                "speech" => app.message_until = now + Duration::from_secs(30),
+                "status" => {
+                    app.message_until = now + Duration::from_secs(30);
+                    app.active_status = true;
+                }
+                _ => {}
+            }
+            let before = app.message.clone();
+            app.deliver_status(blocked != "hidden", now);
+            assert_eq!(app.message, before, "{blocked}");
+            assert_eq!(app.history.len(), 1);
+            app.set_do_not_disturb(false, now);
+            app.close_history();
+            app.expire_error(now + Duration::from_secs(10));
+            app.dismiss_speech(now);
+            app.deliver_status(true, now + Duration::from_secs(10));
+            assert_eq!(app.message, "Kurz aufstehen", "{blocked}");
+        }
+    }
+
+    #[test]
+    fn ipc_then_timer_then_reminders_deliver_in_order_without_repeating() {
+        let endpoint = common::TestEndpoint::new();
+        let ctx = egui::Context::default();
+        let mut app = app(&ctx);
+        app.server = Some(buddy_ipc::Server::start_at(endpoint.endpoint.clone(), || {}).unwrap());
+        buddy_ipc::notify(
+            &endpoint.endpoint,
+            buddy_core::notifications::Notification::new("Build grün"),
+        )
+        .unwrap();
+        let now = Instant::now();
+        app.timer
+            .start(crate::timer::Phase::Break, now - Duration::from_secs(300));
+        app.reminders
+            .schedule("Erste Erinnerung", 1, now - Duration::from_secs(60))
+            .unwrap();
+        app.reminders
+            .schedule("Zweite Erinnerung", 1, now - Duration::from_secs(60))
+            .unwrap();
+        app.collect_history();
+        app.advance_timer(now);
+        app.advance_reminders(now);
+        assert_eq!(app.history.len(), 4);
+        for text in [
+            "Build grün",
+            crate::timer::Phase::Break.message(),
+            "Erste Erinnerung",
+            "Zweite Erinnerung",
+        ] {
+            app.dismiss_speech(now);
+            app.deliver_status(true, now);
+            assert_eq!(app.message, text);
+        }
+        app.dismiss_speech(now);
+        let deadline = app.message_until;
+        app.deliver_status(true, now);
+        assert_eq!(app.message_until, deadline);
+    }
+
+    #[test]
+    fn reminders_tick_while_hidden_expire_bubbles_and_never_save_text_or_schedule() {
+        let ctx = egui::Context::default();
+        let mut app = app(&ctx);
+        app.hidden = true;
+        app.settings.reduced_motion = true;
+        let now = Instant::now();
+        app.reminders
+            .schedule(
+                "Sitzungsprivater Testtext",
+                1,
+                now - Duration::from_secs(180),
+            )
+            .unwrap();
+        app.reminders
+            .schedule("Noch geplanter privater Text", 1440, now)
+            .unwrap();
+        let mut native_frame = eframe::Frame::_new_kittest();
+        let _ = ctx.run_logic(&egui::RawInput::default(), |ctx| {
+            eframe::App::logic(&mut app, ctx, &mut native_frame)
+        });
+        assert_eq!(app.history.len(), 1);
+        assert_eq!(app.repaint_delay(now, false), Duration::from_secs(1));
+        app.hidden = false;
+        app.message_until = now;
+        let text = app.message.clone();
+        app.deliver_status(true, now);
+        assert_eq!(app.message, text);
+        let mut storage = TestStorage::default();
+        eframe::App::save(&mut app, &mut storage);
+        assert!(storage.0.keys().all(|k| !k.contains("reminder")));
+        assert!(
+            storage
+                .0
+                .values()
+                .all(|v| !v.contains("privater") && !v.contains("Sitzungsprivater"))
+        );
+        app.history.clear();
+        assert_eq!(app.history.len(), 0);
+    }
+
+    #[test]
+    fn native_reminder_editor_plans_and_removes_and_minimum_size_keeps_footer_visible() {
+        let ctx = egui::Context::default();
+        let rig = NativeSettings::new(&ctx);
+        let mut app = app(&ctx);
+        app.open_settings(&ctx);
+        frame(&ctx, &mut app, 0.0, vec![]).drop_without_applying_deltas();
+        let header = accesskit_node(rig.output.borrow().as_ref().unwrap(), "Erinnerungen").0;
+        rig.input.borrow_mut().events = vec![accessible_click(header)];
+        frame(&ctx, &mut app, 0.1, vec![]).drop_without_applying_deltas();
+        let input = accesskit_node(rig.output.borrow().as_ref().unwrap(), "Erinnerungstext").0;
+        rig.input.borrow_mut().events = vec![egui::Event::AccessKitActionRequest(
+            egui::accesskit::ActionRequest {
+                action: egui::accesskit::Action::Focus,
+                target_tree: egui::accesskit::TreeId::ROOT,
+                target_node: input,
+                data: None,
+            },
+        )];
+        frame(&ctx, &mut app, 0.2, vec![]).drop_without_applying_deltas();
+        rig.input.borrow_mut().events = vec![egui::Event::Text("Wasser trinken".into())];
+        frame(&ctx, &mut app, 0.25, vec![]).drop_without_applying_deltas();
+        assert_eq!(
+            accesskit_node(rig.output.borrow().as_ref().unwrap(), "Erinnerungstext")
+                .1
+                .value(),
+            Some("Wasser trinken")
+        );
+        let add = accesskit_node(rig.output.borrow().as_ref().unwrap(), "Erinnerung planen").0;
+        rig.input.borrow_mut().events = vec![accessible_click(add)];
+        frame(&ctx, &mut app, 0.3, vec![]).drop_without_applying_deltas();
+        rig.input.borrow_mut().events.clear();
+        frame(&ctx, &mut app, 0.4, vec![]).drop_without_applying_deltas();
+        let remove = accesskit_node(
+            rig.output.borrow().as_ref().unwrap(),
+            "Erinnerung entfernen: Wasser trinken",
+        )
+        .0;
+        rig.input.borrow_mut().events = vec![accessible_click(remove)];
+        frame(&ctx, &mut app, 0.5, vec![]).drop_without_applying_deltas();
+        assert!(
+            app.reminders
+                .tick(Instant::now() + Duration::from_secs(600))
+                .is_empty()
+        );
+        for _ in 0..10 {
+            app.reminders
+                .schedule(&"Langer Text ".repeat(20), 1, Instant::now())
+                .unwrap();
+        }
+        rig.input.borrow_mut().events.clear();
+        rig.input.borrow_mut().screen_rect = Some(Rect::from_min_size(
+            egui::Pos2::ZERO,
+            egui::vec2(380.0, 360.0),
+        ));
+        frame(&ctx, &mut app, 0.6, vec![]).drop_without_applying_deltas();
+        let output = rig.output.borrow();
+        let close = text_rect(output.as_ref().unwrap(), "Schliessen");
+        assert!(
+            Rect::from_min_size(egui::Pos2::ZERO, egui::vec2(380.0, 360.0)).contains_rect(close)
+        );
+        assert!(app.menu_open && app.history.len() == 0);
+    }
+    #[test]
     fn quiet_idle_reuses_existing_gestures_without_speech_and_yields_to_manual_actions() {
         let ctx = egui::Context::default();
         ctx.enable_accesskit();
@@ -1505,7 +1724,8 @@ mod tests {
             app.menu_open = true;
             ctx.enable_accesskit();
             frame(&ctx, &mut app, 0.0, vec![]).drop_without_applying_deltas();
-            let mut output = frame(&ctx, &mut app, 0.05, vec![]);
+            scroll_settings(&ctx, &mut app, 0.1).drop_without_applying_deltas();
+            let mut output = frame(&ctx, &mut app, 0.2, vec![]);
             output.textures_delta.clear();
             assert_eq!(
                 accesskit_node(&output, "Systemeinstellung beachten")
@@ -1516,12 +1736,12 @@ mod tests {
             text_rect(&output, "System: Weniger Bewegung ist aktiv.");
             let pos = text_rect(&output, "Systemeinstellung beachten").center();
             output.drop_without_applying_deltas();
-            click(&ctx, &mut app, pos, 0.1).drop_without_applying_deltas();
+            click(&ctx, &mut app, pos, 0.3).drop_without_applying_deltas();
             assert!(!app.motion.follow_system);
             app.open_history();
             app.player.paused = true;
             app.motion.system = Some(false);
-            let mut output = frame(&ctx, &mut app, 0.2, vec![]);
+            let mut output = frame(&ctx, &mut app, 0.4, vec![]);
             output.textures_delta.clear();
             text_rect(&output, "Meldungsverlauf (0)");
             output.drop_without_applying_deltas();
@@ -1619,6 +1839,28 @@ mod tests {
             .iter()
             .find_map(|s| find_text(&s.shape, needle))
             .unwrap_or_else(|| panic!("UI text missing: {needle}"))
+    }
+    fn scroll_settings(ctx: &egui::Context, app: &mut BuddyApp, time: f64) -> egui::FullOutput {
+        frame(
+            ctx,
+            app,
+            time,
+            vec![
+                egui::Event::PointerMoved(egui::pos2(80.0, 260.0)),
+                egui::Event::MouseWheel {
+                    phase: egui::TouchPhase::Move,
+                    unit: egui::MouseWheelUnit::Point,
+                    delta: egui::vec2(0.0, -240.0),
+                    modifiers: Default::default(),
+                },
+            ],
+        )
+        .drop_without_applying_deltas();
+        // Smooth scrolling consumes the wheel over several UI passes.
+        for index in 1..8 {
+            frame(ctx, app, time + index as f64 * 0.01, vec![]).drop_without_applying_deltas();
+        }
+        frame(ctx, app, time + 0.08, vec![])
     }
     fn avatar_rect(output: &egui::FullOutput, app: &BuddyApp) -> Rect {
         let points = output
@@ -2117,7 +2359,8 @@ mod tests {
         output.drop_without_applying_deltas();
         app.menu_open = true;
         frame(&ctx, &mut app, 0.3, vec![]).drop_without_applying_deltas();
-        let output = frame(&ctx, &mut app, 0.4, vec![]);
+        scroll_settings(&ctx, &mut app, 0.4).drop_without_applying_deltas();
+        let output = frame(&ctx, &mut app, 0.5, vec![]);
         assert!(
             app.hit_map
                 .contains(text_rect(&output, "Hintergrund durchklickbar").center())
