@@ -40,6 +40,7 @@ def credentials(env):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--architecture", choices=tuple(package.ARCHITECTURES), required=True)
+    parser.add_argument("--check-only", action="store_true", help="Nur konfigurierte Secrets vor teuren Builds prüfen.")
     args = parser.parse_args(argv)
     keychain = None
     previous = None
@@ -47,6 +48,9 @@ def main(argv=None):
         if os.environ.get("GITHUB_ACTIONS") != "true" or os.environ.get("RUNNER_OS") != "macOS":
             raise package.PackagingError("Dieser Helfer läuft ausschliesslich auf einem macOS-Actions-Runner.")
         certificate, key = credentials(os.environ)
+        if args.check_only:
+            print("PASS: macOS-Release-Secrets haben das erforderliche Format.")
+            return 0
         previous = shlex.split(package.run(["security", "list-keychains", "-d", "user"], "Runner-Schlüsselbünde lesen"))
         with tempfile.TemporaryDirectory(prefix="beni-signing-", dir=os.environ.get("RUNNER_TEMP")) as folder:
             staging = Path(folder)

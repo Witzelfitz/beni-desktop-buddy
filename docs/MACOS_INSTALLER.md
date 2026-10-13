@@ -8,7 +8,7 @@ Apple Silicon (`aarch64`) und Intel (`x86_64`) erhalten getrennte Pakete. Native
 
 | Modus | Signierung und Abnahme | Dateiname |
 | --- | --- | --- |
-| `development` | Ad hoc, kein Apple-Upload | `beni-buddy-{version}-macos-{arch}-development.dmg` |
+| `development` | App/Executables ad hoc, DMG unsigniert, kein Apple-Upload | `beni-buddy-{version}-macos-{arch}-development.dmg` |
 | `signed-test` | Developer ID, sichere Zeitstempel, Hardened Runtime, keine Notarisierung | `beni-buddy-{version}-macos-{arch}-unnotarized.dmg` |
 | `release` | Developer ID, Hardened Runtime, App und DMG akzeptiert/notarisiert, Tickets angehängt und Gatekeeper geprüft | `beni-buddy-{version}-macos-{arch}.dmg` |
 
@@ -48,9 +48,11 @@ Ein Apple-Upload kann mehrere Minuten dauern. Die Wartezeit ist begrenzt; ein Ti
 
 ## Gezielte CI für beide Architekturen
 
-Der Workflow **macOS installers** läuft bei einem bewusst gesetzten `v*`-Tag oder manuell. Normale Branch-Pushes und PRs starten ihn nicht. Ein manueller Lauf baut standardmässig nur ein Apple-Silicon-Entwicklungspaket; Intel oder beide Architekturen sind wählbar. Die [nativen Runner](https://github.com/actions/runner-images) sind `macos-15` und `macos-15-intel`, mit Cache und 60 Minuten Zeitlimit. Die normalen drei PR-Prüfungen enthalten nur die schnellen, simulierten Packaging-Tests.
+Der Workflow **macOS installers** läuft bewusst manuell. Branch-Pushes, PRs und Tags starten ihn nicht. Ein manueller Lauf baut standardmässig nur ein Apple-Silicon-Entwicklungspaket; Intel oder beide Architekturen sind wählbar. Die [nativen Runner](https://github.com/actions/runner-images) sind `macos-15` und `macos-15-intel`, mit Cache und 60 Minuten Zeitlimit. Die normalen drei PR-Prüfungen enthalten nur die schnellen Packaging-Tests; Signatur-/Release-Tests laufen zusätzlich im bestehenden Linux-Job.
 
-Der Release-Modus benötigt einen zur Cargo-Version passenden v-Tag auf einem bereits in main enthaltenen Commit und fünf zuvor eingerichtete Actions-Secrets:
+Für den gewählten [lokalen Release-Ablauf](LOCAL_RELEASE.md) werden die erfolgreichen nativen Entwicklungsartefakte auf dem Entwickler-Mac Developer-ID-signiert und notarisiert. Dafür bleiben private Apple-Schlüssel lokal; Actions-Secrets sind nicht nötig. Entwicklungs-DMGs bleiben unsigniert, ihre App und Executables werden weiter ad hoc signiert und streng geprüft. Produktions-DMGs behalten verpflichtend Developer ID und Apple-Abnahme. Der `.native.json`-Beleg entsteht nur nach erfolgreicher nativer Installation, CLI-/Fensterprüfung und anschliessender Entfernung. GitHub-Artefaktdigest, Produkteingaben, Commit und dieser Beleg werden vor lokaler Signierung geprüft.
+
+Die spätere optionale **CI-Signierung** im manuellen Release-Modus benötigt einen zur Cargo-Version passenden v-Tag auf einem bereits in main enthaltenen Commit und fünf zuvor eingerichtete Actions-Secrets. Ihre Formate werden vor Toolchain und Builds geprüft:
 
 - `BENI_MACOS_CERTIFICATE_P12`: Base64 des bewusst exportierten Developer-ID-Zertifikats samt privatem Schlüssel.
 - `BENI_MACOS_CERTIFICATE_PASSWORD`: Exportpasswort.
@@ -66,4 +68,6 @@ Der native Abnahmeschritt prüft Paketbytes, Signaturen, Inhalt, temporäre Inst
 
 PASS: 23 portable Packaging-/Credential-/Receipt-Tests; lokale Root-/Desktop-Prüfungen und drei grüne PR-Plattformjobs; Apple-Silicon-DMG mit Developer-ID-Signaturen, Zeitstempeln und Hardened Runtime. Echte Apple-Notarisierung von App und DMG, angehängte/validierte Tickets und Gatekeeper-Prüfung. Erneute schreibgeschützte DMG-Abnahme mit temporärem Kopieren, Version-/Signatur-/Ticket-/Gatekeeper-Prüfung, CLI-Start und Entfernen. Der Nutzer hat die alte App beendet, die neue App aus dem DMG nach Programme kopiert und ihren sichtbaren Start bestätigt. Laufender Prozess unter `/Applications/Beni Buddy.app`, Version 0.1.0/Build 1, gültige Signatur, Ticket und Gatekeeper-Zulassung geprüft. Kompatibles Ad-hoc-Entwicklungsbundle und kompilierter Swift-Fensterprüfer bestanden.
 
-NOT_RUN: neue Installer-CI, nativer Intel-Installer-/Fenstertest, vollständige Bedienabnahme auf einem frischen Gerät und altes macOS 11.0. CI-Secrets sind nicht eingerichtet. Das lokale notarisierte DMG ist noch kein öffentlicher Download. Diese Schritte müssen vor dem Anschluss von W1 abgeschlossen beziehungsweise die angebotenen Plattformanforderungen entsprechend eingegrenzt werden. Authentifizierte Release-/Update-Metadaten sind ebenfalls noch offen.
+FAIL: [erster gezielter Intel-Workflow](https://github.com/Witzelfitz/beni-desktop-buddy/actions/runs/38467512409), nach erfolgreichem Rust-Build beim Packaging-Codesign. Der alte Helfer gab nur einen allgemeinen Codesign-Exitcode aus; der überarbeitete Pfad benennt die Signierstufe und feste Fehlerkategorien, ohne Accountdetails auszugeben. Native Wiederholung steht aus.
+
+NOT_RUN: vollständige Intel-/macOS-15-Installer-Abnahme, echter Kandidat über die neue lokale Pipeline, vollständige Bedienabnahme auf einem frischen Gerät und altes macOS 11.0. Das lokale notarisierte DMG ist noch kein öffentlicher Download. Die lokale Pipeline implementiert Paket-/Manifest-Signaturen; Rust-Updater und öffentliche Feeds fehlen weiter. Nicht eingerichtete Actions-Signing-Secrets blockieren den gewählten lokalen Ablauf nicht.

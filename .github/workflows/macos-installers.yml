@@ -1,7 +1,5 @@
 name: macOS installers
 on:
-  push:
-    tags: ['v*']
   workflow_dispatch:
     inputs:
       architecture:
@@ -25,10 +23,10 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        include: ${{ fromJSON((github.event_name == 'push' || inputs.architecture == 'both') && '[{"architecture":"aarch64","runner":"macos-15"},{"architecture":"x86_64","runner":"macos-15-intel"}]' || (inputs.architecture == 'x86_64' && '[{"architecture":"x86_64","runner":"macos-15-intel"}]' || '[{"architecture":"aarch64","runner":"macos-15"}]')) }}
+        include: ${{ fromJSON(inputs.architecture == 'both' && '[{"architecture":"aarch64","runner":"macos-15"},{"architecture":"x86_64","runner":"macos-15-intel"}]' || (inputs.architecture == 'x86_64' && '[{"architecture":"x86_64","runner":"macos-15-intel"}]' || '[{"architecture":"aarch64","runner":"macos-15"}]')) }}
     runs-on: ${{ matrix.runner }}
     env:
-      BENI_PACKAGE_MODE: ${{ github.event_name == 'push' && 'release' || inputs.mode }}
+      BENI_PACKAGE_MODE: ${{ inputs.mode }}
       BENI_PACKAGE_ARCHITECTURE: ${{ matrix.architecture }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -45,6 +43,15 @@ jobs:
             python3 scripts/release.py check-versions --tag "$GITHUB_REF_NAME"
             git merge-base --is-ancestor "$GITHUB_SHA" origin/main
           fi
+      - name: Preflight optional CI signing credentials
+        if: env.BENI_PACKAGE_MODE == 'release'
+        env:
+          BENI_MACOS_CERTIFICATE_P12: ${{ secrets.BENI_MACOS_CERTIFICATE_P12 }}
+          BENI_MACOS_CERTIFICATE_PASSWORD: ${{ secrets.BENI_MACOS_CERTIFICATE_PASSWORD }}
+          BENI_APPLE_API_KEY: ${{ secrets.BENI_APPLE_API_KEY }}
+          BENI_APPLE_API_KEY_ID: ${{ secrets.BENI_APPLE_API_KEY_ID }}
+          BENI_APPLE_API_ISSUER: ${{ secrets.BENI_APPLE_API_ISSUER }}
+        run: python3 scripts/macos-ci-signing.py --architecture "$BENI_PACKAGE_ARCHITECTURE" --check-only
       - name: Rust toolchain
         run: |
           rustup toolchain install --no-self-update
@@ -77,7 +84,8 @@ jobs:
           version="$(python3 scripts/release.py version)"
           suffix=""
           if [[ "$BENI_PACKAGE_MODE" == "development" ]]; then suffix="-development"; fi
-          python3 scripts/check-macos-installer.py "dist/macos/beni-buddy-$version-macos-$BENI_PACKAGE_ARCHITECTURE$suffix.dmg" --architecture "$BENI_PACKAGE_ARCHITECTURE" --mode "$BENI_PACKAGE_MODE" --launch
+          image="dist/macos/beni-buddy-$version-macos-$BENI_PACKAGE_ARCHITECTURE$suffix.dmg"
+          python3 scripts/check-macos-installer.py "$image" --architecture "$BENI_PACKAGE_ARCHITECTURE" --mode "$BENI_PACKAGE_MODE" --launch --attestation "$image.native.json"
       - name: Store reviewed installer artifacts
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
@@ -87,4 +95,5 @@ jobs:
             dist/macos/*.dmg
             dist/macos/*.sha256
             dist/macos/*.build.json
+            dist/macos/*.native.json
           if-no-files-found: error

@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import platform
 import plistlib
+import re
 import subprocess
 import sys
 import tempfile
@@ -48,10 +49,15 @@ def main(argv=None):
     parser.add_argument("--architecture", choices=tuple(package.ARCHITECTURES), required=True)
     parser.add_argument("--mode", choices=("development", "signed-test", "release"), required=True)
     parser.add_argument("--launch", action="store_true", help="Eigenes Fenster nur auf frischem Actions-Runner prüfen.")
+    parser.add_argument("--attestation", type=Path, help="Nativen Abnahmebeleg nach erfolgreichem Runner-Fenstertest schreiben.")
     args = parser.parse_args(argv)
     try:
         if platform.system() != "Darwin":
             raise package.PackagingError("DMG-Abnahme benötigt macOS.")
+        if args.attestation and (not args.launch or os.environ.get("GITHUB_ACTIONS") != "true"
+                                or os.environ.get("RUNNER_OS") != "macOS"
+                                or not re.fullmatch(r"[0-9a-f]{40}", os.environ.get("GITHUB_SHA", ""))):
+            raise package.PackagingError("Nativer Abnahmebeleg benötigt den echten Runner-Fenstertest und Commit.")
         if args.architecture != package.native_architecture():
             raise package.PackagingError("Native Abnahme muss auf derselben Architektur laufen.")
         image = args.image.resolve()
@@ -74,7 +80,9 @@ def main(argv=None):
         if digest != receipt["sha256"] or image.stat().st_size != receipt["size_bytes"]:
             raise package.PackagingError("Paketbytes stimmen nicht mit dem Build-Beleg überein.")
         production = args.mode != "development"
-        package.verify_signature(image, production=production)
+        if production:
+            package.verify_signature(image, production=True)
+        package.run(["hdiutil", "verify", str(image)], "DMG-Integrität erneut prüfen")
         with tempfile.TemporaryDirectory(prefix="beni-install-check-") as folder:
             directory = Path(folder)
             mount = directory / "volume"
@@ -116,6 +124,16 @@ def main(argv=None):
         print("PASS: DMG, Signaturen, temporäre Installation, CLI-Start und Entfernung.")
         if args.launch:
             print("PASS: eigenes sichtbares App-Fenster auf dem frischen Runner.")
+        if args.attestation:
+            tested_os = package.run(["sw_vers", "-productVersion"], "Native macOS-Version lesen").strip()
+            if not re.fullmatch(r"[0-9]+\.[0-9]+(?:\.[0-9]+)?", tested_os):
+                raise package.PackagingError("Native macOS-Version ist ungültig.")
+            with args.attestation.open("x", encoding="utf-8") as stream:
+                json.dump({"type": "macos-native-install-check", "source_commit": os.environ["GITHUB_SHA"],
+                           "architecture": args.architecture, "version": receipt["version"], "build_number": receipt["build_number"],
+                           "tested_os_version": tested_os, "package_sha256": receipt["sha256"],
+                           "native_window_passed": True, "temporary_install_removed": True}, stream, indent=2)
+                stream.write("\n")
     except (package.PackagingError, OSError, ValueError, KeyError, TypeError, subprocess.TimeoutExpired) as error:
         detail = str(error) if isinstance(error, package.PackagingError) else "Installer oder Build-Beleg kann nicht geprüft werden."
         print(f"FAIL: {detail}", file=sys.stderr)

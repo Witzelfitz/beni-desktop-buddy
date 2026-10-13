@@ -32,6 +32,15 @@ def run(args, label, env=None, timeout=300):
         raise PackagingError(f"{label}: Werkzeug nicht verfügbar oder Zeitlimit erreicht.") from error
     if result.returncode:
         # Signing/notary output may contain account details; never echo commands or raw output.
+        if args[0] == "codesign":
+            diagnostics = (("resource fork", "Nicht erlaubte Finder-/Resource-Fork-Metadaten."),
+                           ("code object is not signed at all", "Codesign-Objekt ist noch nicht signiert."),
+                           ("bundle format", "Codesign-Bundleformat wird nicht erkannt."),
+                           ("invalid or unsupported format", "Codesign-Format wird nicht unterstützt."),
+                           ("errSecInternalComponent", "Interner Fehler des Signierdienstes."))
+            for fragment, detail in diagnostics:
+                if fragment in result.stdout:
+                    raise PackagingError(f"{label} fehlgeschlagen: {detail}")
         raise PackagingError(f"{label} fehlgeschlagen (Exitcode {result.returncode}).")
     return result.stdout
 
@@ -99,7 +108,8 @@ def sign(path, identity, executable=False):
     options = ["--timestamp=none"] if identity == "-" else ["--timestamp"]
     if executable and identity != "-":
         options += ["--options", "runtime"]
-    run(["codesign", "--force", "--sign", identity, *options, str(path)], "Codesignierung")
+    kind = "DMG" if path.suffix == ".dmg" else ("App-Bundle" if path.suffix == ".app" else "Executable")
+    run(["codesign", "--force", "--sign", identity, *options, str(path)], f"Codesignierung ({kind})")
 
 
 def verify_signature(path, production=False):
@@ -112,9 +122,9 @@ def verify_signature(path, production=False):
             raise PackagingError("Hardened Runtime fehlt.")
 
 
-def make_bundle(destination, architecture, identity):
+def make_bundle(destination, architecture, identity, binaries=None):
     version, build = check_versions()
-    binaries = executable_paths(architecture)
+    binaries = executable_paths(architecture) if binaries is None else binaries
     for binary in binaries:
         check_binary(binary, architecture)
     macos = destination / "Contents/MacOS"
@@ -195,8 +205,11 @@ def make_dmg(app, directory, image, identity):
     shutil.copy2(ROOT / "packaging/macos/INSTALLATION.txt", payload / "Installation.txt")
     run(["hdiutil", "create", "-volname", "Beni Buddy", "-srcfolder", str(payload),
          "-format", "UDZO", "-ov", str(image)], "DMG erstellen")
-    sign(image, identity)
-    verify_signature(image, production=identity != "-")
+    # Development containers are unsigned; ad-hoc signatures still protect the app and binaries.
+    # Apple distribution containers always retain their Developer-ID signature.
+    if identity != "-":
+        sign(image, identity)
+        verify_signature(image, production=True)
     run(["hdiutil", "verify", str(image)], "DMG-Integrität prüfen")
 
 

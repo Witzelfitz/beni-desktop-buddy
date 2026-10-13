@@ -46,6 +46,7 @@ Abnahme: Zeit und Ereignisse sind testbar; Nachrichten sind begrenzt; externe St
 
 - Erledigt in PR #23: gemeinsamer [Release-Vertrag](RELEASES.md) mit Schema, Stable-/Beta-Beispielen, Offline-Prüfung und verbindlicher Cargo-Version/Buildnummer. Öffentliche Installer und echte Updateprüfung bleiben Folgearbeit.
 - Gemergt in PR #25: [macOS-DMG und Release-Buildweg](MACOS_INSTALLER.md) für Apple Silicon/Intel, eindeutige Testpakete und verbindliche Apple-Abnahmen. Apple-Silicon-App und DMG tatsächlich notarisiert, Tickets und Gatekeeper geprüft; Nutzerinstallation unter Programme startet. CI-Secrets, Installer-CI, native Intel- und Alt-OS-Abnahme noch offen.
+- Aktuelle Folgearbeit: [lokale Release-Pipeline](LOCAL_RELEASE.md) nach [ADR 0003](adr/0003-local-release-signing.md). Native CI-Builds ohne Apple-Schlüssel, lokale Signierung/Notarisierung und Ed25519 für Pakete und Manifest; bewusste Veröffentlichung bleibt ein eigener Schritt. Actions-Signing-Secrets sind für diesen gewählten Ablauf nicht erforderlich.
 - Erledigt: Beni-App-Icon (PNG/ICNS/ICO), Windows-Exe-Ressource und Linux-Desktop-Vorlage in den plattformspezifischen Paketen.
 - Erledigt: macOS-Entwicklungsbundle ad hoc signieren und streng prüfen; Apple-Silicon-Release mit Developer ID signieren und notarisieren. Windows-Signierung bleibt offen.
 - Reproduzierbare Releases aus freigegebenen Tags.
