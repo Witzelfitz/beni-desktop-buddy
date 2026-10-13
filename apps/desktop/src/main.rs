@@ -1,5 +1,7 @@
 #![cfg_attr(target_os = "windows", windows_subsystem = "windows")]
 mod app;
+mod hit_map;
+mod input;
 mod placement;
 mod tray;
 mod window;
@@ -8,10 +10,14 @@ use buddy_core::{Engine, Settings};
 use eframe::egui;
 
 fn main() -> eframe::Result {
+    let icon =
+        eframe::icon_data::from_png_bytes(include_bytes!("../../../assets/app-icon/beni-256.png"))
+            .expect("validated embedded Beni app icon");
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_title("Beni Desktop Buddy")
             .with_app_id("io.witzelfitz.beni-buddy")
+            .with_icon(icon)
             .with_inner_size([340.0, 440.0])
             .with_decorations(false)
             .with_resizable(false)

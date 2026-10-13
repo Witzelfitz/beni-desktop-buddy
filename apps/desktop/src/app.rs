@@ -16,6 +16,10 @@ pub struct BuddyApp {
     engine: Engine,
     player: Player,
     texture: TextureHandle,
+    atlas_alpha: Vec<u8>,
+    hit_map: crate::hit_map::HitMap,
+    input: crate::input::InputGuard,
+    click_through: bool,
     settings: Settings,
     last_tick: Instant,
     message: String,
@@ -47,9 +51,9 @@ impl BuddyApp {
             [icon.width as usize, icon.height as usize],
             &icon.rgba,
         );
-        let texture = cc
-            .egui_ctx
-            .load_texture("beni-atlas", image, egui::TextureOptions::LINEAR);
+        let texture =
+            cc.egui_ctx
+                .load_texture("beni-atlas", image.clone(), egui::TextureOptions::LINEAR);
         cc.egui_ctx.set_visuals(egui::Visuals::dark());
         let settings = settings.sanitize();
         cc.egui_ctx
@@ -67,6 +71,10 @@ impl BuddyApp {
             engine,
             player,
             texture,
+            atlas_alpha: image.pixels.iter().map(|pixel| pixel.a()).collect(),
+            hit_map: crate::hit_map::HitMap::default(),
+            input: crate::input::InputGuard::default(),
+            click_through: cc.storage.and_then(|s| eframe::get_value(s, "click-through")).unwrap_or(true),
             settings,
             last_tick: Instant::now(),
             message: "Hoi! Ich bin Beni. Klick mich für die Bedienung an oder zieh mich an deinen Lieblingsplatz.".into(),
@@ -200,6 +208,7 @@ impl BuddyApp {
         if dismiss || response.clicked() {
             self.dismiss_speech(now);
         }
+        self.hit_map.add_rect(response.rect, 16.0);
         ui.add_space((78.0 - (ui.cursor().min.y - top)).max(0.0));
     }
     fn avatar_mesh(&self, stage: Rect) -> Result<egui::Mesh, buddy_core::BuddyError> {
@@ -262,6 +271,8 @@ impl BuddyApp {
         });
         match self.avatar_mesh(stage) {
             Ok(mesh) => {
+                self.hit_map
+                    .add_mesh(&mesh, &self.atlas_alpha, self.engine.image_size[0] as usize);
                 ui.painter().add(egui::Shape::mesh(mesh));
                 self.last_render_error = None;
             }
@@ -276,6 +287,7 @@ impl BuddyApp {
                     24,
                     Color32::from_rgba_unmultiplied(28, 44, 38, 180),
                 );
+                self.hit_map.add_rect(stage.shrink(35.0), 24.0);
                 ui.painter().text(
                     stage.center(),
                     egui::Align2::CENTER_CENTER,
@@ -287,7 +299,7 @@ impl BuddyApp {
         }
     }
     fn controls(&mut self, ui: &mut egui::Ui) {
-        egui::Frame::new()
+        let response = egui::Frame::new()
             .fill(Color32::from_rgba_unmultiplied(19, 29, 39, 235))
             .corner_radius(14)
             .inner_margin(8)
@@ -311,14 +323,16 @@ impl BuddyApp {
                         ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
                     }
                 });
-            });
+            })
+            .response;
+        self.hit_map.add_rect(response.rect, 14.0);
     }
     fn menu(&mut self, ctx: &egui::Context) {
         if !self.menu_open {
             return;
         }
         let mut open = true;
-        egui::Window::new("Benis Einstellungen")
+        let response = egui::Window::new("Benis Einstellungen")
             .open(&mut open)
             .fixed_pos([12.0, 12.0])
             .default_width(296.0)
@@ -352,6 +366,13 @@ impl BuddyApp {
                 ui.checkbox(&mut self.settings.reduced_motion, "Weniger Bewegung");
                 ui.checkbox(&mut self.settings.mirrored, "Beni spiegeln");
                 if ui
+                    .checkbox(&mut self.click_through, "Hintergrund durchklickbar")
+                    .changed()
+                    && self.click_through
+                {
+                    self.input.retry_if_failed();
+                }
+                if ui
                     .checkbox(&mut self.settings.always_on_top, "Immer im Vordergrund")
                     .changed()
                 {
@@ -380,12 +401,16 @@ impl BuddyApp {
                 }
                 ui.small("Esc klappt die Bedienung zu. Alt/Option + Q beendet Beni.");
             });
+        if let Some(response) = response {
+            self.hit_map.add_rect(response.response.rect, 0.0);
+        }
         self.menu_open = open;
     }
 }
 impl BuddyApp {
     fn show_ui(&mut self, ui: &mut egui::Ui) {
         let ctx = ui.ctx().clone();
+        self.hit_map.reset(ctx.content_rect().size());
         let now = Instant::now();
         let delta = now.duration_since(self.last_tick).as_secs_f64() * 1000.0;
         self.last_tick = now;
@@ -519,8 +544,15 @@ impl eframe::App for BuddyApp {
         ctx.request_repaint_after(Duration::from_secs(1));
     }
 
-    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+    fn ui(&mut self, ui: &mut egui::Ui, frame: &mut eframe::Frame) {
         self.show_ui(ui);
+        if let Some(window) = frame.winit_window() {
+            let enabled = self.click_through && self.tray.is_some() && !window.is_decorated();
+            if let Err(message) = self.input.apply(window, &self.hit_map, ui.ctx(), enabled) {
+                self.click_through = false;
+                self.report_error(message.into(), Instant::now());
+            }
+        }
     }
     fn clear_color(&self, _visuals: &egui::Visuals) -> [f32; 4] {
         [0.0; 4]
@@ -528,6 +560,7 @@ impl eframe::App for BuddyApp {
     fn save(&mut self, storage: &mut dyn eframe::Storage) {
         eframe::set_value(storage, "buddy-settings", &self.settings);
         eframe::set_value(storage, "status-receiving", &self.ipc_enabled);
+        eframe::set_value(storage, "click-through", &self.click_through);
     }
 }
 
@@ -551,6 +584,16 @@ mod tests {
             engine: Engine::embedded().unwrap(),
             player: Player::default(),
             texture: ctx.load_texture("test-atlas", image, egui::TextureOptions::LINEAR),
+            atlas_alpha: icon
+                .rgba
+                .as_chunks::<4>()
+                .0
+                .iter()
+                .map(|pixel| pixel[3])
+                .collect(),
+            hit_map: crate::hit_map::HitMap::default(),
+            input: crate::input::InputGuard::default(),
+            click_through: true,
             settings: Settings::default(),
             last_tick: Instant::now(),
             message: "Hoi aus der Test-Sprechblase!".into(),
@@ -867,6 +910,38 @@ mod tests {
         assert!(!app.menu_open);
         assert!(!app.controls_open);
         assert_controls_hidden(&output);
+        output.drop_without_applying_deltas();
+    }
+    #[test]
+    fn input_map_tracks_visible_avatar_speech_controls_and_settings() {
+        let ctx = egui::Context::default();
+        let mut app = app(&ctx);
+        app.player.paused = true;
+        let output = frame(&ctx, &mut app, 0.0, vec![]);
+        let avatar = avatar_rect(&output, &app);
+        assert!(app.hit_map.contains(avatar.center()));
+        assert!(!app.hit_map.contains(egui::pos2(2.0, 2.0)));
+        let close = text_rect(&output, "×").center();
+        assert!(app.hit_map.contains(close));
+        output.drop_without_applying_deltas();
+        app.controls_open = true;
+        let output = frame(&ctx, &mut app, 0.1, vec![]);
+        let pause = text_rect(&output, "Weiter").center();
+        assert!(app.hit_map.contains(pause));
+        output.drop_without_applying_deltas();
+        app.controls_open = false;
+        app.dismiss_speech(Instant::now());
+        let output = frame(&ctx, &mut app, 0.2, vec![]);
+        assert!(!app.hit_map.contains(pause));
+        assert!(!app.hit_map.contains(close));
+        output.drop_without_applying_deltas();
+        app.menu_open = true;
+        frame(&ctx, &mut app, 0.3, vec![]).drop_without_applying_deltas();
+        let output = frame(&ctx, &mut app, 0.4, vec![]);
+        assert!(
+            app.hit_map
+                .contains(text_rect(&output, "Hintergrund durchklickbar").center())
+        );
         output.drop_without_applying_deltas();
     }
     #[test]

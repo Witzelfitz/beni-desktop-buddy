@@ -16,7 +16,7 @@ Abnahme: Ein echter Build läuft auf dem Desktop und besteht die manuelle Testma
 - Erledigt: zeitlich begrenzte Fehleranzeige und weiter bedienbare Ersatzfläche bei Zeichenfehlern.
 - Erledigt: Bedienleiste startet eingeklappt und lässt sich per Klick auf Beni oder Escape wieder zuklappen, ohne laufende Statusmeldungen zu ersetzen.
 - Erledigt: native Accessibility-Anbindung, beschrifteter Avatar und Tastaturbedienung. Vollständige VoiceOver-/NVDA-/Orca-Abnahme bleibt offen.
-- Click-through für transparente Flächen mit einer verlässlichen Rückholmöglichkeit.
+- Erledigt: durchklickbare transparente Flächen anhand der Beni-Silhouette und sichtbaren UI; im Menü abschaltbar, mit Tray-Rückholmöglichkeit und bedienbarem Fehler-Fallback.
 - Globale Rückhol-/Pause-Aktion, Benutzerwahl für Hotkeys.
 - Grössenwahl; Arbeitsbereich wird bereits beim Start und nach Monitorwechsel berücksichtigt.
 - OS-Einstellung für reduzierte Bewegung berücksichtigen.
@@ -36,8 +36,8 @@ Abnahme: Zeit und Ereignisse sind testbar; Nachrichten sind begrenzt; externe St
 
 ## 4 · Installation und Updates
 
-- Beni-App-Icon und plattformspezifische Pakete.
-- macOS signieren und notarisieren; Windows-Signierung vorbereiten.
+- Erledigt: Beni-App-Icon (PNG/ICNS/ICO), Windows-Exe-Ressource und Linux-Desktop-Vorlage in den plattformspezifischen Paketen.
+- Erledigt: macOS-Entwicklungsbundle ad hoc signieren und streng prüfen. Developer-ID-Signierung und Notarisierung sowie Windows-Signierung bleiben offen.
 - Reproduzierbare Releases aus freigegebenen Tags.
 - Optionaler, bewusst aktivierter Autostart.
 - Updatekonzept erst nach den ersten stabilen Builds festlegen.

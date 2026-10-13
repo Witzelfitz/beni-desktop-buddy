@@ -39,10 +39,13 @@ jobs:
           rustup show active-toolchain
       - name: Linux GUI dependencies
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y libxkbcommon-dev libwayland-dev libx11-dev libxi-dev libxrandr-dev libxcursor-dev libgl1-mesa-dev
+        run: sudo apt-get update && sudo apt-get install -y libxkbcommon-dev libxkbcommon-x11-dev libwayland-dev libx11-dev libxext-dev libxi-dev libxrandr-dev libxcursor-dev libgl1-mesa-dev xvfb xauth weston
       - run: cargo fmt --manifest-path apps/desktop/Cargo.toml --check
       - run: cargo test --manifest-path apps/desktop/Cargo.toml --locked
       - run: cargo clippy --manifest-path apps/desktop/Cargo.toml --all-targets --locked -- -D warnings
+      - name: Native Linux input-region smoke tests
+        if: runner.os == 'Linux'
+        run: bash scripts/check-input-linux.sh
       - run: cargo build --manifest-path apps/desktop/Cargo.toml --release --locked
       - run: cargo build --release --locked -p buddy-cli
       - name: Archive executable with Unix permissions
@@ -60,6 +63,11 @@ jobs:
             cp "apps/desktop/target/release/beni-desktop-buddy$suffix" "target/release/beni-buddy-cli$suffix" "dist/$package/"
             cp -R integrations "dist/$package/"
             cp docs/INTEGRATIONS.md "dist/$package/"
+            mkdir -p "dist/$package/icons"
+            cp assets/app-icon/beni.png assets/app-icon/Beni.ico "dist/$package/icons/"
+            if [[ "$RUNNER_OS" == "Linux" ]]; then
+              cp packaging/linux/io.witzelfitz.beni-buddy.desktop "dist/$package/"
+            fi
             tar -czf "dist/$package.tar.gz" -C dist "$package"
           fi
       - name: Store executable and lockfile

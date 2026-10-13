@@ -2,6 +2,8 @@
 
 Mini-Beni als nativer Desktop-Buddy in Rust: ein animierter Begleiter auf dem Desktop, mit transparentem Fenster, Gesten und Sprechblasen.
 
+<img src="assets/app-icon/beni.png" alt="Benis App-Icon: freundliches Porträt auf einer hellgrünen Kachel" width="128">
+
 Die native Rust-Grundlage ist auf macOS gestartet und visuell geprüft. Tests, Clippy und Release-Builds bestehen in GitHub Actions auf macOS, Windows und Linux.
 
 <img src="docs/images/macos-buddy.png" alt="Beni als nativer macOS-Desktop-Buddy mit eingeklappter Bedienleiste" width="340">
@@ -40,7 +42,7 @@ Beide Cargo-Workspaces enthalten ein committedes Lockfile. Builds und Tests verw
 Unter Debian/Ubuntu braucht die GUI beispielsweise:
 
 ```sh
-sudo apt-get install libxkbcommon-dev libwayland-dev libx11-dev libxi-dev libxrandr-dev libxcursor-dev libgl1-mesa-dev
+sudo apt-get install libxkbcommon-dev libxkbcommon-x11-dev libwayland-dev libx11-dev libxext-dev libxi-dev libxrandr-dev libxcursor-dev libgl1-mesa-dev
 ```
 
 Linux-Desktop-/Compositor-Verhalten muss separat abgenommen werden. Ein erfolgreicher Build belegt noch keine Transparenz oder Vordergrunddarstellung.
@@ -59,6 +61,7 @@ Linux-Desktop-/Compositor-Verhalten muss separat abgenommen werden. Ein erfolgre
 | Animation auswählen | «Menü» → Animation |
 | Energie, Tempo, Spiegelung | «Menü» |
 | Weniger Bewegung | «Menü» → «Weniger Bewegung» |
+| Hintergrund durchklickbar | Standardmässig aktiv; im Menü abschaltbar. Beni, sichtbare Bedienleiste und Sprechblasen bleiben anklickbar |
 | Eigene Sprechblase | Nachricht im Menü eingeben; lange Texte scrollen; Blase anklicken oder mit × schliessen |
 | Status von lokalen Programmen | «Menü» → «Statusmeldungen empfangen», danach CLI `notify` oder `run` |
 | Vordergrunddarstellung | «Menü» → «Immer im Vordergrund» |
@@ -69,7 +72,7 @@ Die Bedienleiste erscheint erst nach einem Klick auf Beni. Ein weiterer Klick od
 
 Die native Accessibility-Anbindung über [eframes AccessKit-Feature](https://docs.rs/eframe/0.36.2/eframe/#feature-flags) ist aktiviert. Beni wird als beschrifteter Button mit Auf-/Zuklappzustand dargestellt; die Sprechblase hat einen benannten Schliessen-Knopf, und das Nachrichtenfeld einen festen Namen. Tab, Eingabe und Leertaste bedienen auch die eingeklappte Leiste. Eine vollständige Abnahme mit VoiceOver, NVDA und Orca bleibt separat zu prüfen.
 
-20 Desktoptests prüfen UI-Ereignisse, Accessibility-Baum und Aktionen, Tastaturbedienung, ein-/ausgeklappte Bedienung, Fehlerablauf, Bedienbarkeit bei Zeichenfehlern, Tray-Aktionen ohne Zeichnen und Fensterpositionen. Fenster-/Compositor-Verhalten auf Windows/Linux sowie die vollständige manuelle Abnahme bleiben separat zu prüfen.
+24 Desktoptests prüfen UI-Ereignisse, Eingabegeometrie samt PNG-Alpha/DPI, Accessibility-Baum und Aktionen, Tastaturbedienung, ein-/ausgeklappte Bedienung, Fehlerablauf, Bedienbarkeit bei Zeichenfehlern, Tray-Aktionen ohne Zeichnen und Fensterpositionen. Fenster-/Compositor-Verhalten auf Windows/Linux sowie die vollständige manuelle Abnahme bleiben separat zu prüfen.
 
 Das Tray-Menü bietet auch Pause/Fortsetzen und Einstellungen. Gespeicherte Positionen werden beim Start und nach Änderungen der Bildschirme geprüft; vollständig verlorene Fenster werden automatisch zurückgeholt. Auf macOS berücksichtigt dies Menüleiste, Dock und Retina-Punkte. Eine Fehlermeldung verschwindet nach sechs Sekunden oder bei einer erfolgreichen Aktion; bei einem Zeichenfehler bleibt eine bedienbare Ersatzfläche sichtbar.
 
@@ -77,7 +80,9 @@ Unter Linux braucht das Tray einen StatusNotifier-Host (KSNI, beispielsweise in 
 
 Die Sprechblase passt ihre Höhe an, bietet bei langen Texten Scrollen und eine Anzeigedauer nach Lesezeit (4–30 Sekunden, bei Statusmeldungen zusätzlich durch TTL begrenzt). Sie zeigt Text ohne Audioausgabe. Einzelaktionen kehren nach einem Durchlauf zu «warten» zurück. Einstellungen werden lokal gespeichert. Idle zeichnet mit bis zu 15 fps, aktive Gesten mit bis zu 30 fps; Pause und reduzierte Bewegung mit bis zu 4 fps.
 
-Globale Hotkeys, Autostart und Click-through-Flächen sind noch offen.
+Transparente Flächen leiten Mausklicks an das darunterliegende Fenster weiter. Die Eingabegeometrie folgt der gezeichneten Beni-Silhouette, Sprechblase, Bedienleiste und Einstellungen. Auf macOS stellen passive Mausbewegungsereignisse das Fenster vor dem nächsten Klick passend um; Tastaturereignisse werden dafür nicht überwacht. Windows verwendet Fensterregionen, Linux X11 Input Shapes und Wayland Oberflächen-Eingaberegionen. Ohne verfügbares Tray oder bei nativen Fehlern bleibt die normale Fensterbedienung erhalten. Globale Hotkeys und Autostart bleiben offen.
+
+Linux-CI prüft Eingaberegionen zusätzlich mit Xvfb und einem separaten Weston-Headless-Server (`bash scripts/check-input-linux.sh`). Das ersetzt keine vollständige Desktop-Abnahme mit einem echten Compositor und gemischter DPI.
 
 ## Entwicklung
 
@@ -87,7 +92,9 @@ Globale Hotkeys, Autostart und Click-through-Flächen sind noch offen.
 ./scripts/package-macos.sh
 ```
 
-Das macOS-Script erstellt nach erfolgreichem Build `dist/Beni Buddy.app`, einschliesslich CLI und Integrationsvorlagen. Dieses Entwicklungsbundle ist noch nicht signiert/notarisiert. Es führt keinen Autostart oder OS-Installation aus.
+Das macOS-Script erstellt nach erfolgreichem Build `dist/Beni Buddy.app`, einschliesslich CLI, Integrationsvorlagen und App-Icon. Es signiert beide ausführbaren Dateien und das fertige Bundle ad hoc und prüft die Signatur streng. Das Paket wird erst danach aus dem temporären Build-Verzeichnis übernommen. Das Entwicklungsbundle ist nicht notarisiert; für öffentliche Verteilung sind Developer-ID-Signierung und Notarisierung weiterhin offen. Es führt keinen Autostart oder OS-Installation aus.
+
+Das App-Icon ist als PNG, ICNS und ICO samt Provenienz vorhanden. Windows bindet das ICO in die ausführbare Datei ein; Windows/Linux erhalten ausserdem das Fenster-Icon. Linux-Pakete enthalten eine Desktop-Datei als Installationsvorlage: Programm in einen Benutzer-Binärpfad, Desktop-Datei unter `~/.local/share/applications/` und `icons/beni.png` unter `~/.local/share/icons/hicolor/1024x1024/apps/io.witzelfitz.beni-buddy.png` ablegen. Eine automatische Installation wird nicht vorgenommen. Der Icon-Export lässt sich auf macOS mit `python3 scripts/export-app-icon.py` aus dem freigegebenen Raster-Master wiederholen.
 
 Der Kern liegt im Root-Workspace. Die Desktop-App bildet wegen ihrer eigenen GUI-Abhängigkeiten einen separaten Cargo-Workspace. Root-Tests bauen deshalb ausdrücklich **nicht** die Desktop-App. Der GitHub-Workflow enthält einen zusätzlichen Desktop-Job auf allen drei Betriebssystemen. Erfolgreiche Builds stellen Download-Artefakte bereit: ein `.app`-Bundle für macOS und ausführbare Dateien für Windows/Linux, jeweils mit CLI, Wrappern und Anleitung in einem `.tar.gz`-Archiv.
 

@@ -17,9 +17,16 @@ eframe = { version = "=0.36.2", default-features = false, features = ["accesskit
 
 [target.'cfg(target_os = "macos")'.dependencies]
 objc2 = "=0.6.5"
-objc2-app-kit = { version = "=0.3.2", default-features = false, features = ["NSScreen", "NSApplication", "NSRunningApplication"] }
+objc2-app-kit = { version = "=0.3.2", default-features = false, features = ["NSScreen", "NSEvent", "block2", "NSApplication", "NSRunningApplication"] }
+block2 = "=0.6.2"
+
+[target.'cfg(target_os = "windows")'.dependencies]
+windows-sys = { version = "=0.61.2", features = ["Win32_Foundation", "Win32_Graphics_Gdi"] }
 
 [profile.release]
 lto = "thin"
 codegen-units = 1
 strip = true
+
+[build-dependencies]
+embed-resource = "=3.0.11"
