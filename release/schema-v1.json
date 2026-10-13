@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Witzelfitz/beni-desktop-buddy/blob/main/release/schema-v1.json",
+  "title": "Beni release manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "product", "version", "build_number", "channel", "release_notes_url", "artifacts"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "product": {"const": "io.witzelfitz.beni-buddy"},
+    "version": {
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(-beta\\.[1-9][0-9]*)?$"
+    },
+    "build_number": {"type": "integer", "minimum": 1, "maximum": 9999},
+    "channel": {"enum": ["stable", "beta"]},
+    "release_notes_url": {"$ref": "#/$defs/releaseUrl"},
+    "artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 6,
+      "items": {"$ref": "#/$defs/artifact"}
+    }
+  },
+  "$defs": {
+    "releaseUrl": {
+      "type": "string",
+      "maxLength": 512,
+      "pattern": "^https://github\\.com/Witzelfitz/beni-desktop-buddy/releases/(tag|download)/v[0-9A-Za-z._/-]+$"
+    },
+    "systemVersion": {"type": "string", "maxLength": 32, "pattern": "^[0-9]+\\.[0-9]+(\\.[0-9]+)?$"},
+    "requirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["description"],
+      "properties": {
+        "description": {"type": "string", "minLength": 1, "maxLength": 280},
+        "minimum_os_version": {"$ref": "#/$defs/systemVersion"},
+        "minimum_glibc_version": {"$ref": "#/$defs/systemVersion"}
+      }
+    },
+    "signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "key_id", "url"],
+      "properties": {
+        "algorithm": {"const": "ed25519"},
+        "key_id": {"type": "string", "pattern": "^beni-update-v[1-9][0-9]*$", "maxLength": 64},
+        "url": {"$ref": "#/$defs/releaseUrl"}
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["platform", "architecture", "format", "requirements", "url", "size_bytes", "sha256", "signature"],
+      "properties": {
+        "platform": {"enum": ["macos", "windows", "linux"]},
+        "architecture": {"enum": ["aarch64", "x86_64"]},
+        "format": {"enum": ["dmg", "exe", "appimage"]},
+        "requirements": {"$ref": "#/$defs/requirements"},
+        "url": {"$ref": "#/$defs/releaseUrl"},
+        "size_bytes": {"type": "integer", "minimum": 1, "maximum": 4294967296},
+        "sha256": {"type": "string", "minLength": 64, "maxLength": 64, "pattern": "^[0-9a-f]{64}$"},
+        "signature": {"$ref": "#/$defs/signature"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"platform": {"const": "macos"}}},
+          "then": {
+            "properties": {
+              "format": {"const": "dmg"},
+              "requirements": {"required": ["minimum_os_version"], "not": {"required": ["minimum_glibc_version"]}}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"platform": {"const": "windows"}}},
+          "then": {
+            "properties": {
+              "format": {"const": "exe"},
+              "requirements": {"required": ["minimum_os_version"], "not": {"required": ["minimum_glibc_version"]}}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"platform": {"const": "linux"}}},
+          "then": {
+            "properties": {
+              "format": {"const": "appimage"},
+              "requirements": {"required": ["minimum_glibc_version"], "not": {"required": ["minimum_os_version"]}}
+            }
+          }
+        }
+      ]
+    }
+  }
+}

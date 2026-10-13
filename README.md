@@ -12,7 +12,7 @@ Die native Rust-Grundlage ist auf macOS gestartet und visuell geprüft. Tests, C
 
 ## Masterplan
 
-[Der verbindliche Masterplan](docs/MASTERPLAN.md) hält die nächsten Schritte fest: öffentliche Releases, Installer, `mini.witzelfitz.io/download` im getrennten Beni-Allrounder-Repo, Updates über das Menüleistensymbol und freiwillige Ersteinrichtung für Ollama, Claude und OpenAI. Nächster Implementierungsschritt ist der Release-Vertrag und die Versionierung.
+[Der verbindliche Masterplan](docs/MASTERPLAN.md) hält die nächsten Schritte fest: öffentliche Releases, Installer, `mini.witzelfitz.io/download` im getrennten Beni-Allrounder-Repo, Updates über das Menüleistensymbol und freiwillige Ersteinrichtung für Ollama, Claude und OpenAI. [Release-Vertrag und Versionierung](docs/RELEASES.md) sind vorbereitet; öffentliche Installer folgen als nächster Schritt.
 
 ## Aktueller Stand
 
@@ -124,7 +124,12 @@ Linux-CI prüft Eingaberegionen zusätzlich mit Xvfb und einem separaten Weston-
 
 ## Entwicklung
 
+Die Release-Prüfung benötigt Python 3.11 oder neuer und die festgelegten Testabhängigkeiten in einer virtuellen Umgebung. Die Rust-App benötigt diese Python-Pakete zur Laufzeit nicht.
+
 ```sh
+python3 -m venv .venv-release
+.venv-release/bin/python -m pip install -r scripts/requirements-release.txt
+export BENI_RELEASE_PYTHON="$PWD/.venv-release/bin/python"
 ./scripts/check.sh
 ./scripts/check.sh --desktop
 ./scripts/package-macos.sh
@@ -150,12 +155,14 @@ crates/buddy-ipc/             Geschützter lokaler Transport und Hintergrundlist
 integrations/                Shell, PowerShell und optionale Codex-/Claude-Code-Hooks
 apps/desktop/                Native egui/eframe-App
 .github/workflows/ci.yml      Kern- und Desktopchecks auf drei Plattformen
+release/                     Gemeinsames JSON-Schema und unveröffentlichte Beispiele
 scripts/                     Prüfungen, GitHub-Veröffentlichung und macOS-Packaging
 docs/                       Architektur, Roadmap, GitHub-Anleitung, Abnahme, Prüfbericht
 ```
 
 - [Statusmeldungen einrichten: Mac, Linux und Windows](docs/INTEGRATIONS.md)
 - [Lokaler Nachrichtenvertrag](docs/adr/0002-local-status.md)
+- [Release-Vertrag, Versionierung und Prüfwerkzeug](docs/RELEASES.md)
 - [Architektur](docs/ARCHITECTURE.md)
 - [Entscheidung für native Rust-GUI](docs/adr/0001-native-rust.md)
 - [Roadmap mit konkreten Arbeitspaketen](docs/ROADMAP.md)

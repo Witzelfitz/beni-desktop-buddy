@@ -53,6 +53,14 @@ jobs:
       - name: Linux GUI dependencies
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libxkbcommon-dev libxkbcommon-x11-dev libwayland-dev libx11-dev libxext-dev libxi-dev libxrandr-dev libxcursor-dev libgl1-mesa-dev xvfb xauth weston
+      - name: Release version consistency
+        run: python scripts/release.py check-versions
+      - name: Release schema and regression tests
+        if: runner.os == 'Linux'
+        run: |
+          python -m venv "${{ runner.temp }}/beni-release-venv"
+          "${{ runner.temp }}/beni-release-venv/bin/python" -m pip install -r scripts/requirements-release.txt
+          "${{ runner.temp }}/beni-release-venv/bin/python" scripts/check-release.py
       - run: cargo fmt --all --check
       - run: cargo fmt --manifest-path apps/desktop/Cargo.toml --check
       - run: cargo test --workspace --locked
