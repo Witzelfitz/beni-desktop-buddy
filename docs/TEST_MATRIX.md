@@ -29,6 +29,8 @@ Nativer Start, Transparenz und die sichtbare Bedienleiste wurden auf macOS gepr�
 | Systemeinstellung zur Bewegung lesen / Übergehen / Speicherung | PASS | NOT_RUN | NOT_RUN | NOT_RUN |
 | Globalen OS-Schalter im laufenden Buddy ändern | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |
 | Sichtbare Idle-Bewegung aus vorhandenen SDK-Animationen | PASS | NOT_RUN | NOT_RUN | NOT_RUN |
+| Einstellungsfenster: Tray / Buddy, Grösse, Schliessen / erneut öffnen | PASS | NOT_RUN | NOT_RUN | NOT_RUN |
+| Einstellungen: native AX-Aktionen und IPC während geöffnetem Fenster | PASS | NOT_RUN | NOT_RUN | NOT_RUN |
 | Menü / eigene Sprechblase | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |
 | Bedienleiste: eingeklappter Start / Klick auf Beni / Escape | PASS | NOT_RUN | NOT_RUN | NOT_RUN |
 | Grössenwahl Klein / Mittel / Gross, Neustart und Durchklicken | PASS | NOT_RUN | NOT_RUN | NOT_RUN |
@@ -63,3 +65,7 @@ Das Statuspaket wurde auf macOS mit der gebündelten und der im Cargo-Binärpfad
 Die einklappbare Bedienleiste wurde am 12. Oktober 2026 im neu gebauten macOS-Bundle geprüft: eingeklappter Start, Auf-/Zuklappen durch Klick auf Beni, Einstellungen über «Menü» und Schliessen samt Bedienleiste mit Escape bei fokussiertem Fenster. Gezielte Aufnahmen ausschliesslich des Buddy-Fensters bestätigen transparente Pixel an der Stelle der eingeklappten Leiste. Die IPC-Freigabe und bisherigen Einstellungen bleiben nach dem Neustart erhalten. Native Windows-/Linux-Prüfungen dieses Verhaltens bleiben NOT_RUN.
 
 Die Accessibility-Anbindung wurde im neuen macOS-Release-Bundle über die native AX-API ausschliesslich für Benis Fenster geprüft. Benannte Buttons, Nachrichtenfeld, Checkboxen und Statuslabel sind erreichbar. AXPress klappt die Leiste auf/zu, bedient Pause/Weiter und Einstellungen und schliesst eine echte IPC-Statusmeldung. Die globale VoiceOver-Einstellung wurde dabei nicht verändert. Diese API-Prüfung ersetzt keine vollständige Abnahme der gesprochenen Ausgabe und Navigation mit VoiceOver, NVDA oder Orca.
+
+Das separate Einstellungsfenster wurde am 13. Oktober 2026 im ad hoc signierten macOS-Bundle über AX-Aktionen und CGWindow-Geometrie geprüft. Das 520 × 680-Punkte-Fenster (712 Punkte inklusive Titelleiste) lässt sich über Buddy und Menüleistensymbol öffnen, mit Footer oder Titelleiste schliessen und danach erneut öffnen. Verkleinern auf 380 × 360 Punkte sowie die Grössenwahl bei Beni beeinflussen jeweils nur das richtige Fenster. «Immer im Vordergrund» verändert nur Benis Fensterebene. Durchklicken bleibt für den Buddy aktiv; die separaten Checkboxen sind bedienbar. Eine echte IPC-Meldung erscheint bei geöffneten Einstellungen. Zuklappen der Buddy-Leiste lässt das Fenster bestehen. Die ursprünglichen Einstellungen und Benis Position wurden nach der Prüfung wiederhergestellt. Native Windows-/Linux- und vollständige Screenreader-Abnahme bleiben NOT_RUN.
+
+Bei ausgeblendetem Buddy bleibt das separate Fenster im nativen Mac-Test bedienbar: «Beni spiegeln» lässt sich umschalten und zurücksetzen. Tray «Einstellungen» zeigt Beni wieder und fokussiert das bereits offene Fenster.

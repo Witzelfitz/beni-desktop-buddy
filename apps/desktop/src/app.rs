@@ -41,6 +41,7 @@ pub struct BuddyApp {
     hidden: bool,
     controls_open: bool,
     menu_open: bool,
+    settings_focused: bool,
     speech_draft: String,
     error: Option<TransientError>,
     last_render_error: Option<String>,
@@ -108,6 +109,7 @@ impl BuddyApp {
             hidden: false,
             controls_open: false,
             menu_open: false,
+            settings_focused: false,
             speech_draft: "Schön bist du da!".into(),
             error: None,
             last_render_error: None,
@@ -175,7 +177,6 @@ impl BuddyApp {
     fn deliver_status(&mut self, visible: bool, now: Instant) {
         if self.do_not_disturb
             || !visible
-            || self.menu_open
             || self.history_player.is_some()
             || self.error.is_some()
             || (self.active_remote && now < self.message_until)
@@ -359,7 +360,6 @@ impl BuddyApp {
         if response.clicked() {
             self.controls_open = !self.controls_open;
             if !self.controls_open {
-                self.menu_open = false;
                 self.close_history();
             }
         }
@@ -433,8 +433,7 @@ impl BuddyApp {
                         self.player.paused = !self.player.paused;
                     }
                     if ui.button("Menü").clicked() {
-                        self.close_history();
-                        self.menu_open = !self.menu_open;
+                        self.open_settings(ui.ctx());
                     }
                     if ui.button("Beenden").clicked() {
                         ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
@@ -444,103 +443,168 @@ impl BuddyApp {
             .response;
         self.hit_map.add_rect(response.rect, 14.0);
     }
+    fn open_settings(&mut self, ctx: &egui::Context) {
+        self.close_history();
+        if !self.menu_open {
+            self.settings_focused = false;
+        }
+        self.menu_open = true;
+        ctx.send_viewport_cmd_to(
+            crate::settings_window::id(),
+            egui::ViewportCommand::Minimized(false),
+        );
+        ctx.send_viewport_cmd_to(crate::settings_window::id(), egui::ViewportCommand::Focus);
+        ctx.request_repaint();
+    }
     fn menu(&mut self, ctx: &egui::Context) {
         if !self.menu_open {
             return;
         }
-        let mut open = true;
-        let available = ctx.content_rect().size() - Vec2::splat(24.0);
-        let response = egui::Window::new("Benis Einstellungen")
-            .open(&mut open)
-            .fixed_pos([12.0, 12.0])
-            .fixed_size([available.x, available.y.min(360.0)])
-            .vscroll(true)
-            .collapsible(false)
-            .show(ctx, |ui| {
-                if ui.button("Verlauf öffnen").clicked() {
-                    self.open_history();
+        if ctx.embed_viewports() {
+            // Embedded fallback for backends without native viewports, including
+            // headless tests. The desktop backend uses the independent window below.
+            let mut open = true;
+            let available = ctx.content_rect().size() - Vec2::splat(24.0);
+            let response = egui::Window::new("Benis Einstellungen")
+                .open(&mut open)
+                .fixed_pos([12.0, 12.0])
+                .fixed_size([available.x, available.y.min(360.0)])
+                .vscroll(true)
+                .collapsible(false)
+                .show(ctx, |ui| {
+                    if ui.input(|i| i.key_pressed(egui::Key::Escape)) {
+                        self.menu_open = false;
+                    }
+                    self.settings_contents(ui);
+                });
+            if let Some(response) = response {
+                self.hit_map.add_rect(response.response.rect, 0.0);
+            }
+            self.menu_open &= open && self.history_player.is_none();
+            return;
+        }
+        ctx.show_viewport_immediate(
+            crate::settings_window::id(),
+            crate::settings_window::builder(),
+            |ui, _| {
+                let child = ui.ctx().clone();
+                let close = child.input(|i| i.viewport().close_requested());
+                let escape = child.input(|i| i.key_pressed(egui::Key::Escape));
+                if close || (escape && !self.settings_focused) {
+                    self.menu_open = false;
+                    child.request_repaint_of(egui::ViewportId::ROOT);
+                    return;
                 }
-                ui.separator();
-                ui.label("Welche Animation soll ich zeigen?");
-                let states: Vec<_> = self
-                    .engine
-                    .animations
-                    .iter()
-                    .map(|(name, animation)| (name.clone(), animation.label.clone()))
-                    .collect();
-                egui::ScrollArea::vertical()
-                    .max_height(70.0)
-                    .show(ui, |ui| {
-                        for (name, label) in states {
-                            if ui
-                                .selectable_label(self.player.state() == name, label.clone())
-                                .clicked()
-                            {
-                                self.play(&name, &format!("Beni: {label}."));
-                            }
-                        }
-                    });
-                ui.separator();
-                ui.label("Beni-Grösse");
-                ui.horizontal(|ui| {
-                    for size in BuddySize::ALL {
-                        if ui.radio_value(&mut self.size, size, size.label()).changed() {
-                            self.size_pending = true;
-                        }
+                if escape && let Some(focused) = child.memory(|m| m.focused()) {
+                    child.memory_mut(|m| m.surrender_focus(focused));
+                }
+                if child.input(|i| i.modifiers.alt && i.key_pressed(egui::Key::Q)) {
+                    child
+                        .send_viewport_cmd_to(egui::ViewportId::ROOT, egui::ViewportCommand::Close);
+                }
+                ui.painter()
+                    .rect_filled(ui.max_rect(), 0.0, ui.visuals().window_fill());
+                egui::Frame::new().inner_margin(16).show(ui, |ui| {
+                    ui.set_min_size(ui.available_size());
+                    let height = (ui.available_height() - 48.0).max(100.0);
+                    egui::ScrollArea::vertical()
+                        .id_salt("settings-content")
+                        .max_height(height)
+                        .auto_shrink([false, false])
+                        .show(ui, |ui| self.settings_contents(ui));
+                    ui.separator();
+                    if ui.button("Schliessen").clicked() {
+                        self.menu_open = false;
+                        child.request_repaint_of(egui::ViewportId::ROOT);
                     }
                 });
-                ui.add(egui::Slider::new(&mut self.settings.energy, 0.0..=1.0).text("Energie"));
-                ui.add(egui::Slider::new(&mut self.settings.speed, 0.25..=3.0).text("Tempo"));
-                ui.checkbox(&mut self.settings.reduced_motion, "Weniger Bewegung");
-                ui.checkbox(&mut self.motion.follow_system, "Systemeinstellung beachten");
-                ui.small(self.motion.status());
-                ui.checkbox(&mut self.settings.mirrored, "Beni spiegeln");
-                if ui
-                    .checkbox(&mut self.click_through, "Hintergrund durchklickbar")
-                    .changed()
-                    && self.click_through
-                {
-                    self.input.retry_if_failed();
-                }
-                if ui
-                    .checkbox(&mut self.settings.always_on_top, "Immer im Vordergrund")
-                    .changed()
-                {
-                    ctx.send_viewport_cmd(egui::ViewportCommand::WindowLevel(
-                        if self.settings.always_on_top {
-                            egui::WindowLevel::AlwaysOnTop
-                        } else {
-                            egui::WindowLevel::Normal
-                        },
-                    ));
-                }
-                ui.separator();
-                ui.checkbox(&mut self.ipc_enabled, "Statusmeldungen empfangen");
-                ui.small("Lokale Programme können Beni Meldungen schicken.");
-                let mut quiet = self.do_not_disturb;
-                if ui.checkbox(&mut quiet, "Nicht stören").changed() {
-                    self.set_do_not_disturb(quiet, Instant::now());
-                }
-                ui.small("Pausiert Statusanzeigen. Meldungen verfallen weiterhin.");
-                let message = ui.add(
-                    egui::TextEdit::singleline(&mut self.speech_draft)
-                        .hint_text("Benis Nachricht")
-                        .char_limit(400),
-                );
-                ctx.accesskit_node_builder(message.id, |node| {
-                    node.set_label("Benis Nachricht");
-                });
-                if ui.button("Beni zeigt die Nachricht").clicked() {
-                    let message = self.speech_draft.clone();
-                    self.play("reden", &message);
-                }
-                self.hotkeys.ui(ui);
-                ui.small("Esc klappt die Bedienung zu. Alt/Option + Q beendet Beni.");
-            });
-        if let Some(response) = response {
-            self.hit_map.add_rect(response.response.rect, 0.0);
+                // egui releases focus while processing Escape, before this UI callback.
+                self.settings_focused = child.memory(|m| m.focused()).is_some();
+            },
+        );
+    }
+    fn settings_contents(&mut self, ui: &mut egui::Ui) {
+        let ctx = ui.ctx().clone();
+        if ui.button("Verlauf öffnen").clicked() {
+            self.open_history();
         }
-        self.menu_open = open && self.history_player.is_none();
+        ui.separator();
+        ui.label("Welche Animation soll ich zeigen?");
+        let states: Vec<_> = self
+            .engine
+            .animations
+            .iter()
+            .map(|(name, animation)| (name.clone(), animation.label.clone()))
+            .collect();
+        egui::ScrollArea::vertical()
+            .max_height(70.0)
+            .show(ui, |ui| {
+                for (name, label) in states {
+                    if ui
+                        .selectable_label(self.player.state() == name, label.clone())
+                        .clicked()
+                    {
+                        self.play(&name, &format!("Beni: {label}."));
+                    }
+                }
+            });
+        ui.separator();
+        ui.label("Beni-Grösse");
+        ui.horizontal(|ui| {
+            for size in BuddySize::ALL {
+                if ui.radio_value(&mut self.size, size, size.label()).changed() {
+                    self.size_pending = true;
+                }
+            }
+        });
+        ui.add(egui::Slider::new(&mut self.settings.energy, 0.0..=1.0).text("Energie"));
+        ui.add(egui::Slider::new(&mut self.settings.speed, 0.25..=3.0).text("Tempo"));
+        ui.checkbox(&mut self.settings.reduced_motion, "Weniger Bewegung");
+        ui.checkbox(&mut self.motion.follow_system, "Systemeinstellung beachten");
+        ui.small(self.motion.status());
+        ui.checkbox(&mut self.settings.mirrored, "Beni spiegeln");
+        if ui
+            .checkbox(&mut self.click_through, "Hintergrund durchklickbar")
+            .changed()
+            && self.click_through
+        {
+            self.input.retry_if_failed();
+        }
+        if ui
+            .checkbox(&mut self.settings.always_on_top, "Immer im Vordergrund")
+            .changed()
+        {
+            ctx.send_viewport_cmd_to(
+                egui::ViewportId::ROOT,
+                egui::ViewportCommand::WindowLevel(if self.settings.always_on_top {
+                    egui::WindowLevel::AlwaysOnTop
+                } else {
+                    egui::WindowLevel::Normal
+                }),
+            );
+        }
+        ui.separator();
+        ui.checkbox(&mut self.ipc_enabled, "Statusmeldungen empfangen");
+        ui.small("Lokale Programme können Beni Meldungen schicken.");
+        let mut quiet = self.do_not_disturb;
+        if ui.checkbox(&mut quiet, "Nicht stören").changed() {
+            self.set_do_not_disturb(quiet, Instant::now());
+        }
+        ui.small("Pausiert Statusanzeigen. Meldungen verfallen weiterhin.");
+        let message = ui.add(
+            egui::TextEdit::singleline(&mut self.speech_draft)
+                .hint_text("Benis Nachricht")
+                .char_limit(400),
+        );
+        ctx.accesskit_node_builder(message.id, |node| {
+            node.set_label("Benis Nachricht");
+        });
+        if ui.button("Beni zeigt die Nachricht").clicked() {
+            let message = self.speech_draft.clone();
+            self.play("reden", &message);
+        }
+        self.hotkeys.ui(ui);
+        ui.small("Alt/Option + Q beendet Beni.");
     }
 }
 impl BuddyApp {
@@ -583,7 +647,6 @@ impl BuddyApp {
             ctx.send_viewport_cmd(egui::ViewportCommand::Close);
         }
         if ctx.input(|i| i.key_pressed(egui::Key::Escape)) {
-            self.menu_open = false;
             self.controls_open = false;
             self.close_history();
         }
@@ -637,8 +700,7 @@ impl BuddyApp {
                     crate::window::restore(window, &mut self.placement, action == Action::Recover);
                 }
                 if action == Action::Settings {
-                    self.close_history();
-                    self.menu_open = true;
+                    self.open_settings(ctx);
                 } else if action == Action::History {
                     self.open_history();
                 }
@@ -798,6 +860,7 @@ mod tests {
             hidden: false,
             controls_open: false,
             menu_open: false,
+            settings_focused: false,
             speech_draft: "Hoi von den Tests!".into(),
             error: None,
             last_render_error: None,
@@ -823,6 +886,234 @@ mod tests {
             },
             |ui| app.show_ui(ui),
         )
+    }
+    struct NativeSettings {
+        input: std::rc::Rc<std::cell::RefCell<egui::RawInput>>,
+        output: std::rc::Rc<std::cell::RefCell<Option<egui::FullOutput>>>,
+        builders: std::rc::Rc<std::cell::RefCell<Vec<egui::ViewportBuilder>>>,
+    }
+    impl NativeSettings {
+        fn new(ctx: &egui::Context) -> Self {
+            use std::{cell::RefCell, rc::Rc};
+            let rig = Self {
+                input: Rc::new(RefCell::new(egui::RawInput::default())),
+                output: Rc::new(RefCell::new(None)),
+                builders: Rc::new(RefCell::new(vec![])),
+            };
+            ctx.set_embed_viewports(false);
+            ctx.enable_accesskit();
+            ctx.all_styles_mut(|style| style.animation_time = 0.0);
+            let input = rig.input.clone();
+            let output = rig.output.clone();
+            let builders = rig.builders.clone();
+            egui::Context::set_immediate_viewport_renderer(move |ctx, mut viewport| {
+                assert_eq!(viewport.ids.this, crate::settings_window::id());
+                assert_eq!(viewport.ids.parent, egui::ViewportId::ROOT);
+                builders.borrow_mut().push(viewport.builder.clone());
+                let mut raw = input.borrow().clone();
+                raw.viewport_id = viewport.ids.this;
+                raw.screen_rect.get_or_insert(Rect::from_min_size(
+                    egui::Pos2::ZERO,
+                    egui::vec2(520.0, 680.0),
+                ));
+                let info = raw.viewports.entry(viewport.ids.this).or_default();
+                info.parent = Some(viewport.ids.parent);
+                info.title = Some("Benis Einstellungen".into());
+                info.inner_rect = raw.screen_rect;
+                let mut child = ctx.run_ui(raw, |ui| (viewport.viewport_ui_cb)(ui));
+                child.textures_delta.clear();
+                output.borrow_mut().replace(child);
+            });
+            rig
+        }
+    }
+
+    #[test]
+    fn native_settings_have_their_own_surface_without_covering_or_resizing_beni() {
+        let ctx = egui::Context::default();
+        let rig = NativeSettings::new(&ctx);
+        let mut app = app(&ctx);
+        app.size = BuddySize::Small;
+        app.player.paused = true;
+        let output = frame(&ctx, &mut app, 0.0, vec![]);
+        let avatar = avatar_rect(&output, &app);
+        output.drop_without_applying_deltas();
+        app.open_settings(&ctx);
+        frame(&ctx, &mut app, 0.1, vec![]).drop_without_applying_deltas();
+        let mut output = frame(&ctx, &mut app, 0.2, vec![]);
+        output.textures_delta.clear();
+        assert_eq!(avatar_rect(&output, &app), avatar);
+        assert!(
+            !output
+                .shapes
+                .iter()
+                .any(|s| find_text(&s.shape, "Weniger Bewegung").is_some())
+        );
+        assert!(app.hit_map.contains(avatar.center()));
+        let builders = rig.builders.borrow();
+        let builder = builders.last().unwrap();
+        assert_eq!(builder.inner_size, Some(egui::vec2(520.0, 680.0)));
+        assert_eq!(builder.transparent, Some(false));
+        assert_eq!(builder.mouse_passthrough, Some(false));
+        assert_eq!(builder.decorations, Some(true));
+        assert_eq!(builder.resizable, Some(true));
+        assert_eq!(builder.window_level, Some(egui::WindowLevel::Normal));
+        let child = rig.output.borrow();
+        let child = child.as_ref().unwrap();
+        let close = text_rect(child, "Schliessen");
+        assert!(
+            Rect::from_min_size(egui::Pos2::ZERO, egui::vec2(520.0, 680.0)).contains_rect(close)
+        );
+        assert!(child.shapes.iter().any(|s| matches!(&s.shape, egui::Shape::Rect(r) if r.fill.a() == 255 && r.rect.contains_rect(close))));
+        assert_eq!(
+            accesskit_node(child, "Weniger Bewegung").1.role(),
+            egui::accesskit::Role::CheckBox
+        );
+        assert_eq!(
+            accesskit_node(child, "Benis Nachricht").1.role(),
+            egui::accesskit::Role::TextInput
+        );
+    }
+
+    #[test]
+    fn native_settings_minimum_size_keeps_the_close_button_outside_scrolling_content() {
+        let ctx = egui::Context::default();
+        let rig = NativeSettings::new(&ctx);
+        let screen = Rect::from_min_size(egui::Pos2::ZERO, egui::vec2(380.0, 360.0));
+        rig.input.borrow_mut().screen_rect = Some(screen);
+        let mut app = app(&ctx);
+        app.menu_open = true;
+        for index in 0..3 {
+            frame(&ctx, &mut app, index as f64 * 0.1, vec![]).drop_without_applying_deltas();
+        }
+        let child = rig.output.borrow();
+        assert!(screen.contains_rect(text_rect(child.as_ref().unwrap(), "Schliessen")));
+    }
+
+    #[test]
+    fn native_settings_commands_resize_and_relevel_buddy_and_close_only_settings() {
+        let ctx = egui::Context::default();
+        let rig = NativeSettings::new(&ctx);
+        let mut app = app(&ctx);
+        app.player.paused = true;
+        app.controls_open = true;
+        app.open_settings(&ctx);
+        for index in 0..3 {
+            frame(&ctx, &mut app, index as f64 * 0.1, vec![]).drop_without_applying_deltas();
+        }
+        let child = rig.output.borrow();
+        let large = accesskit_node(child.as_ref().unwrap(), "Gross").0;
+        let top = accesskit_node(child.as_ref().unwrap(), "Immer im Vordergrund").0;
+        drop(child);
+        rig.input.borrow_mut().events = vec![accessible_click(large), accessible_click(top)];
+        let mut output = frame(&ctx, &mut app, 0.4, vec![]);
+        output.textures_delta.clear();
+        assert_eq!(app.size, BuddySize::Large);
+        let commands = &output.viewport_output[&egui::ViewportId::ROOT].commands;
+        assert!(commands.contains(&egui::ViewportCommand::WindowLevel(
+            egui::WindowLevel::Normal
+        )));
+        assert!(commands.contains(&egui::ViewportCommand::InnerSize(
+            BuddySize::Large.dimensions()
+        )));
+        assert!(
+            !rig.output.borrow().as_ref().unwrap().viewport_output[&crate::settings_window::id()]
+                .commands
+                .iter()
+                .any(|c| matches!(
+                    c,
+                    egui::ViewportCommand::WindowLevel(_) | egui::ViewportCommand::InnerSize(_)
+                ))
+        );
+        rig.input.borrow_mut().events.clear();
+        rig.input
+            .borrow_mut()
+            .viewports
+            .entry(crate::settings_window::id())
+            .or_default()
+            .events = vec![egui::ViewportEvent::Close];
+        let mut output = frame(&ctx, &mut app, 0.5, vec![]);
+        output.textures_delta.clear();
+        assert!(!app.menu_open);
+        assert!(app.controls_open && app.player.paused);
+        assert!(
+            !output.viewport_output[&egui::ViewportId::ROOT]
+                .commands
+                .contains(&egui::ViewportCommand::Close)
+        );
+    }
+
+    #[test]
+    fn native_settings_escape_finishes_editing_before_closing_its_window() {
+        let ctx = egui::Context::default();
+        let rig = NativeSettings::new(&ctx);
+        let mut app = app(&ctx);
+        app.menu_open = true;
+        for index in 0..3 {
+            frame(&ctx, &mut app, index as f64 * 0.1, vec![]).drop_without_applying_deltas();
+        }
+        let input = accesskit_node(rig.output.borrow().as_ref().unwrap(), "Benis Nachricht").0;
+        rig.input.borrow_mut().events = vec![egui::Event::AccessKitActionRequest(
+            egui::accesskit::ActionRequest {
+                action: egui::accesskit::Action::Focus,
+                target_tree: egui::accesskit::TreeId::ROOT,
+                target_node: input,
+                data: None,
+            },
+        )];
+        frame(&ctx, &mut app, 0.3, vec![]).drop_without_applying_deltas();
+        rig.input.borrow_mut().events = vec![egui::Event::Key {
+            key: egui::Key::Escape,
+            physical_key: None,
+            pressed: true,
+            repeat: false,
+            modifiers: Default::default(),
+        }];
+        frame(&ctx, &mut app, 0.4, vec![]).drop_without_applying_deltas();
+        assert!(app.menu_open, "Escape first leaves the text field");
+        rig.input.borrow_mut().events.clear();
+        frame(&ctx, &mut app, 0.5, vec![]).drop_without_applying_deltas();
+        rig.input.borrow_mut().events = vec![egui::Event::Key {
+            key: egui::Key::Escape,
+            physical_key: None,
+            pressed: true,
+            repeat: false,
+            modifiers: Default::default(),
+        }];
+        let mut output = frame(&ctx, &mut app, 0.6, vec![]);
+        output.textures_delta.clear();
+        assert!(!app.menu_open);
+        assert!(
+            !output.viewport_output[&egui::ViewportId::ROOT]
+                .commands
+                .contains(&egui::ViewportCommand::Close)
+        );
+    }
+
+    #[test]
+    fn open_settings_do_not_block_incoming_status_or_close_when_buddy_controls_collapse() {
+        let endpoint = common::TestEndpoint::new();
+        let ctx = egui::Context::default();
+        let _rig = NativeSettings::new(&ctx);
+        let mut app = app(&ctx);
+        app.server = Some(buddy_ipc::Server::start_at(endpoint.endpoint.clone(), || {}).unwrap());
+        app.menu_open = true;
+        buddy_ipc::notify(
+            &endpoint.endpoint,
+            buddy_core::notifications::Notification::new("Build grün"),
+        )
+        .unwrap();
+        app.deliver_status(true, Instant::now());
+        assert!(app.active_remote && app.menu_open);
+        assert_eq!(app.message, "Build grün");
+        app.controls_open = true;
+        app.player.paused = true;
+        let output = frame(&ctx, &mut app, 0.0, vec![]);
+        let avatar = avatar_rect(&output, &app);
+        output.drop_without_applying_deltas();
+        click(&ctx, &mut app, avatar.center(), 0.1).drop_without_applying_deltas();
+        assert!(!app.controls_open);
+        assert!(app.menu_open && app.player.paused);
     }
     #[test]
     fn quiet_idle_reuses_existing_gestures_without_speech_and_yields_to_manual_actions() {
