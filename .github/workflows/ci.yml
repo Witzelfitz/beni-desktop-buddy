@@ -60,6 +60,11 @@ jobs:
             cp "apps/desktop/target/release/beni-desktop-buddy$suffix" "target/release/beni-buddy-cli$suffix" "dist/$package/"
             cp -R integrations "dist/$package/"
             cp docs/INTEGRATIONS.md "dist/$package/"
+            mkdir -p "dist/$package/icons"
+            cp assets/app-icon/beni.png assets/app-icon/Beni.ico "dist/$package/icons/"
+            if [[ "$RUNNER_OS" == "Linux" ]]; then
+              cp packaging/linux/io.witzelfitz.beni-buddy.desktop "dist/$package/"
+            fi
             tar -czf "dist/$package.tar.gz" -C dist "$package"
           fi
       - name: Store executable and lockfile

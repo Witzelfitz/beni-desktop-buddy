@@ -2,6 +2,8 @@
 
 Mini-Beni als nativer Desktop-Buddy in Rust: ein animierter Begleiter auf dem Desktop, mit transparentem Fenster, Gesten und Sprechblasen.
 
+<img src="assets/app-icon/beni.png" alt="Benis App-Icon: freundliches Porträt auf einer hellgrünen Kachel" width="128">
+
 Die native Rust-Grundlage ist auf macOS gestartet und visuell geprüft. Tests, Clippy und Release-Builds bestehen in GitHub Actions auf macOS, Windows und Linux.
 
 <img src="docs/images/macos-buddy.png" alt="Beni als nativer macOS-Desktop-Buddy mit eingeklappter Bedienleiste" width="340">
@@ -87,7 +89,9 @@ Globale Hotkeys, Autostart und Click-through-Flächen sind noch offen.
 ./scripts/package-macos.sh
 ```
 
-Das macOS-Script erstellt nach erfolgreichem Build `dist/Beni Buddy.app`, einschliesslich CLI und Integrationsvorlagen. Dieses Entwicklungsbundle ist noch nicht signiert/notarisiert. Es führt keinen Autostart oder OS-Installation aus.
+Das macOS-Script erstellt nach erfolgreichem Build `dist/Beni Buddy.app`, einschliesslich CLI, Integrationsvorlagen und App-Icon. Es signiert beide ausführbaren Dateien und das fertige Bundle ad hoc und prüft die Signatur streng. Das Paket wird erst danach aus dem temporären Build-Verzeichnis übernommen. Das Entwicklungsbundle ist nicht notarisiert; für öffentliche Verteilung sind Developer-ID-Signierung und Notarisierung weiterhin offen. Es führt keinen Autostart oder OS-Installation aus.
+
+Das App-Icon ist als PNG, ICNS und ICO samt Provenienz vorhanden. Windows bindet das ICO in die ausführbare Datei ein; Windows/Linux erhalten ausserdem das Fenster-Icon. Linux-Pakete enthalten eine Desktop-Datei als Installationsvorlage: Programm in einen Benutzer-Binärpfad, Desktop-Datei unter `~/.local/share/applications/` und `icons/beni.png` unter `~/.local/share/icons/hicolor/1024x1024/apps/io.witzelfitz.beni-buddy.png` ablegen. Eine automatische Installation wird nicht vorgenommen. Der Icon-Export lässt sich auf macOS mit `python3 scripts/export-app-icon.py` aus dem freigegebenen Raster-Master wiederholen.
 
 Der Kern liegt im Root-Workspace. Die Desktop-App bildet wegen ihrer eigenen GUI-Abhängigkeiten einen separaten Cargo-Workspace. Root-Tests bauen deshalb ausdrücklich **nicht** die Desktop-App. Der GitHub-Workflow enthält einen zusätzlichen Desktop-Job auf allen drei Betriebssystemen. Erfolgreiche Builds stellen Download-Artefakte bereit: ein `.app`-Bundle für macOS und ausführbare Dateien für Windows/Linux, jeweils mit CLI, Wrappern und Anleitung in einem `.tar.gz`-Archiv.
 

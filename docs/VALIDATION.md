@@ -108,3 +108,14 @@ Aktiviert wurde ausschliesslich das native `accesskit`-Feature von eframe. Rust-
 - PASS: `./scripts/check.sh --desktop` mit der versionierten Toolchain: 47 Rusttests, 11 Integrationstests, Formatierung, Clippy, Asset-Hashes und Debug-Build.
 
 Die Mindestversion 1.95 in den Manifesten bleibt bestehen. Die festgelegte Entwicklungstoolchain ist 1.99.0; eine vollständige Prüfung der Mindestversion ist hier nicht ausgeführt worden.
+
+## App-Icon und Ad-hoc-Signierung
+
+- PASS: Originalatlas und Animationsdaten unverändert; fünf Icon-Dateien mit SHA-256-Provenienz. PNG-Grössen/RGBA, ICNS-Container und sieben ICO-Auflösungen geprüft.
+- PASS: `./scripts/check.sh --desktop`: 47 Rusttests, 11 Integrationstests, Formatierung, Clippy ohne Warnungen, Asset-/Icon-Prüfung und Debug-Build.
+- PASS: `./scripts/package-macos.sh`: Release-Build; beide Binaries und fertiges Bundle ad hoc signiert; `codesign --verify --deep --strict` erfolgreich.
+- PASS: Kopie des Bundles mit absichtlich verändertem Ressourcentext wird bei strenger Signaturprüfung abgelehnt. Das ausgelieferte Bundle wurde nicht verändert.
+- PASS: ICNS im Bundle und `CFBundleIconFile` korrekt; macOS `NSWorkspace.icon(forFile:)` liefert das Beni-Icon für den Finder.
+- NOT_RUN: öffentliche Gatekeeper-/Notarisierungsabnahme auf einem frischen Gerät, native Windows-Explorer-/Linux-Launcher-Abnahme. Die Windows-Exe-Ressource wird im nativen Windows-CI-Build kompiliert.
+
+Master und Exportformate liegen in `assets/app-icon/`; das Exportskript benötigt macOS mit sips/iconutil und keine Python-Pakete. Die ursprünglichen Beni-Grafiken wurden nicht überschrieben.

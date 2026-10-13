@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Beni Desktop Buddy
+Comment=Beni als animierter Begleiter auf deinem Desktop
+Exec=beni-desktop-buddy
+Icon=io.witzelfitz.beni-buddy
+Terminal=false
+Categories=Utility;
+StartupWMClass=io.witzelfitz.beni-buddy
