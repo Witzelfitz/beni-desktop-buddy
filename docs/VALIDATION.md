@@ -162,3 +162,16 @@ Die Grössenwahl liegt in der Desktop-App und wird separat unter `buddy-size` ge
 Die Bibliothek `global-hotkey` 0.8.0 installiert ihren Prozess-Callback über `OnceCell`; Beni installiert ihn deshalb einmal und ändert anschliessend nur die begrenzte Ereignisroute. Native Registrierungen werden erst nach Aktivierung erstellt. macOS verwendet den Bibliotheks-Eventhandler mit eigenen exklusiven Carbon-Registrierungen (`kEventHotKeyExclusive`, dokumentiert in Apples SDK `CarbonEvents.h`): Die normale nicht exklusive Registrierung würde Konflikte mit anderen Apps nicht melden. Referenzen bleiben bis zur erfolgreichen Freigabe im Besitz des Backends. Bei Freigabefehlern werden Aktionen deaktiviert und ein Neustart empfohlen.
 
 Gespeichert wird ausschliesslich die akzeptierte Hotkey-Konfiguration unter `global-hotkeys`. Tastatureingaben werden nicht protokolliert; Medien-/Event-Tap-Tasten bleiben ausgeschlossen. Animationskern, Statusprotokoll und bestehende Codex-Hook-Konfiguration wurden nicht verändert.
+
+## Nicht stören · 13. Oktober 2026
+
+- PASS: `./scripts/check.sh --desktop`: 69 Rusttests (27 Root, 42 Desktop), 11 Integrationstests, Formatierung, Clippy ohne Warnungen, Asset-/Icon-Prüfung und Debug-Build.
+- PASS: ausgeschalteter Standardzustand, sichere Behandlung beschädigter Speicherung und Speicherung beider Schalterzustände. IPC-Empfang und Animationspause bleiben unabhängig.
+- PASS: laufende Remote-Blase wird beim Einschalten geschlossen und die Geste auf «warten» gesetzt; eine vorhandene Animationspause bleibt erhalten. Fehleranzeigen und manuell ausgelöste Nachrichten bleiben bedienbar.
+- PASS: Checkbox über Accessibility-Aktion in allen drei Grössen bedient; Modushinweis und Bedienleiste innerhalb des Fensters. Tray-Aktionen funktionieren im Logikpfad auch bei verstecktem Fenster ohne Zeichendurchlauf.
+- PASS: echter lokaler Listener nimmt Meldungen beider Prioritäten bei aktivem Modus an. Nach Ablauf einer kurzen TTL und Ausschalten des Modus kommen nur die übrigen gültigen Meldungen in Prioritätsreihenfolge zur Anzeige.
+- PASS: natives macOS-Release-Bundle ad hoc signiert und streng geprüft. Echtes Tray schaltet den Modus, Buddy bleibt sichtbar; hohe und normale IPC-Meldung warten. Beim Ausschalten erscheint die gültige Meldung, die abgelaufene bleibt aus. Erneutes Einschalten schliesst die aktive Statusblase.
+- PASS: aktiviertes «Nicht stören» nach echtem, geordnetem Neustart wiederhergestellt. Die native Accessibility-Checkbox schaltet den Modus wieder aus. Vorhandene Grössenwahl «Klein», reduzierte Bewegung, Durchklicken, Vordergrund und Empfang bleiben erhalten; Hotkeys bleiben ausgeschaltet. Abschliessende echte IPC-Meldung angezeigt, «Nicht stören» aus, Bedienung eingeklappt.
+- NOT_RUN: native Windows-/Linux-Desktop-Abnahme. Die gemeinsame Desktop-Implementierung benötigt keine neue Plattform-API; CI prüft die Änderung separat.
+
+Persistiert wird der Schalter `do-not-disturb`, keine Meldungsinhalte. Die bestehende begrenzte IPC-Warteschlange mit laufender TTL bleibt zuständig; hohe Priorität umgeht den Modus nicht. Animationskern, Statusprotokoll und Codex-Hook-Konfiguration bleiben unverändert.
