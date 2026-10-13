@@ -2,12 +2,14 @@ use crate::placement::{Bounds, recovered_position};
 use winit::window::Window;
 pub struct PlacementGuard {
     screens: Option<Vec<Bounds>>,
+    window_size: Option<[f64; 2]>,
     checked: std::time::Instant,
 }
 impl Default for PlacementGuard {
     fn default() -> Self {
         Self {
             screens: None,
+            window_size: None,
             checked: std::time::Instant::now(),
         }
     }
@@ -30,18 +32,21 @@ impl PlacementGuard {
             return;
         }
         let changed = self.screens.as_ref() != Some(&screens);
+        let size = [bounds.width, bounds.height];
+        let resized = self.window_size != Some(size);
         let lost = !screens.iter().any(|s| {
             bounds.x + bounds.width > s.x
                 && bounds.x < s.x + s.width
                 && bounds.y + bounds.height > s.y
                 && bounds.y < s.y + s.height
         });
-        if (reset || changed || lost)
+        if (reset || changed || resized || lost)
             && let Some(position) = recovered_position(bounds, &screens, reset)
         {
             place(window, position);
         }
         self.screens = Some(screens);
+        self.window_size = Some(size);
     }
 }
 #[cfg(target_os = "macos")]

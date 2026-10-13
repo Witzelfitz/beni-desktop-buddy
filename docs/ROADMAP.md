@@ -18,7 +18,7 @@ Abnahme: Ein echter Build läuft auf dem Desktop und besteht die manuelle Testma
 - Erledigt: native Accessibility-Anbindung, beschrifteter Avatar und Tastaturbedienung. Vollständige VoiceOver-/NVDA-/Orca-Abnahme bleibt offen.
 - Erledigt: durchklickbare transparente Flächen anhand der Beni-Silhouette und sichtbaren UI; im Menü abschaltbar, mit Tray-Rückholmöglichkeit und bedienbarem Fehler-Fallback.
 - Globale Rückhol-/Pause-Aktion, Benutzerwahl für Hotkeys.
-- Grössenwahl; Arbeitsbereich wird bereits beim Start und nach Monitorwechsel berücksichtigt.
+- Erledigt: gespeicherte Grössenwahl «Klein», «Mittel», «Gross» mit lesbarer Bedienung, angepasstem Einstellungsmenü und erneuter Positionsprüfung nach Grössenänderungen.
 - OS-Einstellung für reduzierte Bewegung berücksichtigen.
 - CPU-/GPU-Verbrauch über einen längeren Idle-Lauf messen, Hintergrundlast weiter reduzieren.
 

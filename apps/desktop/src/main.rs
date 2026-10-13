@@ -3,6 +3,7 @@ mod app;
 mod hit_map;
 mod input;
 mod placement;
+mod size;
 mod tray;
 mod window;
 
@@ -18,7 +19,7 @@ fn main() -> eframe::Result {
             .with_title("Beni Desktop Buddy")
             .with_app_id("io.witzelfitz.beni-buddy")
             .with_icon(icon)
-            .with_inner_size([340.0, 440.0])
+            .with_inner_size(size::BuddySize::default().dimensions())
             .with_decorations(false)
             .with_resizable(false)
             .with_transparent(true)

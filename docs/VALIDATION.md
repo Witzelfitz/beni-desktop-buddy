@@ -131,3 +131,16 @@ Master und Exportformate liegen in `assets/app-icon/`; das Exportskript benötig
 - NOT_RUN (lokal): Windows-/Linux-Desktop-Abnahme und gemischte DPI. Linux-CI führt einen gezielten nativen Backend-Test mit Xvfb und Weston Headless aus; die lokalen Regeln ersetzen diesen Test nicht.
 
 Die Einstellung ist standardmässig aktiv und wird gespeichert. Ohne Tray oder bei Fehlern bleibt normale Bedienung erhalten. macOS verwendet passive lokale/globale Mausmonitore auf dem Hauptthread und gibt lokale Ereignisse unverändert weiter. Beim Abschalten ist die Positionsauswertung deaktiviert, die bestehenden Monitore werden für eine erneute Aktivierung behalten und bei Programmende entfernt. Es werden keine Tastaturereignisse überwacht oder Eingabedaten gespeichert. Windows verwendet native Fensterregionen; X11 nur die Input Shape und Wayland die kopierte Oberflächen-Eingaberegion. Der Animationskern bleibt davon unabhängig.
+
+## Gespeicherte Grössenwahl · 13. Oktober 2026
+
+- PASS: `./scripts/check.sh --desktop`: 55 Rusttests (27 Root, 28 Desktop), 11 Integrationstests, Formatierung, Clippy ohne Warnungen, Asset-/Icon-Prüfung und Debug-Build.
+- PASS: echte UI-Auswahl aller drei Grössen; genau ein Resize-Auftrag pro Änderung, kein fortlaufendes Resize. Text, Quelle, Geste, Pausezustand und Frist einer aktiven Meldung bleiben erhalten. Die ausgewählte Grösse wird im Accessibility-Baum als aktivierter Radio-Button angezeigt.
+- PASS: Speicherung aller Grössen über den App-Save-Pfad; vorhandene Animations-/IPC-Einstellungen bleiben erhalten. Fehlende, unbekannte, typfalsche und beschädigte gespeicherte Werte fallen auf «Mittel» zurück.
+- PASS: Avatar, Bedienleiste, Blase und Einstellungsmenü bleiben in allen drei Grössen erreichbar und in der Eingabemaske enthalten. Lange Blasen scrollen bis zur letzten Zeile; das Menü lässt sich in allen Grössen scrollen und bedienen.
+- PASS: natives macOS-Release-Bundle ad hoc signiert und streng geprüft. Fensterabmessungen nach Auswahl: Klein 300 × 360, Mittel 340 × 440, Gross 420 × 560 Punkte. Beim Vergrössern am Bildschirmrand wurde die Position in den sichtbaren Arbeitsbereich korrigiert.
+- PASS: eigenes Testfenster hinter Beni erhält in jeder Grösse Klicks auf transparente Flächen. Testfenster danach entfernt.
+- PASS: reale Neustarts mit jeder gespeicherten Grösse; Energie, Tempo, reduzierte Bewegung, Durchklicken und IPC-Freigabe erhalten. Beim dritten schnellen Neustart meldete LaunchServices einmal `-600`; erneutes Öffnen als neue Instanz war erfolgreich. Zum Abschluss wieder «Mittel», Bedienung eingeklappt und vorherige sichtbare Fensterposition wiederhergestellt; echte IPC-Meldung angenommen und angezeigt.
+- NOT_RUN: native Windows-/Linux-Desktop-Abnahme der Grössenwahl, physische Monitorwechsel und gemischte DPI. CI prüft diese Branch-Änderungen separat auf allen drei Plattformen.
+
+Die Grössenwahl liegt in der Desktop-App und wird separat unter `buddy-size` gespeichert. Der Animationskern und die Hook-Konfiguration bleiben unverändert. Schrift und Bedienelemente werden nicht mitverkleinert; das Einstellungsmenü passt sich der verfügbaren Fensterfläche an.
