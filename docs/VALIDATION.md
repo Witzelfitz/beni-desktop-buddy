@@ -177,3 +177,13 @@ Linux/X11-Korrektur vor dem Merge: Der native CI-Test zeigte, dass `global-hotke
 - NOT_RUN: native Windows-/Linux-Desktop-Abnahme. Die gemeinsame Desktop-Implementierung benötigt keine neue Plattform-API; CI prüft die Änderung separat.
 
 Persistiert wird der Schalter `do-not-disturb`, keine Meldungsinhalte. Die bestehende begrenzte IPC-Warteschlange mit laufender TTL bleibt zuständig; hohe Priorität umgeht den Modus nicht. Animationskern, Statusprotokoll und Codex-Hook-Konfiguration bleiben unverändert.
+
+## Sparsamere GitHub Actions · 13. Oktober 2026
+
+- PASS: `actionlint .github/workflows/ci.yml` und `git diff --check`. Ausschliesslich Workflow und Dokumentation geändert; Rust-Code und Lockfiles unverändert.
+- PASS: Zwei laufende Doppelprüfungen nach Inhaltsvergleich gestoppt. Der `main`-Baum `82ee8a3c3cd37912a293a62fc0fdbfe8cc749f55` entspricht dem bereits vollständig grün geprüften Hotkey-Stand; der synthetische Merge-Baum von PR #12 `fbeb6954c8fecc3829158553fff8357505f809ce` entspricht dessen ebenfalls grün geprüftem Branch. Gestoppt: Läufe `38368337270` und `38368386424`.
+- Workflow: Feature-Branches laufen nur über PRs auf `main`, Pushes nur auf `main`. Reine Änderungen an Root-README, `docs/` und Issue-/PR-Vorlagen sind ausgenommen. Drei gebündelte Plattformjobs prüfen weiterhin beide Workspaces, Integrationen und Linux-Smoke-Tests; ältere Läufe werden abgebrochen, die Matrix stoppt nach Fehlern, Timeout je Job 25 Minuten.
+- Workflow: PRs und normale manuelle Läufe bauen Debug. Release-Builds, Signaturprüfung auf macOS und Archive entstehen auf `main` oder mit dem manuellen Boolean-Input `build_packages`; Artefakte bleiben sieben Tage verfügbar.
+- Workflow: Rust Cache v2.9.2 ist auf Commit `6323deb102c322ba6fcbdcafc7e3dddab59af2b6` fixiert. Beide Workspaces sind erfasst. Speichern nur auf `main`, Restore auch in PRs; keine grossen isolierten PR-Caches. Die Repository-Policy erlaubt die Action; zuvor waren keine Caches vorhanden.
+- NOT_RUN lokal: erneute Rust-Builds für unveränderten Programmcode. Die neue PR-CI prüft den Workflow einmal auf allen drei Plattformen; deren Ergebnis steht direkt am PR.
+- NOT_RUN: gemessene Laufzeiten nach Cache-Aufbau und erneuter manueller Paket-Lauf. Der erste `main`-Lauf ist noch kalt. Einsparungen hängen von Cache-Treffern und Änderungen ab; die Zahl der automatischen Läufe je Feature-Änderung mit offenem PR sinkt von zwei auf einen.
