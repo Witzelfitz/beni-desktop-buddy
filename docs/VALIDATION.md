@@ -228,3 +228,15 @@ Der Sekundentakt für Positionsprüfung und Logik bleibt erhalten. Normale Anima
 - NOT_RUN: globalen Bewegungs-Schalter des OS während der laufenden App umschalten; native Windows-/Linux-Desktop-Abnahme. Details, Abfrageintervalle und Portal-Rückfall in [SYSTEM_MOTION.md](SYSTEM_MOTION.md).
 
 Nur der Desktop liest Systemvorgaben. Der Kern, Statusprotokoll, Hooks und Assets bleiben unverändert. `zbus` 5.19.0 war bereits im Desktop-Lockfile vorhanden und wird jetzt auf Linux zusätzlich direkt verwendet; unter macOS/Windows sind nur vorhandene Bindings erweitert.
+
+## Idle mit vorhandenen Mini-Beni-Gesten · 13. Oktober 2026
+
+- Ursache des Stillstands: gespeichertes `reduced_motion=true` hielt auch «Warten» auf einer festen Pose. Auf ausdrücklichen Wunsch nach sichtbarer Bewegung ist diese manuelle Auswahl lokal jetzt aus. Systembeachtung bleibt an; Grösse, Energie, Tempo, Spiegelung, Vordergrunddarstellung, Empfang, Durchklicken, Hotkeys und «Nicht stören» bleiben erhalten.
+- PASS: `./scripts/check.sh --desktop`: 88 Rusttests auf macOS (29 Root, 59 Desktop), 11 Python-Integrationstests, beide Formatierungen und Clippy-Prüfungen, Assets/Icons und Desktop-Debug-Build.
+- PASS: alle 480 originalen SDK-Referenzposen stimmen weiterhin überein. PNG, Atlas, Animationsdaten, Aliase und ihre Provenienz sind unverändert. Die drei verwendeten Zustände sind bereits vorhandene Animationen: `warten`, `nachdenken`, `drehen`.
+- PASS: deterministischer Desktop-Scheduler mit explizitem Zeitschritt. Jeweils 18 Sekunden ruhiges Warten, dann abwechselnd die bestehenden One-shots mit ihrer originalen Dauer und Pose, danach «Warten». Tempo gilt für die Ruhezeit; grosse Schritte lösen höchstens eine Aktion aus, ungültige Zeitwerte werden abgelehnt.
+- PASS: Pause, manuelle/System-Bewegungsreduktion, sichtbare Blasen, Fehler, offene Bedienung und verstecktes Fenster verhindern neue Idle-Gesten. Manuelle und Statusaktionen übernehmen über den vorhandenen Play-Pfad sofort; der Idle-Scheduler wird zurückgesetzt und erzeugt keine Blasen oder Verlaufseinträge.
+- PASS: Nachlesen hält den Idle-Scheduler an und stellt Player, Fortschritt, Pause und die Reihenfolge der nächsten vorhandenen Geste wieder her. Idle-eigene Aktionen bleiben bei 15 fps; manuelle/Status-Gesten und das Lesen behalten das bisherige Budget.
+- PASS: finales macOS-Release-Bundle/CLI ad hoc signiert und streng geprüft. Sichtbarer nativer Start und gespeicherte Auswahl geprüft; der Nutzer bestätigt «Ja, er bewegt sich». Frische IPC-Meldung angenommen.
+- NOT_RUN: vollständigen nativen automatischen Idle-Zyklus über die Accessibility-API verfolgen; Benis AX-Fenster war in dieser Sitzung nicht zuverlässig erreichbar. Auswahl, Reihenfolge, originalgetreue Posen und Unterbrechung sind automatisch geprüft; sichtbare Bewegung ist durch den Nutzer bestätigt.
+- NOT_RUN: native Windows-/Linux-Desktop-Abnahme. CI prüft die gemeinsame Implementierung im einzigen PR-Lauf auf drei Buildplattformen.

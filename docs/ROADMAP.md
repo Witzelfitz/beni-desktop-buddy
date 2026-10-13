@@ -33,6 +33,7 @@ Abnahme: Beni lässt sich jederzeit wiederfinden und beenden, blockiert die Arbe
 - Erledigt: dynamische, scrollbar und schliessbar dargestellte Sprechblasen mit Lesedauer und TTL. Kleine Szenen aus mehreren Gesten bleiben offen.
 - Erledigt: standardmässig ausgeschaltete lokale Status-IPC auf macOS/Linux/Windows, CLI notify/run und Integrationsvorlagen; begrenzte Nachrichten, TTL, Prioritäten und Gestenregeln.
 - Erledigt: Sitzungsverlauf der letzten 100 angenommenen Statusmeldungen mit Quelle und Alter, auch bei «Nicht stören» und abgelaufener TTL; beim Nachlesen zeigt Beni «Denken».
+- Erledigt: dezenter Idle-Ablauf ausschliesslich aus bestehenden SDK-Animationen («Warten», gelegentlich «Denken» und «Drehen»), mit Vorrang für Meldungen, manuelle Bedienung, Pause und Bewegungsreduktion.
 - Optional: Embedding-Klassifikator mit eigenem Datensatz und Go/No-Go-Abnahme.
 
 Abnahme: Zeit und Ereignisse sind testbar; Nachrichten sind begrenzt; externe Steuerung ist standardmässig aus.

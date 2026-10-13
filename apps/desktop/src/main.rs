@@ -3,6 +3,7 @@ mod app;
 mod history;
 mod hit_map;
 mod hotkeys;
+mod idle;
 mod input;
 mod motion;
 mod placement;
