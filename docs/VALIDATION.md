@@ -163,6 +163,8 @@ Die Bibliothek `global-hotkey` 0.8.0 installiert ihren Prozess-Callback über `O
 
 Gespeichert wird ausschliesslich die akzeptierte Hotkey-Konfiguration unter `global-hotkeys`. Tastatureingaben werden nicht protokolliert; Medien-/Event-Tap-Tasten bleiben ausgeschlossen. Animationskern, Statusprotokoll und bestehende Codex-Hook-Konfiguration wurden nicht verändert.
 
+Linux/X11-Korrektur vor dem Merge: Der native CI-Test zeigte, dass `global-hotkey` 0.8.0 `XUngrabKey` puffert und ohne weiteren Request nicht an den Server sendet. Blosses Warten löst das nicht. Das Linux-Backend führt nach der Freigabe einen zweiten, idempotenten Unregister-Aufruf aus: Dessen Keyboard-Mapping-Roundtrip auf derselben Verbindung bestätigt die erste Freigabe am Server. Der native Test verwendet Benis Backend und prüft zusätzlich Rücknahme eines Kandidaten bei Konflikt, Erhalt des bisherigen Paars und Freigabe beim Drop. macOS und Windows verwenden weiterhin ihre bisherigen Freigabepfade.
+
 ## Nicht stören · 13. Oktober 2026
 
 - PASS: `./scripts/check.sh --desktop`: 69 Rusttests (27 Root, 42 Desktop), 11 Integrationstests, Formatierung, Clippy ohne Warnungen, Asset-/Icon-Prüfung und Debug-Build.
