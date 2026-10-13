@@ -712,7 +712,20 @@ mod tests {
             "occupied global hotkey must be rejected"
         );
         first.unregister(key).unwrap();
-        second.register(key).unwrap();
+        // The X11 backend acknowledges the command before its buffered ungrab
+        // reaches the server. Wait for that native release, with a hard limit.
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(1);
+        loop {
+            match second.register(key) {
+                Ok(()) => break,
+                Err(global_hotkey::Error::AlreadyRegistered(_))
+                    if std::time::Instant::now() < deadline =>
+                {
+                    std::thread::sleep(std::time::Duration::from_millis(20));
+                }
+                Err(error) => panic!("released X11 hotkey remained unavailable: {error}"),
+            }
+        }
         second.unregister(key).unwrap();
     }
 }
