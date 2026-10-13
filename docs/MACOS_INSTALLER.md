@@ -1,6 +1,6 @@
 # macOS-Installer vorbereiten und freigeben
 
-R2 baut ein schreibgeschütztes DMG mit Beni-App, bestehendem Icon, «Programme»-Link und kurzer Installationshilfe. Die App enthält CLI, eingecheckte Integrationsvorlagen und die eigenen Lizenztexte. Lokale Hook-Konfigurationen und nicht eingecheckte Dateien werden nicht übernommen. Nutzer ziehen die App nach Programme und öffnen sie dort; Entfernen beendet die App und löscht das Bundle, die bisherigen Einstellungen bleiben erhalten.
+R2 baut ein schreibgeschütztes DMG mit Beni-App, bestehendem Icon, «Programme»-Link und kurzer Installationshilfe. Die App enthält CLI, eingecheckte Integrationsvorlagen und die eigenen Lizenztexte. Lokale Hook-Konfigurationen und nicht eingecheckte Dateien werden nicht übernommen. Vor dem Ersetzen einer vorhandenen App Beni beenden; aktive Timer und Erinnerungen enden dabei. Nutzer ziehen die App nach Programme und öffnen sie dort, danach wird das DMG ausgeworfen. Zur Deinstallation Beni beenden und das Bundle löschen; die bisherigen Einstellungen bleiben erhalten.
 
 Apple Silicon (`aarch64`) und Intel (`x86_64`) erhalten getrennte Pakete. Native Builds verwenden vorhandene Cargo-Caches. Cross-Builds benötigen ein zuvor bewusst installiertes Rust-Ziel. `lipo` prüft beide Executables, `otool` deren Mindestversion. Buildziel und Bundleangabe sind macOS 11.0; eine reale Abnahme auf diesem alten System bleibt offen.
 
@@ -26,11 +26,11 @@ Der Build signiert Executables vor dem Bundle, verwendet in signierten Modi Hard
 
 Neben dem DMG entstehen eine `.sha256`-Datei und ein `.build.json`-Beleg mit tatsächlich berechneter Grösse/Prüfsumme, Architektur, Version und Signier-/Notarisierungsstatus. Der Beleg ist **kein `release.json` und kein Update-Feed**. Die Ed25519-Updatesignatur und authentifizierte Feedableitung bleiben vor der ersten öffentlichen Veröffentlichung gemäss [Release-Vertrag](RELEASES.md) einzurichten. Die CI lädt vorerst ausschliesslich befristete Actions-Artefakte hoch; sie erstellt keinen öffentlichen GitHub Release.
 
-## Was notarytool ist und was einmalig fehlt
+## notarytool und einmalige Einrichtung
 
 `notarytool` gehört zu Apples Entwicklungswerkzeugen. Es reicht die bereits signierte Software zur automatischen Prüfung bei Apple ein. Bei Erfolg erzeugt Apple ein Ticket; `stapler` hängt dieses an App/DMG, damit die Bestätigung auch ohne Netzverbindung mitgeliefert wird. [Apple erklärt den Ablauf hier](https://developer.apple.com/documentation/security/notarizing-macos-software-before-distribution).
 
-Die lokale Developer-ID-Identität ist vorhanden und wurde für das Apple-Silicon-Testpaket erfolgreich verwendet. Ein funktionierender Notarisierungszugang ist noch nicht bestätigt. Die einmalige Einrichtung erfolgt direkt im Terminal auf deinem Mac:
+Die lokale Developer-ID-Identität und das Schlüsselbundprofil `beni-notary` sind eingerichtet. App und Apple-Silicon-DMG wurden am 13. Oktober 2026 im echten Release-Modus von Apple akzeptiert. Auf diesem Mac muss das Profil nicht erneut eingerichtet werden. Für einen weiteren Build-Mac erfolgt die einmalige Einrichtung direkt im Terminal:
 
 ```sh
 xcrun notarytool store-credentials beni-notary
@@ -64,6 +64,6 @@ Der native Abnahmeschritt prüft Paketbytes, Signaturen, Inhalt, temporäre Inst
 
 ## Aktueller Abnahmestand
 
-PASS: 23 portable Packaging-/Credential-/Receipt-Tests; lokale Root-/Desktop-Prüfungen; Apple-Silicon-DMG mit Developer-ID-Signaturen, Zeitstempeln und Hardened Runtime; tatsächliche schreibgeschützte DMG-Abnahme, Kopieren, Version-/Signaturprüfung, CLI-Start und Entfernen; kompatibles Ad-hoc-Entwicklungsbundle; Swift-Fensterprüfer kompiliert.
+PASS: 23 portable Packaging-/Credential-/Receipt-Tests; lokale Root-/Desktop-Prüfungen und drei grüne PR-Plattformjobs; Apple-Silicon-DMG mit Developer-ID-Signaturen, Zeitstempeln und Hardened Runtime. Echte Apple-Notarisierung von App und DMG, angehängte/validierte Tickets und Gatekeeper-Prüfung. Erneute schreibgeschützte DMG-Abnahme mit temporärem Kopieren, Version-/Signatur-/Ticket-/Gatekeeper-Prüfung, CLI-Start und Entfernen. Der Nutzer hat die alte App beendet, die neue App aus dem DMG nach Programme kopiert und ihren sichtbaren Start bestätigt. Laufender Prozess unter `/Applications/Beni Buddy.app`, Version 0.1.0/Build 1, gültige Signatur, Ticket und Gatekeeper-Zulassung geprüft. Kompatibles Ad-hoc-Entwicklungsbundle und kompilierter Swift-Fensterprüfer bestanden.
 
-NOT_RUN: echte Notarisierung, Ticket-/Gatekeeper-Abnahme eines Release-Pakets, neue Installer-CI, nativer Intel-Installer-/Fenstertest, saubere vollständige Bedienabnahme und altes macOS 11.0. Der Testinstaller ist noch kein öffentlicher Download. Diese Schritte müssen vor dem Anschluss von W1 abgeschlossen beziehungsweise die angebotenen Plattformanforderungen entsprechend eingegrenzt werden.
+NOT_RUN: neue Installer-CI, nativer Intel-Installer-/Fenstertest, vollständige Bedienabnahme auf einem frischen Gerät und altes macOS 11.0. CI-Secrets sind nicht eingerichtet. Das lokale notarisierte DMG ist noch kein öffentlicher Download. Diese Schritte müssen vor dem Anschluss von W1 abgeschlossen beziehungsweise die angebotenen Plattformanforderungen entsprechend eingegrenzt werden. Authentifizierte Release-/Update-Metadaten sind ebenfalls noch offen.
