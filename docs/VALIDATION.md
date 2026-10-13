@@ -240,3 +240,15 @@ Nur der Desktop liest Systemvorgaben. Der Kern, Statusprotokoll, Hooks und Asset
 - PASS: finales macOS-Release-Bundle/CLI ad hoc signiert und streng geprüft. Sichtbarer nativer Start und gespeicherte Auswahl geprüft; der Nutzer bestätigt «Ja, er bewegt sich». Frische IPC-Meldung angenommen.
 - NOT_RUN: vollständigen nativen automatischen Idle-Zyklus über die Accessibility-API verfolgen; Benis AX-Fenster war in dieser Sitzung nicht zuverlässig erreichbar. Auswahl, Reihenfolge, originalgetreue Posen und Unterbrechung sind automatisch geprüft; sichtbare Bewegung ist durch den Nutzer bestätigt.
 - NOT_RUN: native Windows-/Linux-Desktop-Abnahme. CI prüft die gemeinsame Implementierung im einzigen PR-Lauf auf drei Buildplattformen.
+
+## Separates Einstellungsfenster · 13. Oktober 2026
+
+Die Bedienelemente liegen in einem eigenen, dekorierten und skalierbaren nativen Fenster statt über dem Avatar. Tray «Einstellungen» und Buddy «Menü» verwenden denselben Viewport. Die App-Einstellungen bleiben in derselben Instanz und im bisherigen Speicher; Statusmeldungen laufen während des offenen Fensters weiter.
+
+- PASS: 93 lokale Rusttests (29 Root, 64 Desktop), 11 Python-Integrationstests, Formatierungen, Clippy mit `-D warnings`, Asset-/Icon-Provenienz, Desktop-Debug und signiertes macOS-Release-Bundle.
+- PASS: eigene native Viewport-Fläche und Eingabebereich; Root-Geometrie bleibt unverändert. Scrollbare Einstellungen und erreichbarer Footer bei 520 × 680 sowie 380 × 360 Punkten. Fensterbau ist unabhängig von Buddy-Grösse, Transparenz und Durchklicken.
+- PASS: Checkboxen und Nachrichtenfeld im Child-Accessibility-Baum; Aktionen auf Grössenwahl und Vordergrund richten Fensterkommandos an Root. Schliessen beendet nur die Einstellungen. Escape beendet zuerst eine fokussierte Eingabe und schliesst beim nächsten Druck das Fenster. Neue IPC-Meldung wird bei offenen Einstellungen angezeigt; Zuklappen der Buddy-Leiste schliesst die Einstellungen nicht.
+- PASS: echte macOS-AX-Aktionen für beide Fenster: Öffnen über Buddy und Tray, Grössenwahl Gross → Klein ohne Änderung der Einstellungen-Geometrie, Vordergrund aus/an nur für Beni, separates Verkleinern/Wiederherstellen, Footer- und Titelleistenschliessen und erneutes Öffnen. Echte CLI-Meldung während geöffnetem Fenster sichtbar. Einstellungen und Buddy-Position anschliessend wiederhergestellt.
+- PASS: bei über Tray ausgeblendetem Buddy bleibt das separate Fenster bedienbar; Spiegelung aus/an und Rückkehr über Tray «Einstellungen» geprüft.
+- PASS: zusätzlicher Glow-Viewport braucht einen eigenen nativen AccessKit-Adapter. Der unveränderte Bibliothekspfad lieferte nur die OS-Titelleiste; der dokumentierte [lokale Patch](../vendor/eframe/BENI_PATCH.md) initialisiert den Adapter für jedes neue Fenster vor dem Anzeigen. Alle übrigen Upstream-Quelltexte, Versionen und Abhängigkeiten bleiben erhalten.
+- NOT_RUN: vollständige VoiceOver-/NVDA-/Orca-Bedienung, native Windows-/Linux-Fensterabnahme, visuelle Bewertung durch den Nutzer. Plattformbuilds und gemeinsame UI-Prüfungen werden im einzigen PR-CI-Lauf geprüft.

@@ -6,7 +6,7 @@
 
 `buddy-cli` stellt Asset-Validierung, Animationsliste und JSON-Ausgabe einer Pose bereit. `notify` sendet zusätzlich eine Statusmeldung an den freigegebenen lokalen Listener. `run` führt das ausdrücklich übergebene Programm aus und meldet Start und Exitstatus; die App bleibt optional.
 
-`apps/desktop` lädt das PNG einmal als GPU-Textur und zeichnet vier transformierte Ecken mit den Atlas-UV-Koordinaten. egui stellt Sprechblase, Bedienleiste und Einstellungen dar. eframe verwaltet Fenster, Eventloop und lokale Persistenz.
+`apps/desktop` lädt das PNG einmal als GPU-Textur und zeichnet vier transformierte Ecken mit den Atlas-UV-Koordinaten. egui stellt Sprechblase, Bedienleiste und Einstellungen dar. eframe verwaltet Fenster, Eventloop und lokale Persistenz. Die Einstellungen verwenden einen eigenen nativen Immediate-Viewport mit derselben App-Instanz. Seine Fläche wird nicht in Benis Hit-Map aufgenommen; Grössen- und Vordergrundkommandos für den Buddy adressieren ausdrücklich den Root-Viewport. Ein eng begrenzter, versionierter [eframe-Patch](../vendor/eframe/BENI_PATCH.md) erhält AccessKit für zusätzliche Glow-Fenster.
 
 ## Datenweg
 
