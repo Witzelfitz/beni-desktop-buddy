@@ -46,6 +46,36 @@ def fake_dmg(app, directory, image, identity):
 
 
 class PackagingTests(unittest.TestCase):
+    def test_development_container_unsigned_but_distribution_container_signed(self):
+        for identity in ("-", "identity"):
+            with tempfile.TemporaryDirectory() as folder, patch.object(package, "run"), patch.object(package, "sign") as signer, patch.object(package, "verify_signature") as verify:
+                root = Path(folder)
+                package.make_dmg(root / "source.app", root, root / "test.dmg", identity)
+                if identity == "-":
+                    signer.assert_not_called()
+                    verify.assert_not_called()
+                else:
+                    signer.assert_called_once_with(root / "test.dmg", identity)
+                    verify.assert_called_once_with(root / "test.dmg", production=True)
+
+    def test_signing_diagnostics_are_fixed_and_do_not_echo_account_data(self):
+        result = subprocess.CompletedProcess([], 1, "secret-token: resource fork, Finder information", "")
+        with patch.object(package.subprocess, "run", return_value=result), self.assertRaises(package.PackagingError) as raised:
+            package.run(["codesign", "fixture"], "Codesignierung (App-Bundle)")
+        self.assertIn("Resource-Fork", str(raised.exception))
+        self.assertNotIn("secret-token", str(raised.exception))
+
+    def test_ci_check_only_does_not_create_keychain_or_build(self):
+        with patch.dict(os.environ, {"GITHUB_ACTIONS": "true", "RUNNER_OS": "macOS"}), patch.object(ci, "credentials", return_value=(b"certificate", b"key")), patch.object(ci.package, "run") as runner, contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(ci.main(["--architecture", "aarch64", "--check-only"]), 0)
+            runner.assert_not_called()
+
+    def test_native_attestation_cannot_be_created_without_runner_and_launch(self):
+        with patch.object(installer.platform, "system", return_value="Darwin"), patch.dict(os.environ, {}, clear=True), contextlib.redirect_stderr(io.StringIO()), tempfile.TemporaryDirectory() as folder:
+            target = Path(folder) / "false.native.json"
+            self.assertEqual(installer.main(["missing.dmg", "--architecture", "aarch64", "--mode", "development", "--attestation", str(target)]), 2)
+            self.assertFalse(target.exists())
+
     def test_release_requires_profile_before_any_build_or_signing(self):
         with patch.object(package.platform, "system", return_value="Darwin"), patch.object(package, "signing_identity") as signer:
             with self.assertRaises(package.PackagingError):
