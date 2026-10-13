@@ -8,6 +8,7 @@ use interprocess::local_socket::tokio::{Listener, Stream, prelude::*};
 use interprocess::local_socket::{ListenerOptions, traits::StreamCommon};
 use serde::{Deserialize, Serialize};
 use std::{
+    collections::VecDeque,
     fmt, io,
     sync::{Arc, Mutex, mpsc},
     thread,
@@ -135,8 +136,25 @@ pub fn notify(endpoint: &Endpoint, message: Notification) -> Result<(), ClientEr
             .map_err(|_| ClientError::Timeout)?
         })
 }
+/// Bounded receipt events, independent of the display queue and its TTL.
+pub const MAX_RECENT_MESSAGES: usize = 100;
+
+#[derive(Clone, Debug)]
+pub struct ReceivedNotification {
+    pub message: Notification,
+    pub received_at: Instant,
+}
+
+fn record_receipt(received: &mut VecDeque<ReceivedNotification>, entry: ReceivedNotification) {
+    if received.len() == MAX_RECENT_MESSAGES {
+        received.pop_front();
+    }
+    received.push_back(entry);
+}
+
 pub struct Server {
     queue: Arc<Mutex<NotificationQueue>>,
+    received: Arc<Mutex<VecDeque<ReceivedNotification>>>,
     error: Arc<Mutex<Option<String>>>,
     started: Instant,
     stop: Option<oneshot::Sender<()>>,
@@ -148,11 +166,13 @@ impl Server {
     }
     pub fn start_at(endpoint: Endpoint, wake: impl Fn() + Send + 'static) -> io::Result<Self> {
         let queue = Arc::new(Mutex::new(NotificationQueue::default()));
+        let received = Arc::new(Mutex::new(VecDeque::new()));
         let error = Arc::new(Mutex::new(None));
         let started = Instant::now();
         let (stop, stopped) = oneshot::channel();
         let (ready_tx, ready_rx) = mpsc::sync_channel(1);
         let (worker_queue, worker_error) = (queue.clone(), error.clone());
+        let worker_received = received.clone();
         let thread = thread::Builder::new()
             .name("beni-status".into())
             .spawn(move || {
@@ -207,8 +227,16 @@ impl Server {
                     return;
                 }
                 rt.block_on(async {
-                    if let Err(e) =
-                        serve(listener, stopped, worker_queue, started, engine, wake).await
+                    if let Err(e) = serve(
+                        listener,
+                        stopped,
+                        worker_queue,
+                        worker_received,
+                        started,
+                        engine,
+                        wake,
+                    )
+                    .await
                     {
                         *worker_error.lock().unwrap() = Some(e.to_string());
                     }
@@ -217,6 +245,7 @@ impl Server {
         match ready_rx.recv_timeout(Duration::from_secs(3)) {
             Ok(Ok(())) => Ok(Self {
                 queue,
+                received,
                 error,
                 started,
                 stop: Some(stop),
@@ -251,9 +280,17 @@ impl Server {
     pub fn take_error(&self) -> Option<String> {
         self.error.lock().unwrap().take()
     }
-}
-impl Drop for Server {
-    fn drop(&mut self) {
+    /// Returns each accepted receipt once, even if its display TTL has expired.
+    /// Draining receipts never changes the display queue.
+    pub fn drain_received(&self) -> Vec<ReceivedNotification> {
+        self.received.lock().unwrap().drain(..).collect()
+    }
+    /// Stop accepting messages, then return the final receipts without a shutdown race.
+    pub fn stop_and_drain(mut self) -> Vec<ReceivedNotification> {
+        self.shutdown();
+        self.drain_received()
+    }
+    fn shutdown(&mut self) {
         if let Some(stop) = self.stop.take() {
             let _ = stop.send(());
         }
@@ -262,10 +299,16 @@ impl Drop for Server {
         }
     }
 }
+impl Drop for Server {
+    fn drop(&mut self) {
+        self.shutdown();
+    }
+}
 async fn serve(
     listener: Listener,
     mut stop: oneshot::Receiver<()>,
     queue: Arc<Mutex<NotificationQueue>>,
+    received: Arc<Mutex<VecDeque<ReceivedNotification>>>,
     started: Instant,
     engine: Engine,
     wake: impl Fn(),
@@ -281,8 +324,18 @@ async fn serve(
                 queue
                     .lock()
                     .unwrap()
-                    .enqueue(message, started.elapsed().as_millis() as u64)
+                    .enqueue(message.clone(), started.elapsed().as_millis() as u64)
                     .map_err(io::Error::other)?;
+                {
+                    let mut received = received.lock().unwrap();
+                    record_receipt(
+                        &mut received,
+                        ReceivedNotification {
+                            message,
+                            received_at: Instant::now(),
+                        },
+                    );
+                }
                 wake();
                 Ok(())
             }
@@ -293,5 +346,26 @@ async fn serve(
             stream.write_all(&bytes).await
         };
         tokio::select! { _ = &mut stop => return Ok(()), _ = timeout(IO_TIMEOUT, handle) => {} }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn undrained_receipts_stay_bounded_and_keep_the_newest_messages() {
+        let mut received = VecDeque::new();
+        for i in 0..125 {
+            record_receipt(
+                &mut received,
+                ReceivedNotification {
+                    message: Notification::new(i.to_string()),
+                    received_at: Instant::now(),
+                },
+            );
+        }
+        assert_eq!(received.len(), 100);
+        assert_eq!(received.front().unwrap().message.text, "25");
+        assert_eq!(received.back().unwrap().message.text, "124");
     }
 }

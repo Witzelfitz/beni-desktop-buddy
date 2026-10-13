@@ -49,13 +49,27 @@ fn real_transport_accepts_normalizes_wakes_rejects_flood_and_stops() {
         Err(ClientError::Rejected(_))
     ));
     assert_eq!(server.pending(), 4);
+    let received = server.drain_received();
+    assert_eq!(received.len(), 5, "rejected flood must not enter history");
+    assert_eq!(received[0].message.text, "fertig");
+    assert_eq!(received[0].message.state.as_deref(), Some("daumen"));
+    assert_eq!(
+        server.pending(),
+        4,
+        "receipt draining must not consume delivery"
+    );
+    assert!(
+        server.drain_received().is_empty(),
+        "receipts are drained exactly once"
+    );
     assert!(Server::start_at(endpoint.endpoint.clone(), || {}).is_err());
     drop(server);
     assert!(matches!(
         notify(&endpoint.endpoint, Notification::new("ok")),
         Err(ClientError::Unavailable(_))
     ));
-    let _restart = Server::start_at(endpoint.endpoint.clone(), || {}).unwrap();
+    let restart = Server::start_at(endpoint.endpoint.clone(), || {}).unwrap();
+    assert!(restart.drain_received().is_empty());
 }
 #[test]
 fn invalid_and_oversized_wire_messages_are_rejected_and_never_queued() {
@@ -86,6 +100,23 @@ fn invalid_and_oversized_wire_messages_are_rejected_and_never_queued() {
         }
     });
     assert_eq!(server.pending(), 0);
+    assert!(server.drain_received().is_empty());
+}
+#[test]
+fn expired_delivery_still_has_a_receipt_and_draining_does_not_replay_it() {
+    let endpoint = common::TestEndpoint::new();
+    let server = Server::start_at(endpoint.endpoint.clone(), || {}).unwrap();
+    let mut message = Notification::new("Kurzlebig");
+    message.ttl_s = 1;
+    notify(&endpoint.endpoint, message).unwrap();
+    std::thread::sleep(Duration::from_millis(1100));
+    assert!(server.pop().is_none());
+    let received = server.drain_received();
+    assert_eq!(received.len(), 1);
+    assert_eq!(received[0].message.text, "Kurzlebig");
+    assert!(received[0].received_at.elapsed() >= Duration::from_secs(1));
+    assert!(server.drain_received().is_empty());
+    assert!(server.pop().is_none());
 }
 #[test]
 fn an_idle_client_cannot_block_shutdown_or_restarting() {
