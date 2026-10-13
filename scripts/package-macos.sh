@@ -25,13 +25,14 @@ cat > "$app/Contents/Info.plist" <<'PLIST'
 <key>CFBundleExecutable</key><string>beni-desktop-buddy</string>
 <key>CFBundleIconFile</key><string>Beni.icns</string>
 <key>CFBundlePackageType</key><string>APPL</string>
-<key>CFBundleShortVersionString</key><string>0.1.0</string>
-<key>CFBundleVersion</key><string>1</string>
+<key>CFBundleShortVersionString</key><string>set-by-release-tool</string>
+<key>CFBundleVersion</key><string>set-by-release-tool</string>
 <key>LSMinimumSystemVersion</key><string>11.0</string>
 <key>LSUIElement</key><true/>
 <key>NSHighResolutionCapable</key><true/>
 </dict></plist>
 PLIST
+python3 scripts/release.py stamp-plist "$app/Contents/Info.plist"
 plutil -lint "$app/Contents/Info.plist"
 # Sign nested executables first, then seal the completed bundle.
 codesign --force --sign - --timestamp=none "$app/Contents/MacOS/beni-desktop-buddy"

@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")/.."
+python3 scripts/release.py check-versions
+if [[ -n "${BENI_RELEASE_PYTHON:-}" ]]; then
+  "$BENI_RELEASE_PYTHON" scripts/check-release.py
+else
+  python3 scripts/check-release.py
+fi
 cargo fmt --all --check
 cargo test --workspace --locked
 cargo clippy --workspace --all-targets --locked -- -D warnings

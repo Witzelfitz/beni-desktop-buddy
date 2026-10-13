@@ -10,6 +10,10 @@ edition = "2024"
 rust-version = "1.95"
 publish = false
 
+[workspace.metadata.beni-release]
+# Increase for every published stable or beta build; never reuse a released number.
+build-number = 1
+
 [workspace.dependencies]
 serde = { version = "=1.0.229", features = ["derive"] }
 serde_json = "=1.0.151"

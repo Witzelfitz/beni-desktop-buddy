@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "product": "io.witzelfitz.beni-buddy",
+  "version": "0.1.0",
+  "build_number": 1,
+  "channel": "stable",
+  "release_notes_url": "https://github.com/Witzelfitz/beni-desktop-buddy/releases/tag/v0.1.0",
+  "artifacts": [
+    {
+      "platform": "macos",
+      "architecture": "aarch64",
+      "format": "dmg",
+      "requirements": {
+        "description": "Beispiel: macOS 11.0 oder neuer, Apple Silicon.",
+        "minimum_os_version": "11.0"
+      },
+      "url": "https://github.com/Witzelfitz/beni-desktop-buddy/releases/download/v0.1.0/beni-buddy-0.1.0-macos-aarch64.dmg",
+      "size_bytes": 12345678,
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "signature": {
+        "algorithm": "ed25519",
+        "key_id": "beni-update-v1",
+        "url": "https://github.com/Witzelfitz/beni-desktop-buddy/releases/download/v0.1.0/beni-buddy-0.1.0-macos-aarch64.dmg.sig"
+      }
+    },
+    {
+      "platform": "windows",
+      "architecture": "x86_64",
+      "format": "exe",
+      "requirements": {
+        "description": "Beispiel: Windows 10 Build 19045 oder neuer, 64 Bit.",
+        "minimum_os_version": "10.0.19045"
+      },
+      "url": "https://github.com/Witzelfitz/beni-desktop-buddy/releases/download/v0.1.0/beni-buddy-0.1.0-windows-x86_64.exe",
+      "size_bytes": 12345678,
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "signature": {
+        "algorithm": "ed25519",
+        "key_id": "beni-update-v1",
+        "url": "https://github.com/Witzelfitz/beni-desktop-buddy/releases/download/v0.1.0/beni-buddy-0.1.0-windows-x86_64.exe.sig"
+      }
+    },
+    {
+      "platform": "linux",
+      "architecture": "x86_64",
+      "format": "appimage",
+      "requirements": {
+        "description": "Beispiel: Ubuntu 24.04, glibc 2.39, X11 oder Wayland mit StatusNotifier-Host.",
+        "minimum_glibc_version": "2.39"
+      },
+      "url": "https://github.com/Witzelfitz/beni-desktop-buddy/releases/download/v0.1.0/beni-buddy-0.1.0-linux-x86_64.AppImage",
+      "size_bytes": 12345678,
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "signature": {
+        "algorithm": "ed25519",
+        "key_id": "beni-update-v1",
+        "url": "https://github.com/Witzelfitz/beni-desktop-buddy/releases/download/v0.1.0/beni-buddy-0.1.0-linux-x86_64.AppImage.sig"
+      }
+    }
+  ]
+}
