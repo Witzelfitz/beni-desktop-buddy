@@ -215,3 +215,16 @@ Der Animationskern, das Nachrichtenformat und die Codex-Hook-Konfiguration bleib
 - NOT_RUN: lange Idle-, GPU- und Akkumessung sowie native Windows-/Linux-Leistungsmessung. CI-Ergebnisse für die drei Buildplattformen stehen am PR.
 
 Der Sekundentakt für Positionsprüfung und Logik bleibt erhalten. Normale Animationen werden nicht verlangsamt. Das C-Messwerkzeug wird weder in die App eingebaut noch automatisch durch CI ausgeführt.
+
+## Systemeinstellung für reduzierte Bewegung · 13. Oktober 2026
+
+- PASS: `./scripts/check.sh --desktop`: 82 Rusttests auf macOS (29 Root, 53 Desktop), 11 Python-Integrationstests, beide Formatierungen und Clippy-Prüfungen, Assets/Icons und Desktop-Debug-Build.
+- PASS: Ableitung der effektiven Pose und des Zeichenbudgets aus manueller und Systemvorgabe. Systemwechsel und Übergehen verändern weder Animation, Fortschritt, Pause noch Nachrichtenfristen. Manuelle Reduktion bleibt bei nicht verfügbarer Quelle erhalten.
+- PASS: neuer benannter Accessibility-Schalter in allen drei Fenstergrössen; Bedienung per UI-Klick, unverändert pausierter Meldungsverlauf, Migration bestehender Einstellungen, beschädigter Speicherwert, getrennte Speicherung ohne Persistenz des Systemwerts.
+- PASS: Linux-Portalcode samt privatem D-Bus-Test in einem temporären macOS-Harness kompiliert. Der Testdienst liefert 0/1, unbekannte Zahlen, falschen Typ, fehlenden Schlüssel und verschwindet; Testausführung auf Linux erfolgt in der PR-CI. Kein Zugriff auf einen echten Desktop-Bus in diesen Tests.
+- PASS: echter Rust-Adapter auf dem macOS-Hauptthread liest `Some(false)`; direkter AppKit-Aufruf bestätigt dieselbe OS-Vorgabe. Das finale Release-Bundle und die CLI wurden ad hoc signiert und streng geprüft.
+- PASS nativ: sichtbarer Start, IPC-Meldung angenommen, «Systemeinstellung beachten» im Buddy-Menü standardmässig aktiv und per AXPress aus/an bedienbar; Statusanzeige wechselt korrekt. «Weniger Bewegung» bleibt dabei erhalten und lässt sich separat bedienen. Abschliessend beide Werte wiederhergestellt und Bedienung zugeklappt.
+- PASS nativ: geordneter Neustart speichert `follow-system-motion=true`. Vorherige Werte für Animationseinstellungen, Grösse, Durchklicken, Empfang, Hotkeys und «Nicht stören» unverändert. Nach erneutem Start zeigt das Menü die richtige Systemvorgabe und gespeicherte Auswahl.
+- NOT_RUN: globalen Bewegungs-Schalter des OS während der laufenden App umschalten; native Windows-/Linux-Desktop-Abnahme. Details, Abfrageintervalle und Portal-Rückfall in [SYSTEM_MOTION.md](SYSTEM_MOTION.md).
+
+Nur der Desktop liest Systemvorgaben. Der Kern, Statusprotokoll, Hooks und Assets bleiben unverändert. `zbus` 5.19.0 war bereits im Desktop-Lockfile vorhanden und wird jetzt auf Linux zusätzlich direkt verwendet; unter macOS/Windows sind nur vorhandene Bindings erweitert.

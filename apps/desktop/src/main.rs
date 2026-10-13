@@ -4,6 +4,7 @@ mod history;
 mod hit_map;
 mod hotkeys;
 mod input;
+mod motion;
 mod placement;
 mod size;
 mod tray;
