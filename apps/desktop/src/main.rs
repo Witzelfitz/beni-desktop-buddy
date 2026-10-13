@@ -7,6 +7,7 @@ mod idle;
 mod input;
 mod motion;
 mod placement;
+mod reminders;
 mod settings_window;
 mod size;
 mod timer;

@@ -264,3 +264,15 @@ Die Bedienelemente liegen in einem eigenen, dekorierten und skalierbaren nativen
 - PASS: finales macOS-Release-Bundle ad hoc signiert und streng geprüft. Reale einminütige Fokuszeit samt verstecktem Buddy und Nicht stören; Verlauf, spätere Blase und Originalgeste «Daumen hoch» über native AX-Aktionen bestätigt. Pausentimer gestartet/abgebrochen, Restzeit unterbrochen/fortgesetzt, Vorgaben wiederhergestellt.
 - PASS: native App mit laufendem Pausentimer beendet und neu gestartet: Timer aus, 25/5-Minuten-Vorgabe gespeichert. Ursprüngliche Einstellungen und Position beibehalten.
 - NOT_RUN: native Windows-/Linux-Abnahme, Standby-Verhalten und vollständige Screenreader-Ausgabe. Plattformbuilds und gemeinsame Tests werden im einzigen PR-CI-Lauf geprüft.
+
+## Lokale Erinnerungen · 13. Oktober 2026
+
+Eigene Texte in einem separaten Abschnitt der Einstellungen planen und entfernen. Der begrenzte Desktop-Scheduler tickt mit expliziter monotoner Zeit im bestehenden Logic-Pfad. Erinnerungen laufen parallel zum Fokus-Timer, benötigen keine IPC-Freigabe und verwenden ausschliesslich die bestehende Geste «Idee».
+
+- PASS: `./scripts/check.sh --desktop`: 111 lokale Rusttests (29 Root, 82 Desktop), 11 Python-Integrationstests, beide Formatierungen und Clippy mit `-D warnings`, Assets/Icons und Desktop-Debug-Build. Alle 480 SDK-Referenzposen unverändert.
+- PASS: 1–240 Zeichen nach Entfernen von Steuerzeichen, Unicode-Länge, Wartezeit 1–1440 Minuten, höchstens zehn geplante oder wartende Einträge. Sortierung nach Deadline und Erstellreihenfolge, einmalige Fälligkeit, Entfernen geplanter/wartender Einträge, verspätete Verarbeitung, Ablauf nach 120 Sekunden und erneute Kapazitätsfreigabe.
+- PASS: bestehende Blasen, Nicht stören, verstecktes Fenster, Verlauf und Fehler halten die Anzeige zurück. Reihenfolge IPC → Fokus/Pause → Erinnerungen und einmalige Anzeigen. Fokus-Timer und Avatar-Pause bleiben unabhängig. Fällige Einträge bleiben im begrenzten Verlauf, selbst nach verfallener Blase.
+- PASS: Native-Viewport-UI mit benanntem Texteingabefeld, Fokus/Tastatur sowie Planen-/Entfernen-Aktionen. Zehn lange Einträge bei 380 × 360 Punkten lassen den Footer erreichbar. Die bestehenden eingebetteten Tests scrollen zu den tiefer liegenden Einstellungen; ihre Bewegungs-/Hit-Map-Prüfungen bleiben erhalten.
+- PASS: finales macOS-Release-Bundle ad hoc signiert und streng geprüft. Echte einminütige Erinnerung bei verborgenem Buddy, geschlossenen Einstellungen und Nicht stören; Text im Verlauf sowie anschliessende Blase und «Idee»-Geste über native eigene Aktionen bestätigt.
+- PASS: Beenden mit geplantem Termin und ungesendetem Entwurf: keine Testtexte in Benis vollständiger Persistenz, nach Neustart leeres Feld und leere Liste. Ursprüngliche Einstellungen, Timer-Minuten und Fensterposition beibehalten. Kein zusätzlicher Thread oder Zeichenloop.
+- NOT_RUN: native Windows-/Linux-Abnahme, Standby-Verhalten und vollständige gesprochene Screenreader-Bedienung. Plattformbuilds und gemeinsame Tests werden im einzigen PR-CI-Lauf geprüft.
