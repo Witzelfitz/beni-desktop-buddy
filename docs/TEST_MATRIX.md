@@ -24,6 +24,7 @@ Nativer Start, Transparenz und die sichtbare Bedienleiste wurden auf macOS gepr√
 | Nativer Start | PASS | NOT_RUN | NOT_RUN | NOT_RUN |
 | Apple-Silicon-Release-DMG: Notarisierung / Tickets / Gatekeeper | PASS | NOT_RUN | NOT_RUN | NOT_RUN |
 | Release-DMG: Installation unter Programme / sichtbarer Start | PASS | NOT_RUN | NOT_RUN | NOT_RUN |
+| Native Entwicklungs-DMGs: Intel und Apple Silicon, Installation / CLI / Fenster auf macOS 15.7.9 | PASS | NOT_RUN | NOT_RUN | NOT_RUN |
 | Transparenz / kein Fensterhintergrund | PASS | NOT_RUN | NOT_RUN | NOT_RUN |
 | Alle Animationen / PNG-Alpha | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |
 | Dragging / Klick-Begr√ºssung | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |
