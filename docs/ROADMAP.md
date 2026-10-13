@@ -21,7 +21,8 @@ Abnahme: Ein echter Build läuft auf dem Desktop und besteht die manuelle Testma
 - Erledigt: gespeicherte Grössenwahl «Klein», «Mittel», «Gross» mit lesbarer Bedienung, angepasstem Einstellungsmenü und erneuter Positionsprüfung nach Grössenänderungen.
 - Erledigt: gespeichertes «Nicht stören» im Menü und Tray; Statusanzeigen aller Prioritäten pausieren, während TTL und Empfang weiterlaufen.
 - OS-Einstellung für reduzierte Bewegung berücksichtigen.
-- CPU-/GPU-Verbrauch über einen längeren Idle-Lauf messen, Hintergrundlast weiter reduzieren.
+- Erledigt: unnötige Zeichenanforderungen bei Pause und reduzierter Bewegung von vier auf eine pro Sekunde reduzieren, mit separaten Textfristen und direktem IPC-Wecken; kurze CPU-/Wakeup-Vergleichsmessung auf macOS dokumentieren.
+- Offen: CPU-/GPU-Verbrauch über einen längeren Idle-Lauf messen, Akkuverbrauch und native Windows-/Linux-Last prüfen.
 
 Abnahme: Beni lässt sich jederzeit wiederfinden und beenden, blockiert die Arbeit nicht und bleibt im Idle sparsam.
 

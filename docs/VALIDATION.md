@@ -201,3 +201,17 @@ Persistiert wird der Schalter `do-not-disturb`, keine Meldungsinhalte. Die beste
 - NOT_RUN: native Windows-/Linux-Desktop-Abnahme des Verlaufs. Die gemeinsame Implementierung und der neue Empfangspfad werden in einem einzigen PR-CI-Lauf mit drei Jobs geprüft; die auf main aufgebauten Rust-Caches stehen dafür bereit.
 
 Der Animationskern, das Nachrichtenformat und die Codex-Hook-Konfiguration bleiben unverändert. Eine begrenzte zusätzliche Empfangsliste im IPC-Adapter liefert nur angenommene, normalisierte Meldungen mit monotonem Empfangszeitpunkt; sie wird regelmässig in den Sitzungsverlauf übernommen. Meldungen werden weder persistiert noch automatisch wiederholt. Statuszustellungen erhalten jetzt einen bestehenden Pausezustand, statt ihn durch `Player::play` aufzuheben.
+
+## Sparsamere statische Darstellung · 13. Oktober 2026
+
+- PASS: Kernabschnitt von `./scripts/check.sh --desktop`: 29 Rusttests, 11 Integrationstests, Root-Formatierung und Clippy, Asset-/Icon-Provenienz. Desktop separat nach Korrektur der Test-API geprüft: 50 Rusttests, Desktop-Formatierung und Clippy ohne Warnungen, Release-Build.
+- PASS: echte egui-Ausgabe nach mehreren stabilisierten Frames bestätigt Sekundentakt für Pause und reduzierte Bewegung sowie unveränderte 15-/30-fps-Budgets. Ablaufzeitpunkte von Nachrichten und Fehlern, keine schnelle Schleife für bereits abgelaufene Texte oder unsichtbare Fenster, Gestenende trotz reduziertem Takt geprüft.
+- PASS: echte IPC-Meldung nach stabilisiertem pausiertem UI fordert unmittelbar Repaint mit Verzögerung null an; der Logikpfad zeigt den neuen Text und behält die Pause.
+- PASS: `scripts/measure-process-macos.c` mit `clang -O2 -Wall -Wextra -Werror` gebaut. Ungültige und zu grosse Argumente, fehlender Prozess und CPU-Zeit eines realen, begrenzt beschäftigten Testprozesses geprüft (99,28 % eines Kerns über 1,01 Sekunden).
+- PASS: `./scripts/package-macos.sh` baut die native App und CLI, signiert beide sowie das Bundle ad hoc und prüft die Signatur streng. Sichtbarer nativer Start während der Vergleichsmessungen über ausschliesslich eigene Fenstergeometrie bestätigt.
+- PASS: Vorher-/Nachher-Messung derselben sichtbaren Release-App auf einem Apple M3 Max, macOS 26.6.2, zwei Messfenster à 30 Sekunden pro Modus. «Klein», Tempo 0,98, Energie 0,70, «Nicht stören» an, Empfang an, eingeklappte Bedienung. Methode, Einzelwerte und Grenzen in [PERFORMANCE.md](PERFORMANCE.md).
+- PASS: abschliessend Originaleinstellungen wiederhergestellt, finale App sichtbar gestartet und frische IPC-Meldung angenommen. Empfang bleibt an, «Nicht stören» aus, «Klein» und «Weniger Bewegung» erhalten.
+- NOT_RUN: neue native Bedienabnahme von Pause, Tray-Ausblenden und minimiertem Fenster. Der Zugriff auf Benis native Accessibility-Fenster war in dieser Sitzung nicht zuverlässig möglich; die entsprechende automatische UI-/Logikprüfung besteht. Die bisherigen nativen Abnahmen sind im vorherigen Abschnitt dokumentiert.
+- NOT_RUN: lange Idle-, GPU- und Akkumessung sowie native Windows-/Linux-Leistungsmessung. CI-Ergebnisse für die drei Buildplattformen stehen am PR.
+
+Der Sekundentakt für Positionsprüfung und Logik bleibt erhalten. Normale Animationen werden nicht verlangsamt. Das C-Messwerkzeug wird weder in die App eingebaut noch automatisch durch CI ausgeführt.

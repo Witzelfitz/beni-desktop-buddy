@@ -140,6 +140,29 @@ impl BuddyApp {
         self.message_until = now;
         self.active_remote = false;
     }
+    fn repaint_delay(&self, now: Instant, visible: bool) -> Duration {
+        // Keep the once-per-second topology check, history ages and reduced-motion
+        // one-shots progressing. Input, IPC and tray actions wake the UI directly.
+        let housekeeping = Duration::from_secs(1);
+        if !visible {
+            return housekeeping;
+        }
+        let mut delay = if self.settings.reduced_motion || self.player.paused {
+            housekeeping
+        } else if self.player.state() == "warten" {
+            Duration::from_millis(1000 / 15)
+        } else {
+            Duration::from_millis(1000 / 30)
+        };
+        // Static poses still need to remove transient text at its deadline.
+        if self.history_player.is_none() {
+            let deadline = self.error.as_ref().map_or(self.message_until, |e| e.until);
+            if deadline > now {
+                delay = delay.min(deadline.duration_since(now));
+            }
+        }
+        delay
+    }
     fn deliver_status(&mut self, visible: bool, now: Instant) {
         if self.do_not_disturb
             || !visible
@@ -562,17 +585,7 @@ impl BuddyApp {
             self.size_pending = false;
         }
         let occluded = ctx.input(|i| i.viewport().occluded.unwrap_or(false));
-        if !occluded {
-            // Fixed budget: idle 15 fps, active 30 fps, reduced motion / pause 4 fps.
-            let fps = if self.settings.reduced_motion || self.player.paused {
-                4
-            } else if self.player.state() == "warten" {
-                15
-            } else {
-                30
-            };
-            ctx.request_repaint_after(Duration::from_millis(1000 / fps));
-        }
+        ctx.request_repaint_after(self.repaint_delay(now, !self.hidden && !occluded));
     }
 }
 impl BuddyApp {
@@ -771,6 +784,80 @@ mod tests {
             },
             |ui| app.show_ui(ui),
         )
+    }
+    #[test]
+    fn settled_ui_sleeps_for_static_poses_and_keeps_animated_budgets() {
+        for (reduced, paused, state, expected) in [
+            (true, false, "warten", Duration::from_secs(1)),
+            (false, true, "denken", Duration::from_secs(1)),
+            (false, false, "warten", Duration::from_millis(66)),
+            (false, false, "denken", Duration::from_millis(33)),
+        ] {
+            let ctx = egui::Context::default();
+            ctx.all_styles_mut(|style| style.animation_time = 0.0);
+            let mut app = app(&ctx);
+            app.settings.reduced_motion = reduced;
+            app.player.play(&app.engine, state, false).unwrap();
+            app.player.paused = paused;
+            app.message_until = Instant::now();
+            let mut delay = Duration::ZERO;
+            for index in 0..6 {
+                let mut output = frame(&ctx, &mut app, index as f64 * 0.02, vec![]);
+                delay = output.viewport_output[&egui::ViewportId::ROOT].repaint_delay;
+                output.textures_delta.clear();
+            }
+            assert!(
+                delay <= expected && delay >= expected.saturating_sub(Duration::from_millis(20)),
+                "reduced={reduced}, paused={paused}, state={state}: {delay:?}"
+            );
+        }
+    }
+    #[test]
+    fn static_repaints_honour_speech_and_error_deadlines_without_spinning() {
+        let ctx = egui::Context::default();
+        let mut app = app(&ctx);
+        let now = Instant::now();
+        app.player.paused = true;
+        app.message_until = now + Duration::from_millis(120);
+        assert_eq!(app.repaint_delay(now, true), Duration::from_millis(120));
+        app.report_error("Hinweis".into(), now);
+        // The error hides the message; its six-second lifetime needs no fast loop.
+        assert_eq!(app.repaint_delay(now, true), Duration::from_secs(1));
+        assert_eq!(
+            app.repaint_delay(now + Duration::from_millis(5900), true),
+            Duration::from_millis(100)
+        );
+        app.expire_error(now + Duration::from_secs(6));
+        assert_eq!(
+            app.repaint_delay(now + Duration::from_secs(6), true),
+            Duration::from_secs(1)
+        );
+        app.open_history();
+        assert_eq!(app.repaint_delay(now, true), Duration::from_secs(1));
+        app.close_history();
+        app.player.paused = false;
+        // Hidden/occluded windows never inherit active-gesture or speech deadlines.
+        app.player.play(&app.engine, "denken", false).unwrap();
+        assert_eq!(app.repaint_delay(now, false), Duration::from_secs(1));
+    }
+    #[test]
+    fn reduced_motion_one_shot_still_returns_to_idle_and_expires_speech() {
+        let ctx = egui::Context::default();
+        let mut app = app(&ctx);
+        app.settings.reduced_motion = true;
+        app.play("daumen", "Fertig");
+        app.message_until = Instant::now() - Duration::from_secs(1);
+        for index in 0..10 {
+            app.last_tick = Instant::now() - Duration::from_secs(1);
+            let mut output = frame(&ctx, &mut app, index as f64, vec![]);
+            let has_speech = output
+                .shapes
+                .iter()
+                .any(|s| find_text(&s.shape, "Fertig").is_some());
+            output.textures_delta.clear();
+            assert!(!has_speech);
+        }
+        assert_eq!(app.player.state(), "warten");
     }
     fn find_text(shape: &egui::Shape, needle: &str) -> Option<Rect> {
         match shape {
@@ -2013,6 +2100,46 @@ mod tests {
             1,
             "turning off reception keeps the last receipt"
         );
+    }
+
+    #[test]
+    fn ipc_wakes_a_settled_paused_ui_immediately_and_preserves_pause() {
+        let endpoint = common::TestEndpoint::new();
+        let ctx = egui::Context::default();
+        ctx.all_styles_mut(|style| style.animation_time = 0.0);
+        let mut app = app(&ctx);
+        app.player.paused = true;
+        app.message_until = Instant::now();
+        for index in 0..6 {
+            frame(&ctx, &mut app, index as f64 * 0.02, vec![]).drop_without_applying_deltas();
+        }
+        let (sender, receiver) = std::sync::mpsc::channel();
+        ctx.set_request_repaint_callback(move |info| {
+            let _ = sender.send(info.delay);
+        });
+        let wake = ctx.clone();
+        app.server = Some(
+            buddy_ipc::Server::start_at(endpoint.endpoint.clone(), move || wake.request_repaint())
+                .unwrap(),
+        );
+        app.ipc_enabled = true;
+        buddy_ipc::notify(
+            &endpoint.endpoint,
+            buddy_core::notifications::Notification::new("Build grün nach Pause"),
+        )
+        .unwrap();
+        assert_eq!(
+            receiver.recv_timeout(Duration::from_secs(1)).unwrap(),
+            Duration::ZERO
+        );
+        let mut native_frame = eframe::Frame::_new_kittest();
+        let _ = ctx.run_logic(&egui::RawInput::default(), |ctx| {
+            eframe::App::logic(&mut app, ctx, &mut native_frame);
+        });
+        assert!(app.active_remote && app.player.paused);
+        let output = frame(&ctx, &mut app, 0.2, vec![]);
+        text_rect(&output, "Build grün nach Pause");
+        output.drop_without_applying_deltas();
     }
 
     #[test]

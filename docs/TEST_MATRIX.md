@@ -48,7 +48,8 @@ Nativer Start, Transparenz und die sichtbare Bedienleiste wurden auf macOS gepr�
 | Vordergrunddarstellung | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |
 | Einstellungen nach Neustart | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |
 | Retina / DPI / Monitorwechsel | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |
-| Idle-Last und minimiertes Fenster | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |
+| Kurze Idle-CPU-/Wakeup-Vergleichsmessung: reduziert / animiert | PASS | NOT_RUN | NOT_RUN | NOT_RUN |
+| Lange Idle-/GPU-/Akkumessung, minimiertes Fenster | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |
 
 Transparente Bereiche der Fensterfläche sind bei verfügbarem Tray standardmässig durchklickbar. Native macOS-Prüfung: Ein eigenes Testfenster direkt hinter Beni erhält Klicks durch transparenten Hintergrund und die eingeklappte Leiste; Klicks auf Beni öffnen die Bedienung, sichtbare Blasen lassen sich schliessen, und Dragging funktioniert weiterhin. Die Einstellung lässt sich im Menü abschalten; vollständige Windows-/Linux-Desktop-Abnahme bleibt offen.
 
