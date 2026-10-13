@@ -46,6 +46,21 @@ def fake_dmg(app, directory, image, identity):
 
 
 class PackagingTests(unittest.TestCase):
+    def test_unsigned_nested_helper_is_signed_before_main_executable_and_bundle(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            binaries = tuple(root / name for name in ("beni-desktop-buddy", "beni-buddy-cli"))
+            for binary in binaries:
+                binary.write_bytes(b"fixture unsigned Intel executable")
+            signed = []
+            def sign(path, identity, executable=False):
+                if path.name == "beni-desktop-buddy" and "beni-buddy-cli" not in signed:
+                    raise package.PackagingError("Unsigned nested helper blocks signing the surrounding app.")
+                signed.append(path.name)
+            with patch.object(package, "check_binary"), patch.object(package, "run", return_value=""), patch.object(package, "sign", side_effect=sign), patch.object(package, "verify_signature"):
+                package.make_bundle(root / "Buddy.app", "x86_64", "-", binaries=binaries)
+            self.assertEqual(signed, ["beni-buddy-cli", "beni-desktop-buddy", "Buddy.app"])
+
     def test_development_container_unsigned_but_distribution_container_signed(self):
         for identity in ("-", "identity"):
             with tempfile.TemporaryDirectory() as folder, patch.object(package, "run"), patch.object(package, "sign") as signer, patch.object(package, "verify_signature") as verify:
