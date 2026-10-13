@@ -137,6 +137,8 @@ export BENI_RELEASE_PYTHON="$PWD/.venv-release/bin/python"
 
 Das macOS-Script erstellt nach erfolgreichem Build `dist/Beni Buddy.app`, einschliesslich CLI, Integrationsvorlagen und App-Icon. Es signiert beide ausführbaren Dateien und das fertige Bundle ad hoc und prüft die Signatur streng. Das Paket wird erst danach aus dem temporären Build-Verzeichnis übernommen. Das Entwicklungsbundle ist nicht notarisiert; für öffentliche Verteilung sind Developer-ID-Signierung und Notarisierung weiterhin offen. Es führt keinen Autostart oder OS-Installation aus.
 
+Der neue [macOS-Installer-Buildweg](docs/MACOS_INSTALLER.md) erzeugt getrennte DMGs für Apple Silicon und Intel. Ein lokales Apple-Silicon-Testpaket ist bereits mit Developer ID signiert. Release-Pakete setzen zusätzlich erfolgreiche Apple-Notarisierung, angehängte Tickets und Gatekeeper-Prüfung voraus; der Zugang und weitere native Abnahmen sind noch offen. Der Workflow «macOS installers» läuft gezielt bei v-Tags oder manuell und veröffentlicht vorerst nur Actions-Artefakte.
+
 Das App-Icon ist als PNG, ICNS und ICO samt Provenienz vorhanden. Windows bindet das ICO in die ausführbare Datei ein; Windows/Linux erhalten ausserdem das Fenster-Icon. Linux-Pakete enthalten eine Desktop-Datei als Installationsvorlage: Programm in einen Benutzer-Binärpfad, Desktop-Datei unter `~/.local/share/applications/` und `icons/beni.png` unter `~/.local/share/icons/hicolor/1024x1024/apps/io.witzelfitz.beni-buddy.png` ablegen. Eine automatische Installation wird nicht vorgenommen. Der Icon-Export lässt sich auf macOS mit `python3 scripts/export-app-icon.py` aus dem freigegebenen Raster-Master wiederholen.
 
 Der Kern liegt im Root-Workspace. Die Desktop-App bildet wegen ihrer eigenen GUI-Abhängigkeiten einen separaten Cargo-Workspace. Root-Tests bauen deshalb ausdrücklich **nicht** die Desktop-App. Der GitHub-Workflow prüft beide Workspaces in einem gemeinsamen Job je Betriebssystem: Linux, macOS und Windows. Formatierung, Tests, Clippy und die nativen Linux-Smoke-Tests bleiben enthalten.
@@ -163,6 +165,7 @@ docs/                       Architektur, Roadmap, GitHub-Anleitung, Abnahme, Pr�
 - [Statusmeldungen einrichten: Mac, Linux und Windows](docs/INTEGRATIONS.md)
 - [Lokaler Nachrichtenvertrag](docs/adr/0002-local-status.md)
 - [Release-Vertrag, Versionierung und Prüfwerkzeug](docs/RELEASES.md)
+- [macOS-Installer und einmalige Apple-Einrichtung](docs/MACOS_INSTALLER.md)
 - [Architektur](docs/ARCHITECTURE.md)
 - [Entscheidung für native Rust-GUI](docs/adr/0001-native-rust.md)
 - [Roadmap mit konkreten Arbeitspaketen](docs/ROADMAP.md)

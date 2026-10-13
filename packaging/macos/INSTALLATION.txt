@@ -1,0 +1,16 @@
+Beni Buddy installieren
+
+1. Ziehe «Beni Buddy.app» auf den Ordner «Programme» in diesem Fenster.
+2. Öffne Beni Buddy anschliessend aus Programme.
+3. Wirf das Volume «Beni Buddy» aus.
+
+Beni erscheint auf dem Desktop. Über sein Symbol in der Menüleiste kannst du
+ihn anzeigen, zurückholen, pausieren, einstellen und beenden.
+
+Zum Entfernen Beni über sein Menüleistensymbol beenden und die App aus
+Programme in den Papierkorb verschieben. Deine Einstellungen bleiben für
+eine spätere Installation erhalten. Aktive Timer und Erinnerungen enden
+beim Beenden.
+
+Pakete mit «development» oder «unnotarized» im Dateinamen sind Testpakete
+und noch nicht für den öffentlichen Download freigegeben.

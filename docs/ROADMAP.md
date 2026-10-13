@@ -1,6 +1,6 @@
 # Roadmap
 
-Der verbindliche nächste Arbeitsabschnitt steht im [Masterplan für Distribution, Updates und KI](MASTERPLAN.md). Die öffentliche Freigabe (R0) ist abgeschlossen. R1 ist in PR #23 zur Prüfung vorbereitet; danach folgt R2, macOS-Installer. Den Plan bei jeder Fortsetzung lesen und nach jedem abgeschlossenen PR aktualisieren.
+Der verbindliche nächste Arbeitsabschnitt steht im [Masterplan für Distribution, Updates und KI](MASTERPLAN.md). R0/R1 sind abgeschlossen. R2 ist in PR #25 vorbereitet; Notarisierungszugang und native Installer-Abnahmen bleiben vor den öffentlichen Downloads offen. Den Plan bei jeder Fortsetzung lesen und nach jedem abgeschlossenen PR aktualisieren.
 
 ## 1 · Desktop-Abnahme und erster Build
 
@@ -44,7 +44,8 @@ Abnahme: Zeit und Ereignisse sind testbar; Nachrichten sind begrenzt; externe St
 
 ## 4 · Installation und Updates
 
-- Vorbereitet in PR #23: gemeinsamer [Release-Vertrag](RELEASES.md) mit Schema, Stable-/Beta-Beispielen, Offline-Prüfung und verbindlicher Cargo-Version/Buildnummer. Öffentliche Installer und echte Updateprüfung bleiben Folgearbeit.
+- Erledigt in PR #23: gemeinsamer [Release-Vertrag](RELEASES.md) mit Schema, Stable-/Beta-Beispielen, Offline-Prüfung und verbindlicher Cargo-Version/Buildnummer. Öffentliche Installer und echte Updateprüfung bleiben Folgearbeit.
+- Vorbereitet in PR #25: [macOS-DMG und Release-Buildweg](MACOS_INSTALLER.md) für Apple Silicon/Intel, eindeutige Testpakete und verbindliche Apple-Abnahmen. Lokales Developer-ID-Test-DMG geprüft; Notarisierung und native Intel-Abnahme noch offen.
 - Erledigt: Beni-App-Icon (PNG/ICNS/ICO), Windows-Exe-Ressource und Linux-Desktop-Vorlage in den plattformspezifischen Paketen.
 - Erledigt: macOS-Entwicklungsbundle ad hoc signieren und streng prüfen. Developer-ID-Signierung und Notarisierung sowie Windows-Signierung bleiben offen.
 - Reproduzierbare Releases aus freigegebenen Tags.
