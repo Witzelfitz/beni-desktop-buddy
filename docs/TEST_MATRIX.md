@@ -151,3 +151,22 @@ Das normale Packaging enthält das gepinnte SDK und verwendet macOS 15.0 als Bun
 | Tatsächliche Installation A → B und Installationsfehlerfälle | NOT_RUN; konkreter Ablauf in UPDATE_RELEASE_RUNBOOK.md |
 
 Keine neuen Installer für diese Vorbereitung gebaut; keine Produktionsschlüssel gelesen, keine installierte App oder Hooks geändert. Öffentliche Version bleibt 0.1.1, Feed-Freigabe im Bundle bleibt aus.
+
+## Bootstrap-Veröffentlichung 0.1.2, 14. Oktober 2026
+
+| Prüfung | Ergebnis |
+| --- | --- |
+| Versions-PR #43: Root-/Desktop-Versionen und Lockfiles synchron, Build 3 neu, drei Plattformprüfungen | PASS |
+| Neue native Mac-Entwicklungsinstaller Intel/ARM samt GUI | PASS, Run 38569173327 |
+| Linux 0.1.2: CLI, X11/Wayland, Menüintegration/-entfernung | PASS, Run 38569177728, Ubuntu 22.04 |
+| Lokale Developer-ID-Signierung, Apple-Notarisierung, App-/DMG-Tickets und Gatekeeper beider Mac-Pakete | PASS |
+| Finale signierte Intel-/ARM-Pakete: temporäre Installation, CLI, eigenes sichtbares Fenster, Entfernung | PASS, Run 38571146659 auf macOS 15.7.9; Intel-Ticketcheck beim ersten Versuch FAIL/Exitcode 68, gezieltes Wiederholen mit unveränderten Dateien PASS |
+| Sparkle liest tatsächlichen signierten 0.1.2-Feed, akzeptiert Signatur und genau ein passendes Item/Build/Version/Adresse/Grösse; natives Ergebnis «aktuelle Version» | PASS, isolierte Developer-ID-Probe auf Entwickler-Mac mit unverändertem Feed und lokalem Fixture-Server, keine bestehende App ersetzt |
+| Release 0.1.2: genau 13 öffentliche Dateien, Upload-Digests, alle anonymen Bytes/SHA-256/Signaturen | PASS, Release-ID 412741277, Tag auf Quellcommit cf11fe0bc26fb087eca526a6d92144163fba4bfe |
+| Live `/api/downloads` und beide Mac-Stable-Feeds: v2/0.1.2/Build 3, unveränderte XML-Bytes | PASS |
+| Echter Browser: macOS-Vorauswahl, Version 0.1.2, Apple-Silicon-DMG tatsächlich geladen und Hash/Grösse identisch | PASS, Chromium mit realer Live-API; keine Browserfehler |
+| Bisherige Programme-Installation und Codex-Hook vor Nutzerinstallation unverändert | PASS, SHA-256-Vergleich |
+| Nutzerinstallation 0.1.2 und echtes Update A → B | NOT_RUN, Nutzer wird anschliessend durchgeführt |
+| Update-Downloadabbruch, defekte Paketsignatur und nicht schreibbarer Installationsort | NOT_RUN |
+
+Windows wartet weiter auf Microsofts Firmenprüfung. Kein neuer Windows-Installer gebaut; Installer-/CI-Builds gezielt einmal je benötigtem Ziel, ausschliesslich der fehlgeschlagene Intel-Abnahmejob ohne Rust-Build wiederholt.
