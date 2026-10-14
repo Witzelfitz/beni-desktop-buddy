@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """Offline installer tests; no builds, signing keys or installed applications."""
 import importlib.util
+import io
 from pathlib import Path
 import struct
 import subprocess
 import tempfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 
 def load(name, path):
@@ -18,6 +19,29 @@ def load(name, path):
 ROOT = Path(__file__).resolve().parents[1]
 package = load('portable_package', ROOT / 'scripts/package-portable.py')
 menu = load('linux_menu', ROOT / 'packaging/linux/install-desktop.py')
+installer = load('portable_installer', ROOT / 'scripts/check-portable-installer.py')
+
+
+class StartupDiagnosticsTests(unittest.TestCase):
+    def test_failure_identifies_backend_and_exit_without_echoing_output(self):
+        process = Mock(); process.poll.return_value = 1
+        log = io.BytesIO(b'Error: Glutin: EGL Display failed. secret-token user-text\n')
+        with self.assertRaises(installer.package.PackagingError) as failure:
+            installer.wait_window(process, lambda: False, label='Linux/Wayland', log=log)
+        message = str(failure.exception)
+        self.assertIn('Linux/Wayland', message); self.assertIn('Prozess-Exitcode 1', message)
+        self.assertIn('Glutin', message); self.assertIn('EGL', message)
+        self.assertNotIn('secret-token', message); self.assertNotIn('user-text', message)
+
+    def test_live_window_success_does_not_read_logs_and_timeout_stays_a_failure(self):
+        process = Mock(); process.poll.return_value = None
+        log = Mock()
+        installer.wait_window(process, lambda: True, label='Linux/X11', log=log)
+        log.read.assert_not_called()
+        with patch.object(installer.time, 'monotonic', side_effect=[0, 26]):
+            with self.assertRaises(installer.package.PackagingError) as failure:
+                installer.wait_window(process, lambda: False, label='Linux/X11')
+        self.assertIn('Prozess läuft', str(failure.exception))
 
 
 class InstallerTests(unittest.TestCase):

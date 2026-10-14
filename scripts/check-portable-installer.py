@@ -25,12 +25,29 @@ def stop(process):
         except subprocess.TimeoutExpired: process.kill(); process.wait(timeout=5)
 
 
-def wait_window(process, check):
+def startup_summary(process, log, label):
+    """Only fixed categories and numeric exits; never echo application output."""
+    status = process.poll()
+    details = ['Prozess läuft' if status is None else f'Prozess-Exitcode {status}']
+    if log is not None:
+        log.seek(0)
+        output = log.read(16 * 1024).decode(errors='replace').lower()
+        for marker, category in (
+            ('panicked at', 'Rust-Panik'), ('error while loading shared libraries', 'Fehlende Laufzeitbibliothek'),
+            ('glibc_', 'GLIBC-Konflikt'), ('winit', 'Winit'), ('glutin', 'Glutin'),
+            ('wayland', 'Wayland'), ('x11', 'X11'), ('opengl', 'OpenGL'), ('egl', 'EGL'),
+            ('dbus', 'D-Bus'), ('d-bus', 'D-Bus'), ('display', 'Display'),
+        ):
+            if marker in output and category not in details: details.append(category)
+    return f'{label}: ' + '; '.join(details) + '.'
+
+
+def wait_window(process, check, *, label='Fensterstart', log=None):
     deadline = time.monotonic()+25
     while time.monotonic() < deadline and process.poll() is None:
         if check(): return
         time.sleep(0.5)
-    raise package.PackagingError('Die installierte App hat kein eigenes sichtbares Fenster geöffnet.')
+    raise package.PackagingError('Die installierte App hat kein eigenes sichtbares Fenster geöffnet. ' + startup_summary(process, log, label))
 
 
 def windows(image, folder):
@@ -89,7 +106,8 @@ def linux(image, folder):
         process = subprocess.Popen([str(appdir/'AppRun')], env=dict(env, WINIT_UNIX_BACKEND='x11'), stdout=log, stderr=log)
         try:
             wait_window(process, lambda: subprocess.run(['xdotool','search','--onlyvisible','--pid',str(process.pid)],
-                                                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=5).returncode == 0)
+                                                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=5).returncode == 0,
+                        label='Linux/X11', log=log)
         finally: stop(process)
     runtime = folder/'wayland-runtime'; runtime.mkdir(mode=0o700)
     wayland_env = dict(env, XDG_RUNTIME_DIR=str(runtime), WAYLAND_DISPLAY='beni-test', WINIT_UNIX_BACKEND='wayland', WAYLAND_DEBUG='1')
@@ -105,7 +123,7 @@ def linux(image, folder):
             def configured():
                 client_log.seek(0); protocol = client_log.read().decode(errors='replace')
                 return 'xdg_toplevel' in protocol and 'set_title(' in protocol and 'ack_configure(' in protocol and '.commit(' in protocol
-            try: wait_window(process, configured)
+            try: wait_window(process, configured, label='Linux/Wayland', log=client_log)
             finally: stop(process)
         finally: stop(compositor)
     package.run([str(image),'--install-desktop'], 'Linux-Menü explizit installieren', env=env)
