@@ -1,0 +1,72 @@
+name: Windows and Linux installers
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: portable-installers-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  installer:
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: windows
+            runner: windows-2025
+          - platform: linux
+            runner: ubuntu-22.04
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Rust toolchain
+        run: rustup toolchain install --no-self-update
+      - name: Cache native Rust workspaces
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          workspaces: |
+            . -> target
+            apps/desktop -> target
+          shared-key: portable-installer-${{ matrix.platform }}-base-2026
+          cache-bin: false
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+      - name: Linux packaging and GUI dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libxkbcommon-dev libxkbcommon-x11-dev libwayland-dev libx11-dev libxext-dev libxi-dev libxrandr-dev libxcursor-dev libxinerama-dev libgl1-mesa-dev xvfb xauth xdotool weston binutils desktop-file-utils
+      - name: Validate versions and installer policy
+        run: |
+          python scripts/release.py check-versions
+          python scripts/check-portable-packaging.py
+      - name: Build native executables
+        run: |
+          cargo build --manifest-path apps/desktop/Cargo.toml --release --locked
+          cargo build --release --locked -p buddy-cli
+      - name: Build native installer
+        run: python scripts/package-portable.py --platform ${{ matrix.platform }}
+      - name: Native Windows installation and window test
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $version = python scripts/release.py version
+          python scripts/check-portable-installer.py "dist/windows/beni-buddy-$version-windows-x86_64.exe" --platform windows
+      - name: Native Linux installation, X11 and Wayland test
+        if: runner.os == 'Linux'
+        run: |
+          version="$(python scripts/release.py version)"
+          xvfb-run -a python scripts/check-portable-installer.py "dist/linux/beni-buddy-$version-linux-x86_64.AppImage" --platform linux
+      - name: Store reviewed installers
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: portable-${{ matrix.platform }}-x86_64
+          retention-days: 30
+          path: |
+            dist/${{ matrix.platform }}/*.exe
+            dist/${{ matrix.platform }}/*.AppImage
+            dist/${{ matrix.platform }}/*.sha256
+            dist/${{ matrix.platform }}/*.build.json
+            dist/${{ matrix.platform }}/*.native.json
+          if-no-files-found: error

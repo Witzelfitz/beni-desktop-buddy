@@ -1,0 +1,11 @@
+#!/bin/sh
+set -eu
+BENI_APPDIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+export LD_LIBRARY_PATH="$BENI_APPDIR/usr/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+case "${1:-}" in
+  --cli) shift; exec "$BENI_APPDIR/usr/bin/beni-buddy-cli" "$@" ;;
+  --install-desktop|--remove-desktop)
+    exec python3 "$BENI_APPDIR/usr/share/beni-buddy/install-desktop.py" "$1" "$BENI_APPDIR"
+    ;;
+esac
+exec "$BENI_APPDIR/usr/bin/beni-desktop-buddy" "$@"

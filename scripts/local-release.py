@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 import platform
 import re
+import shutil
 import stat
 import subprocess
 import sys
@@ -24,7 +25,7 @@ spec.loader.exec_module(package)
 REPO = "Witzelfitz/beni-desktop-buddy"
 MAX_PACKAGE_BYTES = 128 * 1024 * 1024
 BUILD_INPUTS = ("Cargo.toml", "Cargo.lock", "rust-toolchain.toml", "apps", "crates", "vendor", "assets",
-                "integrations", "LICENSE.md", "LICENSE-MIT", "docs/INTEGRATIONS.md")
+                "integrations", "packaging", "LICENSE.md", "LICENSE-MIT", "docs/INTEGRATIONS.md")
 
 
 class ReleaseError(Exception):
@@ -174,6 +175,69 @@ def download_installer(run_id, architecture, directory, current_commit):
     return extract_artifact(data, artifact, architecture, directory, sha), sha
 
 
+def download_portable(run_id, target, directory, current_commit):
+    if target not in ('windows', 'linux') or not re.fullmatch(r'[1-9][0-9]{0,19}', str(run_id)):
+        raise ReleaseError('Ungültiges natives Installer-Ziel.')
+    run = api(f'actions/runs/{run_id}')
+    if (run.get('status') != 'completed' or run.get('conclusion') != 'success'
+            or run.get('path') != '.github/workflows/portable-installers.yml' or run.get('event') != 'workflow_dispatch'
+            or run.get('head_branch') != 'main' or run.get('repository', {}).get('full_name') != REPO
+            or run.get('head_repository', {}).get('full_name') != REPO):
+        raise ReleaseError('Nur erfolgreiche native Installer-Läufe des eigenen main übernehmen.')
+    sha = run.get('head_sha', '')
+    if not re.fullmatch(r'[0-9a-f]{40}', sha): raise ReleaseError('Ungültiger Installer-Commit.')
+    command(['git', 'merge-base', '--is-ancestor', sha, 'origin/main'])
+    if build_fingerprint(sha) != build_fingerprint(current_commit):
+        raise ReleaseError('Native Pakete haben unterschiedliche Produkteingaben.')
+    runner = 'windows-2025' if target == 'windows' else 'ubuntu-22.04'
+    jobs = api(f'actions/runs/{run_id}/jobs?per_page=100')['jobs']
+    selected = [j for j in jobs if j.get('name') == f'installer ({target}, {runner})' and j.get('conclusion') == 'success']
+    if len(selected) != 1: raise ReleaseError('Native Installer-Abnahme fehlt.')
+    listing = api(f'actions/runs/{run_id}/artifacts?per_page=100')['artifacts']
+    matches = [a for a in listing if a.get('name') == f'portable-{target}-x86_64' and a.get('expired') is False]
+    if len(matches) != 1: raise ReleaseError('Genau ein natives Paketartefakt erforderlich.')
+    artifact = matches[0]
+    if (type(artifact.get('id')) is not int or type(artifact.get('size_in_bytes')) is not int
+            or not 0 < artifact['size_in_bytes'] <= MAX_PACKAGE_BYTES
+            or artifact.get('workflow_run', {}).get('head_sha') != sha):
+        raise ReleaseError('Native Artefaktzuordnung ist ungültig.')
+    data = command(['gh','api',f"repos/{REPO}/actions/artifacts/{artifact['id']}/zip"], timeout=180)
+    return extract_portable(data, artifact, target, directory, sha), sha
+
+
+def extract_portable(data, artifact, target, directory, source_commit):
+    if (artifact.get('digest') != 'sha256:'+hashlib.sha256(data).hexdigest() or len(data) > MAX_PACKAGE_BYTES
+            or artifact.get('name') != f'portable-{target}-x86_64' or artifact.get('expired') is not False):
+        raise ReleaseError('Native Artefaktprüfsumme oder Ziel stimmt nicht.')
+    version, build = check_versions()
+    name = f'beni-buddy-{version}-{target}-x86_64.'+('exe' if target=='windows' else 'AppImage')
+    expected = {name,name+'.sha256',name+'.build.json',name+'.native.json'}
+    with zipfile.ZipFile(io.BytesIO(data)) as archive:
+        members = archive.infolist()
+        if len(members) != 4 or {m.filename for m in members} != expected: raise ReleaseError('Unerwartete native Archivdateien.')
+        for member in members:
+            if (member.is_dir() or stat.S_IFMT(member.external_attr >> 16) not in (0,stat.S_IFREG)
+                    or member.flag_bits & 1 or member.file_size > (MAX_PACKAGE_BYTES if member.filename == name else 8192)):
+                raise ReleaseError('Unzulässiger nativer Archivinhalt.')
+        for member in members:
+            with (directory/member.filename).open('xb') as stream: stream.write(archive.read(member))
+    image = directory/name; digest = hashlib.sha256(image.read_bytes()).hexdigest()
+    receipt = json_bytes(Path(str(image)+'.build.json').read_bytes(),8192)
+    required = {'type':'portable-build-receipt','platform':target,'architecture':'x86_64','version':version,'build_number':build,
+                'filename':name,'sha256':digest,'size_bytes':image.stat().st_size,'publisher_signed':False,
+                'minimum_runtime':'10.0.22000' if target=='windows' else '2.35'}
+    if (image.stat().st_size == 0 or any(type(receipt.get(k)) is not type(v) or receipt.get(k)!=v for k,v in required.items())
+            or Path(str(image)+'.sha256').read_text()!=f'{digest}  {name}\n'):
+        raise ReleaseError('Native Installerbytes oder Build-Beleg stimmen nicht.')
+    native = json_bytes(Path(str(image)+'.native.json').read_bytes(),8192)
+    required = {'type':'portable-native-acceptance','platform':target,'architecture':'x86_64','version':version,'build_number':build,
+                'source_commit':source_commit,'sha256':digest,'publisher_signed':False,'window_visible':True,'installed_then_removed':True}
+    required.update({'running_app_protected':True} if target=='windows' else {'x11_window':True,'wayland_surface':True})
+    if any(type(native.get(k)) is not type(v) or native.get(k)!=v for k,v in required.items()):
+        raise ReleaseError('Native Installer-/Fensterabnahme passt nicht zu Paket und Commit.')
+    return image
+
+
 def build_from_installer(image, architecture, output, identity, profile):
     version, _ = check_versions()
     with tempfile.TemporaryDirectory(prefix="beni-native-resign-") as folder:
@@ -301,7 +365,8 @@ def verify_candidate(directory, trusted_path):
     if (provenance.get("type") != "unpublished-release-candidate"
             or not re.fullmatch(r"[0-9a-f]{40}", provenance.get("source_commit", ""))
             or not re.fullmatch(r"[0-9a-f]{64}", provenance.get("product_inputs_sha256", ""))
-            or {p.get("architecture") for p in provenance.get("native_builds", [])} != {a["architecture"] for a in manifest["artifacts"]}):
+            or {(p.get('platform', 'macos'), p.get('architecture')) for p in provenance.get('native_builds', [])}
+               != {(a['platform'], a['architecture']) for a in manifest['artifacts']}):
         raise ReleaseError("Signierter Kandidatenbeleg stimmt nicht mit den Zielpaketen überein.")
     expected = {"release.json", "release.json.sig", "candidate.json", "candidate.json.sig"}
     for artifact in manifest["artifacts"]:
@@ -435,6 +500,15 @@ def prepare(args):
         final = staging / "candidate"
         final.mkdir()
         artifacts, provenance, inputs = [], [], []
+        portable_inputs = []
+        portable_targets = getattr(args, 'portable_platform', [])
+        if len(set(portable_targets)) != len(portable_targets): raise ReleaseError('Doppelte native Plattform.')
+        for target in portable_targets:
+            if target=='windows' and not getattr(args, 'allow_unsigned_windows', False):
+                raise ReleaseError('Windows ohne Herausgebersignatur benötigt die ausdrückliche Freigabe.')
+            native = staging/target; native.mkdir()
+            image, sha = download_portable(args.portable_run, target, native, commit)
+            portable_inputs.append((target,image,sha))
         for architecture in args.architecture:
             picked = []
             for run_id in args.run:
@@ -461,7 +535,20 @@ def prepare(args):
                               "requirements": {"description": f"macOS {args.minimum_os} oder neuer; {'Apple Silicon' if architecture == 'aarch64' else 'Intel'}.", "minimum_os_version": args.minimum_os},
                               "url": url, "size_bytes": path.stat().st_size, "sha256": digest,
                               "signature": {"algorithm": "ed25519", "key_id": key_id, "url": url + ".sig"}})
-            provenance.append({"architecture": architecture, "workflow_run": int(run_id), "source_commit": sha})
+            provenance.append({'platform':'macos', "architecture": architecture, "workflow_run": int(run_id), "source_commit": sha})
+        for target, image, sha in portable_inputs:
+            path = final/image.name; shutil.copy2(image,path)
+            if target=='linux': path.chmod(0o755)
+            sign_file(path,key)
+            digest = hashlib.sha256(path.read_bytes()).hexdigest()
+            (final/(path.name+'.sha256')).write_text(f'{digest}  {path.name}\n')
+            url = f'{REPOSITORY}/releases/download/v{version}/{path.name}'
+            requirements = ({'description':'Windows 11 oder neuer, Intel/AMD 64 Bit. Noch ohne Herausgebersignatur.', 'minimum_os_version':'10.0.22000'}
+                            if target=='windows' else {'description':'Linux Intel/AMD 64 Bit, GLIBC 2.35 oder neuer; X11 oder Wayland.', 'minimum_glibc_version':'2.35'})
+            artifacts.append({'platform':target,'architecture':'x86_64','format':'exe' if target=='windows' else 'appimage',
+                              'requirements':requirements,'url':url,'size_bytes':path.stat().st_size,'sha256':digest,
+                              'signature':{'algorithm':'ed25519','key_id':key_id,'url':url+'.sig'}})
+            provenance.append({'platform':target,'architecture':'x86_64','workflow_run':int(args.portable_run),'source_commit':sha})
         manifest = {"schema_version": 1, "product": "io.witzelfitz.beni-buddy", "version": version,
                     "build_number": build, "channel": "beta" if "-beta." in version else "stable",
                     "release_notes_url": f"{REPOSITORY}/releases/tag/v{version}", "artifacts": artifacts}
@@ -487,6 +574,9 @@ def main(argv=None):
     prepare_parser.add_argument("--run", action="append", required=True)
     prepare_parser.add_argument("--architecture", nargs="+", choices=tuple(package.ARCHITECTURES), default=list(package.ARCHITECTURES))
     prepare_parser.add_argument("--minimum-os", required=True)
+    prepare_parser.add_argument('--portable-run')
+    prepare_parser.add_argument('--portable-platform', nargs='+', choices=['windows','linux'], default=[])
+    prepare_parser.add_argument('--allow-unsigned-windows', action='store_true', help='Nur nach bewusster Freigabe einer unsignierten Windows-Vorschau.')
     prepare_parser.add_argument("--notary-profile", default=os.environ.get("BENI_NOTARY_PROFILE", "beni-notary"))
     prepare_parser.add_argument("--public-key", type=Path, default=ROOT / "release/keys/beni-update-v1.json")
     prepare_parser.add_argument("--output", type=Path, default=ROOT / "dist/release-candidate")

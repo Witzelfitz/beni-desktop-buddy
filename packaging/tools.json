@@ -1,0 +1,5 @@
+{
+  "nsis": {"version":"3.12","url":"https://downloads.sourceforge.net/project/nsis/NSIS%203/3.12/nsis-3.12.zip","sha256":"56581f90db321581c5381193d796fffcf2d24b2f8fed2160a6c6a3baa67f2c4f"},
+  "appimagetool": {"version":"1.9.1","url":"https://github.com/AppImage/appimagetool/releases/download/1.9.1/appimagetool-x86_64.AppImage","sha256":"ed4ce84f0d9caff66f50bcca6ff6f35aae54ce8135408b3fa33abfc3cb384eb0"},
+  "appimage-runtime": {"version":"20251108","url":"https://github.com/AppImage/type2-runtime/releases/download/20251108/runtime-x86_64","sha256":"2fca8b443c92510f1483a883f60061ad09b46b978b2631c807cd873a47ec260d"}
+}

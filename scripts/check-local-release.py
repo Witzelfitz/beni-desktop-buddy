@@ -89,6 +89,33 @@ def candidate(directory):
 
 
 class LocalReleaseTests(unittest.TestCase):
+    def setUp(self):
+        # Historical release fixtures must remain independent of the next product version.
+        versions = patch.object(release, 'check_versions', return_value=('0.1.0', 1))
+        versions.start(); self.addCleanup(versions.stop)
+
+    def test_native_portable_bytes_and_required_window_proofs(self):
+        for target in ('windows','linux'):
+            name = 'beni-buddy-0.1.0-'+target+'-x86_64.'+('exe' if target=='windows' else 'AppImage')
+            data = b'native installer fixture'; digest = hashlib.sha256(data).hexdigest()
+            receipt = {'type':'portable-build-receipt','platform':target,'architecture':'x86_64','version':'0.1.0','build_number':1,
+                       'filename':name,'sha256':digest,'size_bytes':len(data),'publisher_signed':False,
+                       'minimum_runtime':'10.0.22000' if target=='windows' else '2.35'}
+            native = {'type':'portable-native-acceptance','platform':target,'architecture':'x86_64','version':'0.1.0','build_number':1,
+                      'source_commit':'a'*40,'sha256':digest,'publisher_signed':False,'window_visible':True,'installed_then_removed':True,
+                      'running_app_protected':True,'x11_window':True,'wayland_surface':True}
+            for broken in (False,True):
+                native['window_visible'] = not broken
+                files = {name:data,name+'.sha256':f'{digest}  {name}\n'.encode(),name+'.build.json':json.dumps(receipt).encode(),
+                         name+'.native.json':json.dumps(native).encode()}
+                archive = archive_bytes(files)
+                metadata = {'name':f'portable-{target}-x86_64','expired':False,'digest':'sha256:'+hashlib.sha256(archive).hexdigest()}
+                with tempfile.TemporaryDirectory() as folder:
+                    if broken:
+                        with self.assertRaises(release.ReleaseError): release.extract_portable(archive,metadata,target,Path(folder),'a'*40)
+                    else:
+                        self.assertEqual(release.extract_portable(archive,metadata,target,Path(folder),'a'*40).read_bytes(),data)
+
     def final_release_fixture(self, root):
         source = root / "source"
         source.mkdir()
