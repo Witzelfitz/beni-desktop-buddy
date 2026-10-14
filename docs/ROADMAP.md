@@ -44,14 +44,14 @@ Abnahme: Zeit und Ereignisse sind testbar; Nachrichten sind begrenzt; externe St
 
 ## 4 · Installation und Updates
 
-- Erledigt in PR #23: gemeinsamer [Release-Vertrag](RELEASES.md) mit Schema, Stable-/Beta-Beispielen, Offline-Prüfung und verbindlicher Cargo-Version/Buildnummer. Öffentliche Installer und echte Updateprüfung bleiben Folgearbeit.
+- Erledigt in PR #23: gemeinsamer [Release-Vertrag](RELEASES.md) mit Schema, Stable-/Beta-Beispielen, Offline-Prüfung und verbindlicher Cargo-Version/Buildnummer. Öffentliche Installer sind inzwischen unter R2/R5 veröffentlicht; die tatsächliche Installation A → B bleibt Teil der Updateabnahme.
 - Gemergt in PR #25: [macOS-DMG und Release-Buildweg](MACOS_INSTALLER.md), erstes Apple-Silicon-DMG tatsächlich notarisiert, Tickets/Gatekeeper und Nutzerinstallation bestanden. PR #28 korrigiert die Intel-Signierreihenfolge; beide nativen Entwicklungsinstaller auf macOS 15.7.9 geprüft.
 - Gemergt in PR #27: [lokale Release-Pipeline](LOCAL_RELEASE.md) nach [ADR 0003](adr/0003-local-release-signing.md). Native CI ohne Apple-Schlüssel, lokale Signierung/Notarisierung und Ed25519 für Pakete/Manifest. Echter gemeinsamer Kandidat 0.1.0/Build 1 für Intel und Apple Silicon erstellt und geprüft, Release-Entwurf mit acht zurückgeladenen/authentifizierten Assets vorhanden. Öffentliches Release 0.1.0 inzwischen freigegeben und alle anonymen Downloads geprüft. Actions-Signing-Secrets nicht erforderlich.
 - Erledigt: Beni-App-Icon (PNG/ICNS/ICO), Windows-Exe-Ressource und Linux-Desktop-Vorlage in den plattformspezifischen Paketen.
 - Erledigt: macOS-Entwicklungsbundle ad hoc signieren und streng prüfen; Apple-Silicon-Release mit Developer ID signieren und notarisieren. Windows-Signierung bleibt offen.
-- R3a/R3b gemergt: Sparkle im Bundle, Tray-Updateaktion, automatische Prüfwahl und kontrollierter Neustart. R3c vorbereitet: v2-Manifest, integrierte signierte Feeds und eigener Website-Adapter. [Release-Ablauf](UPDATE_RELEASE_RUNBOOK.md); Bootstrap-Veröffentlichung und tatsächliches Update A → B folgen.
+- R3a/R3b gemergt: Sparkle im Bundle, Tray-Updateaktion, automatische Prüfwahl und kontrollierter Neustart. R3c und Bootstrap 0.1.2 veröffentlicht: v2-Manifest, integrierte signierte Feeds und eigener Website-Adapter sind live. [Release-Ablauf](UPDATE_RELEASE_RUNBOOK.md); Nutzerinstallation A und tatsächliches Update A → B folgen.
 - Reproduzierbare Releases aus freigegebenen Tags.
 - Optionaler, bewusst aktivierter Autostart.
-- Geplant: Installer, Downloadseite, signierte Updates über das Menüleistensymbol und KI-Ersteinrichtung gemäss [Masterplan](MASTERPLAN.md).
+- Mac-/Linux-Installer und Downloadseite veröffentlicht; Mac-Updateprüfung ab 0.1.2 verfügbar. Windows-Signierung, echtes Update A → B, Linux-Updateadapter und KI-Ersteinrichtung bleiben offen gemäss [Masterplan](MASTERPLAN.md).
 
 Abnahme: Pakete werden auf sauberen Geräten installiert und sauber deinstalliert; Signaturen und Updateverhalten sind geprüft.
