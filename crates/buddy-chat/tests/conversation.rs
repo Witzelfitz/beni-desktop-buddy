@@ -37,7 +37,7 @@ fn streamed_reply_preserves_unicode_and_commits_complete_pairs() {
     assert_eq!(request.messages()[0].text(), PERSONA);
     assert_eq!(request.messages()[1].text(), "Hoi Beni 😀");
     assert_eq!(request.max_output_tokens(), 512);
-    session.receive(request.id(), StreamEvent::Delta("Hoi! ".into()), 101);
+    session.receive(request.id(), StreamEvent::Delta("Hallo! ".into()), 101);
     session.receive(
         request.id(),
         StreamEvent::Delta("Was läuft? 😀".into()),
@@ -47,10 +47,10 @@ fn streamed_reply_preserves_unicode_and_commits_complete_pairs() {
     assert_eq!(session.history_turns(), 0);
     session.receive(request.id(), done(), 103);
     assert_eq!(session.history_turns(), 1);
-    assert_eq!(session.response(), "Hoi! Was läuft? 😀");
+    assert_eq!(session.response(), "Hallo! Was läuft? 😀");
     assert_eq!(
         session.history().collect::<Vec<_>>(),
-        [("Hoi Beni 😀", "Hoi! Was läuft? 😀")]
+        [("Hoi Beni 😀", "Hallo! Was läuft? 😀")]
     );
     assert_eq!(
         session.phase(),
@@ -72,7 +72,7 @@ fn streamed_reply_preserves_unicode_and_commits_complete_pairs() {
             .collect::<Vec<_>>(),
         [Role::System, Role::User, Role::Assistant, Role::User]
     );
-    assert_eq!(next.messages()[2].text(), "Hoi! Was läuft? 😀");
+    assert_eq!(next.messages()[2].text(), "Hallo! Was läuft? 😀");
     assert!(!session.receive(request.id(), StreamEvent::Delta("late".into()), 105));
     assert!(session.response().is_empty());
 }
@@ -80,7 +80,7 @@ fn streamed_reply_preserves_unicode_and_commits_complete_pairs() {
 #[test]
 fn rejected_input_does_not_start_or_destroy_previous_reply() {
     let mut session = ChatSession::default();
-    complete(&mut session, "Hallo", "Hoi");
+    complete(&mut session, "Hallo", "Hallo");
     for (model, input, expected) in [
         ("", "Hallo".into(), ChatError::InvalidModel),
         ("bad\nmodel", "Hallo".into(), ChatError::InvalidModel),
@@ -100,7 +100,7 @@ fn rejected_input_does_not_start_or_destroy_previous_reply() {
     ] {
         assert_eq!(session.start(model, &input, 3).unwrap_err(), expected);
         assert!(!session.busy());
-        assert_eq!(session.response(), "Hoi");
+        assert_eq!(session.response(), "Hallo");
         assert_eq!(session.history_turns(), 1);
     }
     assert_eq!(
@@ -366,7 +366,7 @@ impl ChatProvider for FakeProvider {
         if cancellation.is_cancelled() {
             return Err(ChatError::Cancelled);
         }
-        emit(StreamEvent::Delta("Hoi Beni!".into()))?;
+        emit(StreamEvent::Delta("Hallo Beni!".into()))?;
         if cancellation.is_cancelled() {
             return Err(ChatError::Cancelled);
         }
@@ -389,7 +389,7 @@ fn provider_contract_runs_on_worker_with_bounded_channel_and_shared_cancel() {
         session.receive(id, event, 1);
     }
     worker.join().unwrap().unwrap();
-    assert_eq!(session.response(), "Hoi Beni!");
+    assert_eq!(session.response(), "Hallo Beni!");
     assert_eq!(session.history_turns(), 1);
     let (request, token) = session.start("fake", "Hallo", 2).unwrap();
     session.cancel();

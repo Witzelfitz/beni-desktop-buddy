@@ -10,6 +10,10 @@ use std::{
     time::Instant,
 };
 
+fn reply_text(text: &str) -> String {
+    json!({"v":1,"segments":[{"text":text,"emotion":"friendly"}]}).to_string()
+}
+
 const DIGEST: &str = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 fn tags(names: &[&str]) -> String {
     json!({"models":names.iter().map(|name| json!({"name":name,"size":1024,"digest":DIGEST})).collect::<Vec<_>>()}).to_string()
@@ -173,10 +177,15 @@ fn real_http_chat_rechecks_model_and_sends_only_explicit_conversation() {
         vec![
             (200, tags(&["test:small"])),
             (200, info()),
-            (
-                200,
-                format!("{}\n{}\n", text("Hoi 😀", false), text("!", true)),
-            ),
+            (200, {
+                let content = reply_text("Hallo 😀!");
+                let split = content.find("😀").unwrap();
+                format!(
+                    "{}\n{}\n",
+                    text(&content[..split], false),
+                    text(&content[split..], true)
+                )
+            }),
         ],
         false,
     );
@@ -193,7 +202,7 @@ fn real_http_chat_rechecks_model_and_sends_only_explicit_conversation() {
     for event in events {
         session.receive(request.id(), event, 1);
     }
-    assert_eq!(session.response(), "Hoi 😀!");
+    assert_eq!(session.response(), "Hallo 😀!");
     assert_eq!(session.history_turns(), 1);
     let requests = fixture.requests.lock().unwrap();
     assert_eq!(
@@ -208,6 +217,7 @@ fn real_http_chat_rechecks_model_and_sends_only_explicit_conversation() {
     assert_eq!(body["messages"][0]["content"], buddy_chat::PERSONA);
     assert_eq!(body["messages"][1]["content"], "Nur diese Frage");
     assert_eq!(body["options"]["num_predict"], 512);
+    assert_eq!(body["format"], buddy_chat::reply_schema());
     assert!(body.get("tools").is_none());
     assert!(body.get("images").is_none());
 }
@@ -295,7 +305,7 @@ fn redirects_and_raw_error_bodies_never_become_diagnostics() {
 
 #[test]
 fn decoder_accepts_split_utf8_ignores_reasoning_and_preserves_finish_usage() {
-    let line=json!({"model":"test:small","done":true,"done_reason":"length","message":{"role":"assistant","content":"😀".repeat(600),"thinking":"private-thinking"},"eval_count":512}).to_string();
+    let line=json!({"model":"test:small","done":true,"done_reason":"length","message":{"role":"assistant","content":reply_text(&"😀".repeat(600)),"thinking":"private-thinking"},"eval_count":512}).to_string();
     let mut decoder = Decoder::new("test:small");
     let mut events = Vec::new();
     for byte in line.bytes() {
@@ -314,15 +324,12 @@ fn decoder_accepts_split_utf8_ignores_reasoning_and_preserves_finish_usage() {
         .unwrap();
     let text = events
         .iter()
-        .filter_map(|e| {
-            if let StreamEvent::Delta(t) = e {
-                assert!(t.len() <= MAX_DELTA_BYTES);
-                Some(t.as_str())
-            } else {
-                None
-            }
+        .find_map(|e| match e {
+            StreamEvent::Reply(reply) => Some(reply.text()),
+            _ => None,
         })
-        .collect::<String>();
+        .unwrap();
+    assert!(!events.iter().any(|e| matches!(e, StreamEvent::Delta(_))));
     assert_eq!(text, "😀".repeat(600));
     assert!(!text.contains("private-thinking"));
     assert!(matches!(
@@ -343,7 +350,7 @@ fn malformed_incomplete_tool_remote_or_oversized_streams_fail_closed() {
         json!({"model":"test:small","done":true,"message":{"role":"assistant","content":"","tool_calls":[{}]}}).to_string(),
         json!({"model":"test:small","remote_host":"https://remote.test","done":true}).to_string(),
         json!({"model":"test:small","done":true,"error":"private-key-error"}).to_string(),
-        text(&"a".repeat(MAX_RESPONSE_BYTES+1),true), "a".repeat(MAX_LINE_BYTES+1)] {
+        text(&"a".repeat(MAX_REPLY_BYTES+1),true), "a".repeat(MAX_LINE_BYTES+1)] {
         let mut decoder=Decoder::new("test:small");
         assert!(decoder.push(format!("{line}\n").as_bytes(),&mut |_| Ok(())).is_err());
     }

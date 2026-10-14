@@ -17,7 +17,7 @@ pub const REQUEST_TIMEOUT_MS: u64 = 120_000;
 pub const IDLE_TIMEOUT_MS: u64 = 30_000;
 
 /// Fixed application persona, separate from status notifications and provider output.
-pub const PERSONA: &str = "Du bist Beni, ein freundlicher Desktop-Buddy. Antworte kurz in Schweizer Hochdeutsch. Verwende ss statt Eszett. Du kannst keine Dateien öffnen, Programme ausführen oder den Bildschirm sehen. Behaupte keine ausgeführten Aktionen.";
+pub const PERSONA: &str = "Du bist Beni, ein freundlicher Desktop-Buddy. Antworte ausschliesslich in sauberem Hochdeutsch mit Schweizer Rechtschreibung: ss statt Eszett, normale Umlaute. Verwende niemals Schweizerdeutsch oder Dialekt, auch nicht als Gruss oder Zitat. Sage Hallo statt Hoi oder Grüezi. Antworte auch auf Dialektfragen in Hochdeutsch. Erzähle natürlich und kurz, wie in einem Gespräch. Liefere ausschliesslich ein JSON-Objekt mit v:1 und segments. Jeder Abschnitt enthält text (ein bis zwei kurze Sätze, höchstens 600 Zeichen) und emotion (neutral, friendly, curious, happy, sad, surprised, encouraging oder thoughtful). Verwende ein bis sechs Abschnitte und passende, bei Bedarf unterschiedliche Emotionen. Keine Markdown-Codeblöcke und keine zusätzlichen Felder. Du kannst keine Dateien öffnen, Programme ausführen oder den Bildschirm sehen. Behaupte keine ausgeführten Aktionen.";
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct RequestId(pub(crate) u64);
@@ -116,6 +116,7 @@ pub enum ChatError {
     InvalidModel,
     Busy,
     InvalidResponse,
+    Language,
     ResponseLimit,
     StreamLimit,
     Timeout,
@@ -135,6 +136,9 @@ impl fmt::Display for ChatError {
             Self::InvalidModel => "Bitte wähle einen gültigen Modellnamen.",
             Self::Busy => "Eine Antwort läuft bereits.",
             Self::InvalidResponse => "Der Anbieter hat eine ungültige Antwort geliefert.",
+            Self::Language => {
+                "Beni hat Dialekt statt Hochdeutsch geliefert. Bitte versuche es nochmals."
+            }
             Self::ResponseLimit => "Die Antwort hat die Längengrenze erreicht.",
             Self::StreamLimit => "Die Antwort enthält zu viele Teilereignisse.",
             Self::Timeout => "Die Antwort hat zu lange gedauert.",
@@ -150,13 +154,21 @@ impl fmt::Display for ChatError {
 impl std::error::Error for ChatError {}
 
 pub enum StreamEvent {
+    /// A bounded structured response is still arriving; no raw JSON is displayed.
+    Progress,
+    Reply(crate::Reply),
     Delta(String),
-    Finished { reason: FinishReason, usage: Usage },
+    Finished {
+        reason: FinishReason,
+        usage: Usage,
+    },
     Failed(ChatError),
 }
 impl fmt::Debug for StreamEvent {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Self::Progress => f.write_str("Progress"),
+            Self::Reply(reply) => f.debug_tuple("Reply").field(reply).finish(),
             Self::Delta(text) => f.debug_struct("Delta").field("bytes", &text.len()).finish(),
             Self::Finished { reason, usage } => f
                 .debug_struct("Finished")

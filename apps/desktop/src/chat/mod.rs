@@ -1,4 +1,43 @@
 mod ollama;
+mod presentation;
+pub use presentation::Cue;
+use presentation::Presentation;
+pub const EXTRA_HEIGHT: f32 = 340.0;
+#[cfg(test)]
+pub fn dimensions(base: egui::Vec2, open: bool, monitor: Option<egui::Vec2>) -> egui::Vec2 {
+    dimensions_with_space(base, open, monitor, None)
+}
+pub fn dimensions_with_space(
+    base: egui::Vec2,
+    open: bool,
+    monitor: Option<egui::Vec2>,
+    space_above: Option<f32>,
+) -> egui::Vec2 {
+    if !open {
+        return base;
+    }
+    let monitor = monitor.filter(|m| m.x.is_finite() && m.y.is_finite() && m.x > 0.0 && m.y > 0.0);
+    if monitor.is_some_and(|m| {
+        (m.y - 48.0 < base.y + 200.0
+            || space_above.is_some_and(|space| space < (EXTRA_HEIGHT.min(m.y - 48.0 - base.y))))
+            && m.x >= base.x + 440.0
+    }) {
+        return egui::vec2(base.x + 440.0, base.y);
+    }
+    let height = monitor.map_or(base.y + EXTRA_HEIGHT, |m| {
+        (base.y + EXTRA_HEIGHT).min(m.y - 48.0)
+    });
+    egui::vec2(base.x.max(420.0), height)
+}
+pub fn beside(base: egui::Vec2, actual: egui::Vec2) -> bool {
+    actual.x >= base.x + 430.0 && actual.y < base.y + 150.0
+}
+pub fn offset(base: egui::Vec2, actual: egui::Vec2) -> egui::Vec2 {
+    egui::vec2(
+        (actual.x - base.x) * if beside(base, actual) { 1.0 } else { 0.5 },
+        actual.y - base.y,
+    )
+}
 use buddy_chat::{
     CancellationToken, ChatError, ChatProvider, ChatSession, Phase, RequestId, StreamEvent,
 };
@@ -39,6 +78,8 @@ pub struct Chat {
     worker: Option<Worker>,
     provider: Ollama,
     clock: Instant,
+    presentation: Option<Presentation>,
+    connection_open: bool,
     focused: bool,
 }
 impl Chat {
@@ -65,6 +106,8 @@ impl Chat {
             worker: None,
             provider: Ollama::default(),
             clock: Instant::now(),
+            presentation: None,
+            connection_open: false,
             focused: false,
         }
     }
@@ -80,28 +123,61 @@ impl Chat {
         if self.enabled && !self.discovered && self.worker.is_none() {
             self.refresh(ctx);
         }
-        ctx.send_viewport_cmd_to(id(), egui::ViewportCommand::Minimized(false));
-        ctx.send_viewport_cmd_to(id(), egui::ViewportCommand::Focus);
+        ctx.send_viewport_cmd(egui::ViewportCommand::Minimized(false));
+        ctx.send_viewport_cmd(egui::ViewportCommand::Focus);
         ctx.request_repaint();
     }
     pub fn close(&mut self) {
         self.cancel();
         self.open = false;
+        self.focused = false;
+    }
+    pub fn escape(&mut self, ctx: &egui::Context) {
+        if self.focused {
+            if let Some(id) = ctx.memory(|m| m.focused()) {
+                ctx.memory_mut(|m| m.surrender_focus(id));
+            }
+            self.focused = false;
+        } else {
+            self.close();
+        }
     }
     pub fn cancel(&mut self) {
         if let Some(worker) = &self.worker {
             worker.cancellation.cancel();
         }
         self.session.cancel();
+        self.presentation = None;
     }
     pub fn busy(&self) -> bool {
-        self.session.busy()
+        self.session.busy() || self.presentation.as_ref().is_some_and(Presentation::active)
+    }
+    pub(crate) fn receive(&mut self, id: RequestId, event: StreamEvent, now: u64) {
+        let finished = matches!(&event, StreamEvent::Finished { .. });
+        if self.session.receive(id, event, now)
+            && finished
+            && self.open
+            && matches!(self.session.phase(), Phase::Completed { .. })
+            && let Some(reply) = self.session.reply()
+        {
+            self.presentation = Some(Presentation::new(id, reply.clone(), now));
+        }
+    }
+    pub(crate) fn next_part(&mut self) {
+        let now = self.now_ms();
+        if let Some(p) = &mut self.presentation {
+            p.next(now);
+        }
     }
     pub fn poll(&mut self) {
         let now = self.now_ms();
         self.session.advance(now);
+        if let Some(presentation) = &mut self.presentation {
+            presentation.advance(now);
+        }
         if let Some(worker) = &self.worker {
             let mut disconnected = false;
+            let mut replies = Vec::new();
             for _ in 0..32 {
                 let event = match worker.receive.try_recv() {
                     Ok(event) => event,
@@ -129,15 +205,19 @@ impl Chat {
                         }
                     }
                     Event::Reply(id, event) => {
-                        self.session.receive(id, event, now);
+                        replies.push((id, event));
                     }
                     _ => {}
                 }
             }
+            let request_id = worker.request_id;
+            for (id, event) in replies {
+                self.receive(id, event, now);
+            }
             if disconnected {
                 // Disconnection proves all buffered events were consumed.
                 // Dropping a handle never blocks the GUI to join a worker.
-                if let Some(id) = worker.request_id {
+                if let Some(id) = request_id {
                     self.session
                         .receive(id, StreamEvent::Failed(ChatError::Protocol), now);
                 }
@@ -150,6 +230,7 @@ impl Chat {
             return;
         }
         self.enabled = true;
+        self.presentation = None;
         self.session.clear();
         self.pending_input.clear();
         self.models.clear();
@@ -164,7 +245,6 @@ impl Chat {
             let result = provider.discover(&token);
             let _ = send.try_send(Event::Models(result));
             wake.request_repaint_of(egui::ViewportId::ROOT);
-            wake.request_repaint_of(id());
         });
         self.worker = Some(Worker {
             receive,
@@ -192,6 +272,8 @@ impl Chat {
                 return;
             }
         };
+        self.presentation = None;
+        self.connection_open = false;
         self.pending_input = self.draft.trim().into();
         self.draft.clear();
         self.connection_error = None;
@@ -208,7 +290,6 @@ impl Chat {
                 let _ = emit(StreamEvent::Failed(error));
             }
             wake.request_repaint_of(egui::ViewportId::ROOT);
-            wake.request_repaint_of(crate::chat::id());
         });
         self.worker = Some(Worker {
             receive,
@@ -225,196 +306,228 @@ impl Chat {
         self.models.clear();
         self.discovered = false;
         self.connection_error = None;
+        self.presentation = None;
         self.session.clear();
         self.pending_input.clear();
     }
-    pub fn show(&mut self, ctx: &egui::Context) -> Option<egui::Rect> {
+    pub fn cue(&self) -> Option<Cue> {
         if !self.open {
             return None;
         }
-        if ctx.embed_viewports() {
-            let mut open = true;
-            let response = egui::Window::new("Mit Beni reden")
-                .open(&mut open)
-                .default_size([640.0, 720.0])
-                .min_size([420.0, 520.0])
-                .resizable(true)
-                .collapsible(false)
-                .show(ctx, |ui| self.contents(ui));
-            if !open {
-                self.close();
-            }
-            return response.map(|r| r.response.rect);
+        match self.session.phase() {
+            Phase::Waiting => Some(Cue::Thinking),
+            Phase::Speaking => Some(Cue::Speaking),
+            Phase::Completed { .. } => self.presentation.as_ref().and_then(Presentation::cue),
+            _ => None,
         }
-        ctx.show_viewport_immediate(id(), builder(), |ui, _| {
-            let child = ui.ctx().clone();
-            let escape = child.input(|i| i.key_pressed(egui::Key::Escape));
-            if child.input(|i| i.viewport().close_requested()) || (escape && !self.focused) {
-                self.close();
-                child.request_repaint_of(egui::ViewportId::ROOT);
-                return;
-            }
-            if escape && let Some(focused) = child.memory(|m| m.focused()) {
-                child.memory_mut(|m| m.surrender_focus(focused));
-            }
-            ui.painter()
-                .rect_filled(ui.max_rect(), 0.0, ui.visuals().window_fill());
-            egui::Frame::new().inner_margin(16).show(ui, |ui| {
-                ui.set_min_size(ui.available_size());
-                self.contents(ui);
-            });
-            self.focused = child.memory(|m| m.focused()).is_some();
-            if self.worker.is_some() {
-                child.request_repaint_after(Duration::from_millis(100));
-            }
-        });
-        None
     }
-    fn contents(&mut self, ui: &mut egui::Ui) {
+    pub fn show(&mut self, ui: &mut egui::Ui, beside: bool) -> egui::Rect {
+        let fill = egui::Color32::from_rgb(246, 249, 237);
+        let rect = egui::Frame::new()
+            .fill(fill)
+            .corner_radius(18)
+            .inner_margin(12)
+            .show(ui, |ui| {
+                ui.set_width(ui.available_width().max(200.0));
+                *ui.visuals_mut() = egui::Visuals::light();
+                ui.visuals_mut().override_text_color = Some(egui::Color32::from_rgb(28, 41, 35));
+                ui.visuals_mut().widgets.inactive.bg_fill = egui::Color32::from_rgb(220, 231, 205);
+                ui.visuals_mut().widgets.hovered.bg_fill = egui::Color32::from_rgb(200, 220, 185);
+                self.contents(ui);
+            })
+            .response
+            .rect;
+        // The tail stays in this transparent buddy surface and moves with Beni.
+        let points = if beside {
+            let center = rect.right_center();
+            vec![
+                center + egui::vec2(-1.0, -10.0),
+                center + egui::vec2(-1.0, 10.0),
+                center + egui::vec2(12.0, 0.0),
+            ]
+        } else {
+            let center = rect.center_bottom();
+            vec![
+                center + egui::vec2(-10.0, -1.0),
+                center + egui::vec2(10.0, -1.0),
+                center + egui::vec2(0.0, 12.0),
+            ]
+        };
+        ui.painter().add(egui::Shape::convex_polygon(
+            points,
+            fill,
+            egui::Stroke::NONE,
+        ));
+        if self.open {
+            self.focused = ui.ctx().memory(|m| m.focused()).is_some();
+        }
+        rect.expand2(if beside {
+            egui::vec2(12.0, 0.0)
+        } else {
+            egui::vec2(0.0, 12.0)
+        })
+    }
+    fn connection(&mut self, ui: &mut egui::Ui) {
         let ctx = ui.ctx().clone();
-        ui.heading("Beni & du");
         if !self.enabled {
-            ui.label("Verbinde Beni mit deinem lokalen Ollama und wähle ein bereits installiertes Chatmodell.");
-            ui.label("Dein eingegebener Text und der angezeigte Chatkontext werden an den lokalen Dienst gesendet. Statusmeldungen bleiben getrennt.");
+            ui.label("Verbinde ein vorhandenes lokales Ollama-Modell. Nur dieses Gespräch und der angezeigte Kontext werden an den lokalen Dienst gesendet.");
             if ui.button("Lokales Ollama verbinden").clicked() {
                 self.refresh(&ctx);
             }
-            if ui.button("Später").clicked() {
-                self.close();
-            }
             return;
         }
-        ui.horizontal_wrapped(|ui| {
-            ui.label("Ollama lokal");
-            let previous = self.selected.clone();
-            ui.add_enabled_ui(self.worker.is_none(), |ui| {
-                egui::ComboBox::from_id_salt("chat-model")
-                    .selected_text(if self.selected.is_empty() {
-                        "Modell wählen"
-                    } else {
-                        &self.selected
-                    })
-                    .show_ui(ui, |ui| {
-                        for model in &self.models {
-                            if ui
-                                .selectable_value(
-                                    &mut self.selected,
-                                    model.name.clone(),
-                                    format!(
-                                        "{} · {:.1} GiB",
-                                        model.name,
-                                        model.size as f64 / 1073741824.0
-                                    ),
-                                )
-                                .clicked()
-                            {
-                                ui.close();
-                            }
+        let previous = self.selected.clone();
+        ui.add_enabled_ui(self.worker.is_none(), |ui| {
+            egui::ComboBox::from_id_salt("chat-model")
+                .width(ui.available_width().min(330.0))
+                .selected_text(if self.selected.is_empty() {
+                    "Modell wählen"
+                } else {
+                    &self.selected
+                })
+                .show_ui(ui, |ui| {
+                    for model in &self.models {
+                        if ui
+                            .selectable_value(
+                                &mut self.selected,
+                                model.name.clone(),
+                                format!(
+                                    "{} · {:.1} GiB",
+                                    model.name,
+                                    model.size as f64 / 1073741824.0
+                                ),
+                            )
+                            .clicked()
+                        {
+                            ui.close();
                         }
-                    });
-                if ui.button("Modelle aktualisieren").clicked() {
-                    self.refresh(&ctx);
-                }
-            });
-            if self.selected != previous {
-                self.session.clear();
-                self.pending_input.clear();
+                    }
+                });
+            if ui.button("Modelle aktualisieren").clicked() {
+                self.refresh(&ctx);
             }
         });
-        ui.small("Nur dieses Gespräch geht an deinen lokalen Ollama-Dienst. Keine Statusmeldungen, Dateien oder Bildschirmdaten.");
+        if self.selected != previous {
+            self.session.clear();
+            self.presentation = None;
+            self.pending_input.clear();
+            self.connection_open = false;
+        }
         if !self.discovered && self.worker.is_some() {
-            ui.horizontal(|ui| {
-                ui.spinner();
-                ui.label("Modelle prüfen …");
-            });
+            ui.label("Modelle prüfen …");
         } else if self.discovered && self.models.is_empty() && self.connection_error.is_none() {
-            ui.label("Kein lokales Chatmodell gefunden. Bild-, Embedding- und Cloud-Modelle werden nicht angeboten.");
+            ui.label("Kein geeignetes lokales Textmodell gefunden.");
         }
         if let Some(error) = self.connection_error {
-            ui.colored_label(egui::Color32::LIGHT_RED, error.to_string());
+            ui.colored_label(egui::Color32::DARK_RED, error.to_string());
         }
-        ui.separator();
-        let height = (ui.available_height() - 160.0).max(70.0);
-        egui::ScrollArea::vertical()
-            .id_salt("beni-chat-history")
-            .max_height(height)
-            .auto_shrink([false, false])
-            .stick_to_bottom(true)
-            .show(ui, |ui| {
-                if !self.draft.trim().is_empty() {
-                    egui::CollapsingHeader::new("Kontext für diese Anfrage").show(ui, |ui| {
-                        match self.session.preview(&self.draft) {
-                            Ok(messages) => {
-                                for message in messages {
-                                    ui.strong(match message.role() {
-                                        buddy_chat::Role::System => "Benis Rolle",
-                                        buddy_chat::Role::User => "Du",
-                                        buddy_chat::Role::Assistant => "Beni",
-                                    });
-                                    ui.add(egui::Label::new(message.text()).wrap());
-                                }
-                            }
-                            Err(error) => {
-                                ui.label(error.to_string());
-                            }
+        ui.small("Gespräch nur in dieser Sitzung. Statusmeldungen bleiben getrennt.");
+        if !self.draft.trim().is_empty() {
+            egui::CollapsingHeader::new("Kontext für diese Anfrage").show(ui, |ui| {
+                match self.session.preview(&self.draft) {
+                    Ok(messages) => {
+                        for message in messages {
+                            ui.strong(match message.role() {
+                                buddy_chat::Role::System => "Benis Rolle",
+                                buddy_chat::Role::User => "Du",
+                                buddy_chat::Role::Assistant => "Beni",
+                            });
+                            ui.add(egui::Label::new(message.text()).wrap());
                         }
-                    });
-                }
-                if self.session.history_turns() == 0 && self.pending_input.is_empty() {
-                    ui.label("Hoi! Worüber möchtest du reden?");
-                }
-                for (input, output) in self.session.history() {
-                    ui.strong("Du");
-                    ui.add(egui::Label::new(input).wrap());
-                    ui.strong("Beni");
-                    ui.add(egui::Label::new(output).wrap());
-                    ui.add_space(12.0);
-                }
-                if !self.pending_input.is_empty()
-                    && !matches!(self.session.phase(), Phase::Completed { .. })
-                {
-                    ui.strong("Du");
-                    ui.add(egui::Label::new(&self.pending_input).wrap());
-                    ui.strong("Beni");
-                    ui.add(egui::Label::new(self.session.response()).wrap());
+                    }
+                    Err(error) => {
+                        ui.label(error.to_string());
+                    }
                 }
             });
-        match self.session.phase() {
-            Phase::Waiting => {
-                ui.horizontal(|ui| {
-                    ui.spinner();
-                    ui.label("Beni denkt …");
-                });
-            }
-            Phase::Speaking => {
-                ui.label("Beni antwortet …");
-            }
-            Phase::Failed(error) => {
-                ui.colored_label(egui::Color32::LIGHT_RED, error.to_string());
-            }
-            Phase::Cancelled => {
-                ui.label("Anfrage abgebrochen.");
-            }
-            Phase::Completed {
-                reason: buddy_chat::FinishReason::Length,
-                ..
-            } => {
-                ui.label("Antwort am Tokenlimit beendet.");
-            }
-            _ => {
-                ui.label("Chatverlauf bleibt nur in dieser App-Sitzung.");
-            }
         }
+        if ui.button("Ollama trennen").clicked() {
+            self.disconnect();
+        }
+    }
+    fn contents(&mut self, ui: &mut egui::Ui) {
+        ui.horizontal(|ui| {
+            ui.strong("Beni");
+            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                let close = ui.button("×").on_hover_text("Gespräch schliessen");
+                close.widget_info(|| {
+                    egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "Gespräch schliessen")
+                });
+                if close.clicked() {
+                    self.close();
+                }
+            });
+        });
         let ready = self.enabled
             && self.worker.is_none()
             && self.models.iter().any(|m| m.name == self.selected);
+        let body_height = (ui.available_height() - 112.0).max(20.0);
+        egui::ScrollArea::vertical()
+            .id_salt("beni-conversation-bubble")
+            .max_height(body_height)
+            .min_scrolled_height(body_height)
+            .auto_shrink([false, false])
+            .show(ui, |ui| {
+                let required =
+                    !self.enabled || self.selected.is_empty() || self.connection_error.is_some();
+                let header = egui::CollapsingHeader::new("Verbindung & Kontext")
+                    .open(Some(required || self.connection_open))
+                    .show(ui, |ui| self.connection(ui));
+                if header.header_response.clicked() && !required {
+                    self.connection_open = !self.connection_open;
+                }
+                if self.worker.is_some() && !self.session.busy() {
+                    ui.small("Modelle prüfen …");
+                }
+                if let Some(presentation) = &self.presentation {
+                    ui.add(
+                        egui::Label::new(egui::RichText::new(presentation.text()).size(15.0))
+                            .wrap(),
+                    );
+                    if presentation.parts() > 1 {
+                        ui.small(format!(
+                            "Abschnitt {} von {}",
+                            presentation.index() + 1,
+                            presentation.parts()
+                        ));
+                    }
+                } else if self.session.busy() {
+                    ui.label("Ich denke über deine Nachricht nach …");
+                } else if self.session.response().is_empty()
+                    || !matches!(self.session.phase(), Phase::Completed { .. })
+                {
+                    ui.label("Hallo! Worüber möchtest du sprechen?");
+                } else {
+                    ui.add(egui::Label::new(self.session.response()).wrap());
+                }
+                match self.session.phase() {
+                    Phase::Failed(error) => {
+                        ui.colored_label(egui::Color32::DARK_RED, error.to_string());
+                    }
+                    Phase::Cancelled => {
+                        ui.label("Anfrage abgebrochen.");
+                    }
+                    _ => {}
+                }
+                if self.session.history_turns() > 0 {
+                    egui::CollapsingHeader::new("Gespräch nachlesen").show(ui, |ui| {
+                        for (input, output) in self.session.history() {
+                            ui.strong("Du");
+                            ui.add(egui::Label::new(input).wrap());
+                            ui.strong("Beni");
+                            ui.add(egui::Label::new(output).wrap());
+                            ui.add_space(8.0);
+                        }
+                    });
+                }
+            });
         let edit = ui.add_enabled(
             ready,
             egui::TextEdit::multiline(&mut self.draft)
                 .desired_rows(2)
                 .desired_width(f32::INFINITY)
                 .char_limit(buddy_chat::MAX_INPUT_BYTES)
-                .hint_text("Schreib Beni eine Nachricht …"),
+                .hint_text("Schreibe Beni eine Nachricht …"),
         );
         edit.widget_info(|| {
             egui::WidgetInfo::labeled(
@@ -426,7 +539,7 @@ impl Chat {
         let shortcut = ready
             && edit.has_focus()
             && ui.input(|i| i.modifiers.command && i.key_pressed(egui::Key::Enter));
-        edit.on_hover_text("Senden: Cmd+Enter auf macOS, Ctrl+Enter auf Windows/Linux. Enter fügt eine neue Zeile ein.");
+        edit.on_hover_text("Cmd+Enter auf macOS, Ctrl+Enter auf Windows/Linux sendet. Enter fügt eine neue Zeile ein.");
         ui.horizontal_wrapped(|ui| {
             if ui
                 .add_enabled(
@@ -436,7 +549,7 @@ impl Chat {
                 .clicked()
                 || shortcut
             {
-                self.send(&ctx);
+                self.send(ui.ctx());
             }
             if ui
                 .add_enabled(self.worker.is_some(), egui::Button::new("Abbrechen"))
@@ -444,23 +557,24 @@ impl Chat {
             {
                 self.cancel();
             }
+            let next = self
+                .presentation
+                .as_ref()
+                .is_some_and(Presentation::has_next);
+            if ui.add_enabled(next, egui::Button::new("Weiter")).clicked() {
+                self.next_part();
+            }
             if ui
-                .add_enabled(self.worker.is_none(), egui::Button::new("Chat leeren"))
+                .add_enabled(self.worker.is_none(), egui::Button::new("Gespräch leeren"))
                 .clicked()
             {
                 self.session.clear();
+                self.presentation = None;
                 self.pending_input.clear();
             }
-            if ui.button("Ollama trennen").clicked() {
-                self.disconnect();
-            }
-            if ui.button("Schliessen").clicked() {
-                self.close();
-            }
         });
-        if self.worker.is_some() {
-            ui.ctx()
-                .request_repaint_after_for(Duration::from_millis(100), egui::ViewportId::ROOT);
+        if self.worker.is_some() || self.presentation.as_ref().is_some_and(Presentation::active) {
+            ui.ctx().request_repaint_after(Duration::from_millis(100));
         }
     }
 }
@@ -481,7 +595,7 @@ fn send_event(
         match send.try_send(event) {
             Ok(()) => {
                 ctx.request_repaint_of(egui::ViewportId::ROOT);
-                ctx.request_repaint_of(id());
+
                 return Ok(());
             }
             Err(TrySendError::Full(returned)) => {
@@ -492,25 +606,6 @@ fn send_event(
         }
     }
 }
-pub fn id() -> egui::ViewportId {
-    egui::ViewportId::from_hash_of("beni-chat-window")
-}
-pub fn builder() -> egui::ViewportBuilder {
-    egui::ViewportBuilder::default()
-        .with_title("Mit Beni reden")
-        .with_app_id("io.witzelfitz.beni-buddy.chat")
-        .with_inner_size([640.0, 720.0])
-        .with_min_inner_size([420.0, 520.0])
-        .with_clamp_size_to_monitor_size(true)
-        .with_decorations(true)
-        .with_resizable(true)
-        .with_transparent(false)
-        .with_mouse_passthrough(false)
-        .with_window_level(egui::WindowLevel::Normal)
-        .with_taskbar(true)
-        .with_active(true)
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -528,6 +623,20 @@ mod tests {
         }
         fn flush(&mut self) {}
     }
+    #[test]
+    fn escape_finishes_editing_even_if_egui_already_cleared_focus_then_cancels() {
+        let ctx = egui::Context::default();
+        let mut chat = Chat::load(None);
+        chat.open = true;
+        chat.focused = true;
+        let (_, token) = chat.session.start("test", "Frage", 0).unwrap();
+        assert!(ctx.memory(|m| m.focused()).is_none());
+        chat.escape(&ctx);
+        assert!(chat.open && chat.session.busy() && !token.is_cancelled());
+        chat.escape(&ctx);
+        assert!(!chat.open && !chat.session.busy() && token.is_cancelled());
+    }
+
     #[test]
     fn opt_in_and_model_persist_but_conversations_never_do() {
         let mut chat = Chat::load(None);

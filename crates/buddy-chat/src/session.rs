@@ -18,10 +18,11 @@ pub enum Phase {
 struct Turn {
     input: String,
     output: String,
+    context_output: String,
 }
 impl Turn {
     fn bytes(&self) -> usize {
-        self.input.len() + self.output.len()
+        self.input.len() + self.context_output.len()
     }
 }
 struct Active {
@@ -41,6 +42,7 @@ pub struct ChatSession {
     active: Option<Active>,
     phase: Phase,
     response: String,
+    reply: Option<Reply>,
     history: VecDeque<Turn>,
 }
 impl fmt::Debug for ChatSession {
@@ -63,6 +65,9 @@ impl ChatSession {
     }
     pub fn response(&self) -> &str {
         &self.response
+    }
+    pub fn reply(&self) -> Option<&Reply> {
+        self.reply.as_ref()
     }
     pub fn history_turns(&self) -> usize {
         self.history.len()
@@ -110,7 +115,7 @@ impl ChatSession {
             });
             messages.push(Message {
                 role: Role::Assistant,
-                text: turn.output.clone(),
+                text: turn.context_output.clone(),
             });
         }
         messages.push(Message {
@@ -149,6 +154,7 @@ impl ChatSession {
             events: 0,
         });
         self.response.clear();
+        self.reply = None;
         self.phase = Phase::Waiting;
         Ok((
             ChatRequest {
@@ -180,8 +186,24 @@ impl ChatSession {
             return true;
         }
         match event {
+            StreamEvent::Progress => {
+                active.last_text_ms = Some(now_ms);
+            }
+            StreamEvent::Reply(reply) => {
+                if !self.response.is_empty() || self.reply.is_some() {
+                    self.fail(ChatError::Protocol);
+                } else {
+                    self.response = reply.text();
+                    self.reply = Some(reply);
+                    active.last_text_ms = Some(now_ms);
+                    self.phase = Phase::Speaking;
+                }
+            }
             StreamEvent::Delta(text) => {
-                if text.len() > MAX_DELTA_BYTES || !contract::valid_text(&text) {
+                if self.reply.is_some()
+                    || text.len() > MAX_DELTA_BYTES
+                    || !contract::valid_text(&text)
+                {
                     self.fail(ChatError::InvalidResponse);
                 } else if text.len() > MAX_RESPONSE_BYTES - self.response.len() {
                     self.fail(ChatError::ResponseLimit);
@@ -192,6 +214,16 @@ impl ChatSession {
                 }
             }
             StreamEvent::Finished { reason, usage } => {
+                if self.reply.is_none() {
+                    match crate::reply::standard_text(&self.response) {
+                        Ok(text) => self.response = text,
+                        Err(error) => {
+                            self.response.clear();
+                            self.fail(error);
+                            return true;
+                        }
+                    }
+                }
                 if self.response.trim().is_empty() {
                     self.fail(ChatError::InvalidResponse);
                 } else {
@@ -199,6 +231,11 @@ impl ChatSession {
                     self.history.push_back(Turn {
                         input: active.input,
                         output: self.response.clone(),
+                        context_output: self
+                            .reply
+                            .as_ref()
+                            .map(Reply::encode)
+                            .unwrap_or_else(|| self.response.clone()),
                     });
                     while self.history.len() > MAX_HISTORY_TURNS
                         || self.history.iter().map(Turn::bytes).sum::<usize>() > MAX_CONTEXT_BYTES
@@ -246,6 +283,7 @@ impl ChatSession {
         self.cancel();
         self.history.clear();
         self.response.clear();
+        self.reply = None;
         self.phase = Phase::Idle;
     }
 
