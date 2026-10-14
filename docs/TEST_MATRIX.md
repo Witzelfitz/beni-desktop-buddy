@@ -324,3 +324,23 @@ PASS: Gesprächsblase und JSON-Emotionen aus PR #54 gemergt; drei Plattformprüf
 | Native Windows-/Linux-Gespräche, physische Monitorwechsel und Sichtabnahme jeder Emotion | NOT_RUN; generische Zustandsprüfungen und native macOS-Feature-Abnahme dokumentiert |
 
 Die Paketquellen der beiden Macs liegen auf 98523f9, die Testkorrektur und neue native Linux-Abnahme auf 2879a23; die geprüften Produkteingaben sind identisch. 0.1.5 ist der neue gemeinsame Release, frühere Releases bleiben unverändert. Keine Modelle heruntergeladen, keine Cloud-Keys verwendet und keine Sprachausgabe ergänzt. Die öffentliche Updatekette ist geprüft; die Installation auf dem Nutzergerät wird ausdrücklich separat bestätigt.
+
+
+## Härtungen H1–H5, 14. Oktober 2026
+
+PR #58–#62 sind in main gemergt; Quellstand `240589b22edf25981af1be37d521c98a712543cf`. Diese Prüfung betrifft die Entwicklung nach 0.1.5/Build 6, keine neuen veröffentlichten Installer.
+
+| Prüfung | Ergebnis |
+| --- | --- |
+| README, Bedienungs-/Entwicklungsanleitungen und lokale Markdown-Links | PASS, kurzer Einstieg; Details getrennt, lokale Links geprüft |
+| Gemeinsamer lokaler Lauf `scripts/check.sh --desktop` auf integriertem main | PASS, 47 Roottests und 110 Desktoptests, beide fmt-/Clippy-Prüfungen und separater GUI-Build |
+| Packaging und Release-/Updater-Vertrag | PASS, 34 Mac-, 16 portable Packaging-, 20 Release-, 27 lokale Release- und 20 Sparkle-Tests; Version/Build und Assets konsistent |
+| Zentrale Sprechblasenregeln | PASS, alle 128 Merkmalskombinationen, Besitzerpriorität und Gespräch/Timer/Erinnerung/IPC/Escape-Ablauf mit echter IPC-Verbindung |
+| Vendored eframe | PASS, vollständiger Originalarchivvergleich, genau drei deklarierte Quellpatches, 3 Inventar-Regressionstests und 2 echte synchrone FileStorage-Prüfungen |
+| Gemeinsamer Interpreter, frühe Fehler und GUI-Trennung | PASS, 5 Toolingtests und echter integrierter Prüflauf mit festgelegten Release-Abhängigkeiten |
+| CI-Scope, Artefaktbindung und Infrastruktur-Retry | PASS, 4 CI-Policytests und actionlint; PR #59 inklusive nativer Linux-Proben grün |
+| Isolierte native macOS-Gesprächsabnahme aus PR #60 | PASS, am eigenen Debug-Prozess: Gespräch öffnen, alle Bedienelemente im einzigen Fenster, Escape und Beenden; keine Änderung der Nutzerinstallation |
+| Abschliessende main-CI auf macOS, Windows und Linux samt separaten nativen Linux-Proben | PASS, [Lauf 38634069881](https://github.com/Witzelfitz/beni-desktop-buddy/actions/runs/38634069881): alle drei Rust-Jobs und separate X11-/Wayland-Proben erfolgreich |
+| Echter Modelllauf, neue Installer-/Sparkle-Paketabnahmen und manuelle Windows-/Linux-Gespräche für diese Härtungen | NOT_RUN; bestehende frühere Abnahmen bleiben getrennt dokumentiert |
+
+Die Statuswarteschlangen, TTL, Opt-in-Grenzen, vorhandenen SDK-Gesten und der netzwerkfreie Animationskern bleiben erhalten. Ältere main-Läufe aus den einzelnen Merges werden durch den gemeinsamen Lauf ersetzt und automatisch abgebrochen.
