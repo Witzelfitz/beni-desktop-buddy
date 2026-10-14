@@ -1,6 +1,12 @@
 name: Windows and Linux installers
 on:
   workflow_dispatch:
+    inputs:
+      platform:
+        description: 'Welche nativen Installer prüfen?'
+        type: choice
+        options: [both, windows, linux]
+        default: both
 permissions:
   contents: read
 concurrency:
@@ -12,11 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - platform: windows
-            runner: windows-2025
-          - platform: linux
-            runner: ubuntu-22.04
+        include: ${{ fromJSON(inputs.platform == 'windows' && '[{"platform":"windows","runner":"windows-2025"}]' || (inputs.platform == 'linux' && '[{"platform":"linux","runner":"ubuntu-22.04"}]' || '[{"platform":"windows","runner":"windows-2025"},{"platform":"linux","runner":"ubuntu-22.04"}]')) }}
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7

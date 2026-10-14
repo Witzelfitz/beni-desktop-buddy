@@ -187,11 +187,11 @@ def download_portable(run_id, target, directory, current_commit):
     if target not in ('windows', 'linux') or not re.fullmatch(r'[1-9][0-9]{0,19}', str(run_id)):
         raise ReleaseError('Ungültiges natives Installer-Ziel.')
     run = api(f'actions/runs/{run_id}')
-    if (run.get('status') != 'completed' or run.get('conclusion') != 'success'
+    if (run.get('status') != 'completed' or run.get('conclusion') not in ('success','failure')
             or run.get('path') != '.github/workflows/portable-installers.yml' or run.get('event') != 'workflow_dispatch'
             or run.get('head_branch') != 'main' or run.get('repository', {}).get('full_name') != REPO
             or run.get('head_repository', {}).get('full_name') != REPO):
-        raise ReleaseError('Nur erfolgreiche native Installer-Läufe des eigenen main übernehmen.')
+        raise ReleaseError('Nur abgeschlossene native Installer-Läufe des eigenen main übernehmen.')
     sha = run.get('head_sha', '')
     if not re.fullmatch(r'[0-9a-f]{40}', sha): raise ReleaseError('Ungültiger Installer-Commit.')
     command(['git', 'merge-base', '--is-ancestor', sha, 'origin/main'])
@@ -201,6 +201,10 @@ def download_portable(run_id, target, directory, current_commit):
     jobs = api(f'actions/runs/{run_id}/jobs?per_page=100')['jobs']
     selected = [j for j in jobs if j.get('name') == f'installer ({target}, {runner})' and j.get('conclusion') == 'success']
     if len(selected) != 1: raise ReleaseError('Native Installer-Abnahme fehlt.')
+    native_step = 'Native Windows installation and window test' if target=='windows' else 'Native Linux installation, X11 and Wayland test'
+    for name in ('Build native installer',native_step,'Store reviewed installers'):
+        if not any(s.get('name')==name and s.get('conclusion')=='success' for s in selected[0].get('steps',[])):
+            raise ReleaseError('Erfolgreicher nativer Ziel-Job benötigt alle Paket- und Abnahmeschritte.')
     listing = api(f'actions/runs/{run_id}/artifacts?per_page=100')['artifacts']
     matches = [a for a in listing if a.get('name') == f'portable-{target}-x86_64' and a.get('expired') is False]
     if len(matches) != 1: raise ReleaseError('Genau ein natives Paketartefakt erforderlich.')

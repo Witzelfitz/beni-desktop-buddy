@@ -12,6 +12,7 @@ import shutil
 import subprocess
 import tempfile
 import time
+import urllib.request
 
 spec = importlib.util.spec_from_file_location('portable', Path(__file__).with_name('package-portable.py'))
 package = importlib.util.module_from_spec(spec); spec.loader.exec_module(package)
@@ -40,7 +41,20 @@ def windows(image, folder):
     executable = installed / 'beni-desktop-buddy.exe'
     package.check_binary(executable, 'windows')
     package.run([str(installed / 'beni-buddy-cli.exe'), 'validate-assets'], 'Installierte Windows-CLI prüfen')
-    process = subprocess.Popen([str(executable)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    # Fresh hosted runners lack a hardware OpenGL driver. This test-only DLL is
+    # never included in the installer and never touches Windows system folders.
+    url = 'https://github.com/mmozeiko/build-mesa/releases/download/26.2.4/mesa-llvmpipe-x64-26.2.4.7z'
+    with urllib.request.urlopen(url,timeout=60) as response: driver = response.read(32*1024*1024+1)
+    if hashlib.sha256(driver).hexdigest() != '6eff97dc5b33c8017a67eb617a1b010341b1569863caa8638b508983645daeec':
+        raise package.PackagingError('Test-Grafiktreiber hat eine falsche Prüfsumme.')
+    archive = folder/'mesa.7z'; archive.write_bytes(driver)
+    graphics = folder/'mesa'
+    package.run(['7z','x','-y',f'-o{graphics}',str(archive)],'Test-Grafiktreiber extrahieren')
+    drivers = list(graphics.rglob('opengl32.dll'))
+    if len(drivers)!=1: raise package.PackagingError('Test-Grafiktreiber hat einen unerwarteten Inhalt.')
+    package.check_binary(drivers[0],'windows'); shutil.copy2(drivers[0],installed/'opengl32.dll')
+    log = tempfile.TemporaryFile()
+    process = subprocess.Popen([str(executable)], env=dict(os.environ,GALLIUM_DRIVER='llvmpipe'),stdout=log,stderr=log)
     inspector = package.ROOT / 'packaging/windows/window-smoke.ps1'
     try:
         wait_window(process, lambda: subprocess.run(['pwsh','-NoProfile','-File',str(inspector),'-ProcessId',str(process.pid)],
@@ -50,7 +64,10 @@ def windows(image, folder):
             result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=45)
             if result.returncode != 2 or package.digest(executable) != before or process.poll() is not None:
                 raise package.PackagingError('Laufende Windows-App wird nicht sicher geschützt.')
-    finally: stop(process)
+    except package.PackagingError:
+        log.seek(0); print(log.read(4000).decode(errors='replace'))
+        raise
+    finally: stop(process); log.close()
     foreign = installed / 'my-notes.txt'; foreign.write_text('keep')
     package.run(f'"{installed / "Uninstall.exe"}" /S _?={installed}', 'Windows deinstallieren')
     if executable.exists() or foreign.read_text() != 'keep':
@@ -60,7 +77,7 @@ def windows(image, folder):
         with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\Microsoft\Windows\CurrentVersion\Uninstall\io.witzelfitz.beni-buddy'):
             raise package.PackagingError('Deinstallations-Eintrag bleibt unerwartet erhalten.')
     except FileNotFoundError: pass
-    return {'window_visible':True, 'running_app_protected':True, 'installed_then_removed':True}
+    return {'window_visible':True, 'running_app_protected':True, 'installed_then_removed':True,'graphics_backend':'ci_mesa_llvmpipe_26.2.4'}
 
 
 def linux(image, folder):
