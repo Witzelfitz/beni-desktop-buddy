@@ -209,14 +209,20 @@ impl BuddyApp {
         }
         delay
     }
+    fn bubble_state(&self, visible: bool, now: Instant) -> crate::bubble_policy::State {
+        crate::bubble_policy::State {
+            visible,
+            quiet: self.do_not_disturb,
+            history: self.history_player.is_some(),
+            conversation: self.chat.open,
+            error: self.error.is_some(),
+            speech_active: now < self.message_until,
+            status_active: self.active_status,
+        }
+    }
     fn deliver_status(&mut self, visible: bool, now: Instant) {
-        if self.do_not_disturb
-            || !visible
-            || self.history_player.is_some()
-            || self.chat.open
-            || self.error.is_some()
-            || (self.active_status && now < self.message_until)
-        {
+        let policy = self.bubble_state(visible, now);
+        if !policy.accepts_ipc() {
             return;
         }
         if let Some(delivery) = self.server.as_ref().and_then(|s| s.pop()) {
@@ -231,7 +237,7 @@ impl BuddyApp {
             return;
         }
         // Local notices wait for all visible speech, including manual text.
-        if now >= self.message_until {
+        if policy.accepts_local() {
             if let Some(phase) = self.timer.take_notice(now) {
                 self.show_local_notice(phase.message(), phase.animation(), "timer", now);
             } else if let Some(reminder) = self.reminders.take_notice(now) {
@@ -551,12 +557,7 @@ impl BuddyApp {
         }
     }
     fn sync_chat_animation(&mut self, now: Instant) {
-        let state = if !self.hidden
-            && self.chat.open
-            && self.history_player.is_none()
-            && self.error.is_none()
-            && now >= self.message_until
-        {
+        let state = if self.bubble_state(!self.hidden, now).animates_conversation() {
             self.chat.cue()
         } else {
             None
@@ -1889,6 +1890,71 @@ mod tests {
             app.deliver_status(true, now + Duration::from_secs(10));
             assert_eq!(app.message, "Kurz aufstehen", "{blocked}");
         }
+    }
+
+    #[test]
+    fn conversation_escape_releases_queued_notices_in_order_and_never_resumes_its_request() {
+        let endpoint = common::TestEndpoint::new();
+        let ctx = egui::Context::default();
+        let mut app = app(&ctx);
+        app.server = Some(buddy_ipc::Server::start_at(endpoint.endpoint.clone(), || {}).unwrap());
+        app.player.paused = true;
+        app.open_chat(&ctx);
+        let (_, cancellation) = app.chat.session.start("test", "Frage", 0).unwrap();
+        let now = Instant::now();
+        app.sync_chat_animation(now);
+        assert_eq!(app.player.state(), "nachdenken");
+        app.timer
+            .start(crate::timer::Phase::Break, now - Duration::from_secs(300));
+        app.reminders
+            .schedule("Kurz aufstehen", 1, now - Duration::from_secs(60))
+            .unwrap();
+        app.advance_timer(now);
+        app.advance_reminders(now);
+        buddy_ipc::notify(
+            &endpoint.endpoint,
+            buddy_core::notifications::Notification::new("Build grün"),
+        )
+        .unwrap();
+        app.deliver_status(true, now);
+        assert!(!app.active_status);
+        assert_eq!(app.server.as_ref().unwrap().pending(), 1);
+        frame(
+            &ctx,
+            &mut app,
+            0.0,
+            vec![egui::Event::Key {
+                key: egui::Key::Escape,
+                physical_key: None,
+                pressed: true,
+                repeat: false,
+                modifiers: Default::default(),
+            }],
+        )
+        .drop_without_applying_deltas();
+        assert!(!app.chat.open);
+        assert!(cancellation.is_cancelled());
+        app.sync_chat_animation(now);
+        assert!(app.chat_player.is_none());
+        for text in [
+            "Build grün",
+            crate::timer::Phase::Break.message(),
+            "Kurz aufstehen",
+        ] {
+            app.dismiss_speech(now);
+            app.deliver_status(true, now);
+            assert_eq!(app.message, text);
+            assert!(app.player.paused);
+            let deadline = app.message_until;
+            app.deliver_status(true, now);
+            assert_eq!(
+                app.message_until, deadline,
+                "an active notice must not be preempted"
+            );
+        }
+        app.dismiss_speech(now);
+        app.deliver_status(true, now);
+        assert!(!app.active_status);
     }
 
     #[test]

@@ -1,5 +1,6 @@
 #![cfg_attr(target_os = "windows", windows_subsystem = "windows")]
 mod app;
+mod bubble_policy;
 mod chat;
 mod history;
 mod hit_map;
