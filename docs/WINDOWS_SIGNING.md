@@ -1,6 +1,6 @@
 # Windows-Herausgebersignatur einrichten
 
-Stand: 14. Oktober 2026. Kosten für Artifact Signing Basic ausdrücklich freigegeben. Aktives Azure-Abonnement mit Besitzerrolle und `Microsoft.CodeSigning`-Registrierung durch den Nutzer bestätigt. Konto `witzelfitzbeni` in Ressourcengruppe `beni-release-signing`, Switzerland North, Basic und Konto-URI im Portal-Screenshot geprüft. Die Identity-Verifier-Rolle wurde dem eigenen Benutzerkonto zugewiesen. **Nächster Schritt: öffentliche Firmenprüfung.** Noch kein Public-Trust-Profil, keine OIDC-Anbindung und keine Authenticode-Signierung. Die Ed25519-Downloadsignatur ersetzt diese nicht.
+Stand: 14. Oktober 2026. Kosten für Artifact Signing Basic ausdrücklich freigegeben. Aktives Azure-Abonnement mit Besitzerrolle und `Microsoft.CodeSigning`-Registrierung durch den Nutzer bestätigt. Konto `witzelfitzbeni` in Ressourcengruppe `beni-release-signing`, Switzerland North, Basic und Konto-URI im Portal-Screenshot geprüft. Die Identity-Verifier-Rolle wurde dem eigenen Benutzerkonto zugewiesen. **Öffentliche Firmenprüfung eingereicht:** Der Nutzer bestätigt am 14. Oktober 2026 den Portalstatus «In Bearbeitung / In Progress». Microsofts Freigabe steht aus. Noch kein Public-Trust-Profil, keine OIDC-Anbindung und keine Authenticode-Signierung. Die Ed25519-Downloadsignatur ersetzt diese nicht.
 
 ## 1. Azure-Abonnement
 
@@ -26,6 +26,10 @@ Die [Microsoft-Anleitung](https://learn.microsoft.com/en-us/azure/artifact-signi
 
 Im Signierkonto unter **Identity validations → Organization → New Identity → Public** die Firma prüfen lassen. Rechtsname, vollständige Geschäftsadresse, Schweizer Unternehmens-ID, Firmenwebsite und zwei erreichbare E-Mail-Adressen auf der eigenen Firmendomäne anhand der tatsächlichen Firmendaten eintragen. Die Prüfung erfolgt im Portal und benötigt gegebenenfalls Nachweise. Diese Identitätsprüfung kann die Build-Pipeline nicht übernehmen.
 
+Die Schweizer UID liess sich im Formular unter **Steuernummer / Tax Id** ohne Bindestrich und Punkte, mit `CHE`-Präfix eingeben (Format `CHE#########`). Der Nutzer bestätigt danach die erfolgreiche Einreichung. Dieser Eingabeweg ist auch als [Schweizer Erfahrungsbericht in Microsoft Q&A](https://learn.microsoft.com/en-us/answers/questions/1692352/trusted-signing-identity-validation-business-ident) dokumentiert. Eine UID ist keine D-U-N-S-Nummer. Die akzeptierte Formulareingabe bestätigt noch keine abgeschlossene Firmenprüfung.
+
+Während «In Progress» die angegebenen Postfächer inklusive Spam auf Bestätigungslinks und Rückfragen prüfen. Bei «Action Required» die konkreten Microsoft-Anweisungen im Portal beziehungsweise in der E-Mail erfüllen. Die [offizielle Anleitung](https://learn.microsoft.com/en-us/azure/artifact-signing/quickstart#create-an-identity-validation-request) nennt 1 bis 20 Arbeitstage für die Bearbeitung, bei weiteren Nachweisen gegebenenfalls länger. Es ist keine automatische Statusüberwachung eingerichtet.
+
 Erst nach erfolgreicher Prüfung ein Zertifikatsprofil **Public Trust** namens `beni-desktop` erstellen. **Private Trust** ist für öffentliche Downloads ungeeignet. Der bestätigte Firmenname wird Herausgeber des Zertifikats.
 
 ## 4. GitHub-Verknüpfung und Pipeline
@@ -42,5 +46,6 @@ Auch ein korrekt signierter neuer Download kann anfangs eine [SmartScreen-Reputa
 
 - **PASS:** Preis und Schweizer Organisationsverfügbarkeit anhand offizieller Quellen geprüft; Basic-Kosten freigegeben. Aktives Abonnement/Provider-Registrierung durch den Nutzer bestätigt; Basic-Konto mit Region und URI im Portal-Screenshot geprüft; eigene Identity-Verifier-Rolle zugewiesen.
 - **PASS Windows-Paket:** Nativer Installer und eigenes Fenster auf dem Server-2025-Runner mit isoliertem Mesa-Softwaretreiber abgenommen, [Run 38537805266](https://github.com/Witzelfitz/beni-desktop-buddy/actions/runs/38537805266). Diese unsigned Ausgabe ist nicht als öffentlicher Download angeboten.
-- **NOT_RUN:** Öffentliche Firmenprüfung, Public-Trust-Profil, OIDC, Authenticode und öffentliche Windows-Veröffentlichung. Bisher wird der Nutzer durch die Portal-Einrichtung geführt; keine API-Anmeldung für Azure eingerichtet. Identitätsnachweise und allfällige weitere Microsoft-Prüfung bleiben beim Nutzer/Microsoft.
+- **IN_PROGRESS laut Nutzerrückmeldung:** Öffentliche Organisationsprüfung für Witzelfitz Consulting GmbH eingereicht; Microsofts Freigabe steht aus.
+- **NOT_RUN:** Public-Trust-Profil, OIDC, Authenticode und öffentliche Windows-Veröffentlichung. Bisher wird der Nutzer durch die Portal-Einrichtung geführt; keine API-Anmeldung für Azure eingerichtet. Identitätsnachweise und allfällige weitere Microsoft-Prüfung bleiben beim Nutzer/Microsoft.
 - **Separat abgeschlossen:** Linux-AppImage und beide Mac-DMGs sind als 0.1.1 öffentlich verfügbar und auf der Downloadseite geprüft; siehe [Installerabnahme](PORTABLE_INSTALLERS.md).
