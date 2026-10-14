@@ -201,3 +201,23 @@ NOT_RUN: Installation A → B; dafür wird 0.1.3/Build 4 vorbereitet. Neue klein
 | Tatsächliche Nutzerinstallation 0.1.2 → 0.1.3 samt Neustart, Einstellungen/IPC und Timerabfrage | NOT_RUN, nächster begleiteter Schritt |
 
 Die negativen SDK-Proben laufen ausschliesslich in eigenen temporären Testbundles, ohne private Produktionsschlüssel. Das Paket war eine kontrolliert beschädigte 0.1.2-Fixture, als Testziel Build 4 angekündigt; kein fehlerhafter Stable-Feed veröffentlicht. Produktionsapp behält HTTPS und unveränderte Vertrauensanker.
+
+## Tatsächliches Nutzerupdate und Chat-Grundlage, 14. Oktober 2026
+
+| Prüfung | Ergebnis |
+| --- | --- |
+| Nutzer aktualisiert 0.1.2 → 0.1.3 über die angebotene Updatekette | PASS, Nutzer bestätigt «update ist auf 0.1.3 durch» |
+| Programme-App Version/Build/Bundle-ID und laufender Prozess | PASS, 0.1.3/Build 4, unveränderte Bundle-ID |
+| Gespeicherte Buddy-Einstellungen, Grösse, Empfang, Click-through, Nicht stören und Bewegungsregel nach Update | PASS, Werte gegenüber geschützter 0.1.2-Sicherung unverändert; keine Inhalte ausgegeben |
+| Codex-Hook nach Update unverändert | PASS, SHA-256-Vergleich mit vorheriger Sicherung |
+| Gebündelte 0.1.3-CLI erreicht bestehenden Statusdienst | PASS, Testmeldung mit Quelle update-check angenommen; sichtbare Geste nicht separat abgenommen |
+| Tatsächlicher Ablauf «Später» → spätere ausdrückliche Neustartfreigabe mit pausiertem Timer | NOT_RUN, pausierter Timer bestätigt, Ablauf der Abfrage nicht separat bestätigt |
+| Weitere Administrator-/ACL-Fälle und neue Zielgeräte | NOT_RUN |
+| R7a: Provider-Vertrag, Session und Fake-Worker | PASS, 13 neue Offline-Tests einschliesslich Abbruch, Fristen, Grenzen, Kontext und redigierten Diagnosen |
+| Root-/Desktop-fmt, Tests und Clippy | PASS lokal auf macOS, 42 Root- und 88 Desktoptests |
+| Release-Schema/Versionskonsistenz und lokale Release-Regressionsprüfungen | PASS, 20 + 27 Offline-Prüfungen; neue Chat-Version in Root-Lockfile berücksichtigt |
+| Ollama-Voraussetzung auf Entwickler-Mac | PASS, CLI vorhanden, lokaler Dienst erreichbar, vier Modelle; keine Modellanfrage gestellt |
+| Neue Windows-/Linux-Prüfungen für R7a | NOT_RUN lokal, bestehende PR-CI folgt; keine zusätzlichen Installer-Jobs |
+| Echte Modellanfragen, Einrichtungs-/Chatfenster, Zugangsdatenverwaltung und Chat-Animationen | NOT_RUN, folgende eigene Umsetzungsschritte |
+
+Chat-Grundlage ohne neue externe Rust-Abhängigkeiten; kein HTTP-Aufruf oder Modell-Download. Keine Installer-Matrix oder neue Veröffentlichung für diesen Entwicklungsschritt.

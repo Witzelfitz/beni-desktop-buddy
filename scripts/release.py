@@ -39,11 +39,11 @@ def check_versions(root=ROOT, tag=None):
     for relative in ("apps/desktop/Cargo.toml", "crates/buddy-ipc/Cargo.toml"):
         if toml_file(root / relative)["package"]["version"] != version:
             raise ValueError(f"{relative}: Version stimmt nicht mit dem Workspace überein.")
-    for relative in ("crates/buddy-core/Cargo.toml", "crates/buddy-cli/Cargo.toml"):
+    for relative in ("crates/buddy-core/Cargo.toml", "crates/buddy-cli/Cargo.toml", "crates/buddy-chat/Cargo.toml"):
         if toml_file(root / relative)["package"]["version"] != {"workspace": True}:
             raise ValueError(f"{relative}: Version muss vom Workspace geerbt werden.")
     expected = {
-        "Cargo.lock": {"buddy-core", "buddy-cli", "buddy-ipc"},
+        "Cargo.lock": {"buddy-core", "buddy-cli", "buddy-ipc", "buddy-chat"},
         "apps/desktop/Cargo.lock": {"beni-desktop-buddy", "buddy-core", "buddy-ipc"},
     }
     for relative, names in expected.items():

@@ -212,7 +212,8 @@ class VersionTests(unittest.TestCase):
         root = Path(directory)
         version, build = release.version_info()
         for relative in ("Cargo.toml", "Cargo.lock", "apps/desktop/Cargo.toml", "apps/desktop/Cargo.lock",
-                         "crates/buddy-ipc/Cargo.toml", "crates/buddy-core/Cargo.toml", "crates/buddy-cli/Cargo.toml"):
+                         "crates/buddy-ipc/Cargo.toml", "crates/buddy-core/Cargo.toml", "crates/buddy-cli/Cargo.toml",
+                         "crates/buddy-chat/Cargo.toml"):
             destination = root / relative
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(ROOT / relative, destination)
@@ -258,8 +259,8 @@ class VersionTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     release.version_info(root)
 
-    def test_core_and_cli_must_inherit_workspace_versions(self):
-        for relative in ("crates/buddy-core/Cargo.toml", "crates/buddy-cli/Cargo.toml"):
+    def test_core_cli_and_chat_must_inherit_workspace_versions(self):
+        for relative in ("crates/buddy-core/Cargo.toml", "crates/buddy-cli/Cargo.toml", "crates/buddy-chat/Cargo.toml"):
             with self.subTest(relative=relative), tempfile.TemporaryDirectory() as directory:
                 root = self.copied_project(directory)
                 path = root / relative
