@@ -123,6 +123,7 @@ class InstallerTests(unittest.TestCase):
         with patch.object(package, 'ROOT', self.folder):
             with self.assertRaises(package.PackagingError): package.tool('nsis')
 
+    @unittest.skipIf(__import__('os').name == 'nt', '/usr-merge is a Linux filesystem convention')
     def test_library_ownership_uses_usr_merge_and_refuses_unowned_files(self):
         missing = subprocess.CompletedProcess([],1,b'',b'no matching path')
         found = subprocess.CompletedProcess([],0,b'libwayland-egl1:amd64: /usr/lib/x86_64-linux-gnu/libwayland-egl.so.1\n',b'')
