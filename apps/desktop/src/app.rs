@@ -33,6 +33,13 @@ pub struct BuddyApp {
     history_player: Option<Player>,
     chat: crate::chat::Chat,
     chat_player: Option<Player>,
+    chat_cue: Option<crate::chat::Cue>,
+    chat_layout_open: bool,
+    rest_position: Option<[f32; 2]>,
+    initial_geometry: bool,
+    space_above: Option<f32>,
+    work_area: Option<Vec2>,
+    last_monitor_size: Option<Vec2>,
     settings: Settings,
     motion: crate::motion::MotionPreference,
     system_motion: crate::motion::SystemMotion,
@@ -107,8 +114,16 @@ impl BuddyApp {
             history_player: None,
             chat: crate::chat::Chat::load(cc.storage),
             chat_player: None,
+            chat_cue: None,
+            chat_layout_open: false,
+            rest_position: cc.storage.and_then(|s| eframe::get_value::<[f32; 2]>(s, "buddy-rest-position"))
+                .filter(|p| p.iter().all(|n| n.is_finite())),
+            initial_geometry: true,
+            space_above: None,
+            work_area: None,
+            last_monitor_size: None,
             last_tick: Instant::now(),
-            message: "Hoi! Ich bin Beni. Klick mich für die Bedienung an oder zieh mich an deinen Lieblingsplatz.".into(),
+            message: "Hallo! Ich bin Beni. Klick mich für die Bedienung an oder zieh mich an deinen Lieblingsplatz.".into(),
             message_until: Instant::now() + Duration::from_secs(10),
             message_source: None,
             active_status: false,
@@ -122,7 +137,7 @@ impl BuddyApp {
             controls_open: false,
             menu_open: false,
             settings_focused: false,
-            speech_draft: "Schön bist du da!".into(),
+            speech_draft: "Schön, dass du da bist!".into(),
             error: None,
             last_render_error: None,
             tray: None,
@@ -198,7 +213,7 @@ impl BuddyApp {
         if self.do_not_disturb
             || !visible
             || self.history_player.is_some()
-            || self.chat.busy()
+            || self.chat.open
             || self.error.is_some()
             || (self.active_status && now < self.message_until)
         {
@@ -481,8 +496,8 @@ impl BuddyApp {
             .show(ui, |ui| {
                 ui.horizontal(|ui| {
                     ui.spacing_mut().item_spacing.x = 4.0;
-                    if ui.button("Hoi!").clicked() {
-                        self.play("hallo", "Hoi! Schön bist du da.");
+                    if ui.button("Hallo!").clicked() {
+                        self.play("hallo", "Hallo! Schön, dass du da bist.");
                     }
                     let talk = ui.button("Reden").on_hover_text("Mit Beni reden");
                     talk.widget_info(|| {
@@ -518,12 +533,18 @@ impl BuddyApp {
         self.close_history();
         self.menu_open = false;
         self.controls_open = false;
-        if !self.active_status {
-            self.message_until = Instant::now();
+        if self.active_status {
+            let paused = self.player.paused;
+            if self.player.play(&self.engine, "warten", false).is_ok() {
+                self.player.paused = paused;
+            }
         }
+        self.message_until = Instant::now();
+        self.active_status = false;
         self.chat.open(ctx);
     }
     fn stop_chat_animation(&mut self) {
+        self.chat_cue = None;
         if let Some(mut previous) = self.chat_player.take() {
             previous.paused = self.player.paused;
             self.player = previous;
@@ -536,15 +557,11 @@ impl BuddyApp {
             && self.error.is_none()
             && now >= self.message_until
         {
-            match self.chat.session.phase() {
-                buddy_chat::Phase::Waiting => Some("nachdenken"),
-                buddy_chat::Phase::Speaking => Some("reden"),
-                _ => None,
-            }
+            self.chat.cue()
         } else {
             None
         };
-        let Some(state) = state else {
+        let Some(cue) = state else {
             self.stop_chat_animation();
             return;
         };
@@ -552,13 +569,17 @@ impl BuddyApp {
             self.chat_player = Some(self.player.clone());
             self.idle.reset();
         }
-        if self.player.state() != state {
+        if self.chat_cue != Some(cue) {
             let paused = self.player.paused;
-            if let Err(error) = self.player.play(&self.engine, state, false) {
+            if let Err(error) = self
+                .player
+                .play(&self.engine, cue.animation(), cue.one_shot())
+            {
                 self.stop_chat_animation();
                 self.report_error(error.to_string(), now);
             } else {
                 self.player.paused = paused;
+                self.chat_cue = Some(cue);
             }
         }
     }
@@ -736,7 +757,56 @@ impl BuddyApp {
     }
 }
 impl BuddyApp {
+    fn sync_conversation_geometry(
+        &mut self,
+        ctx: &egui::Context,
+        window: Option<&winit::window::Window>,
+    ) {
+        let base = self.size.dimensions();
+        let actual = ctx.content_rect().size();
+        let outer = ctx.input(|i| i.viewport().outer_rect.map(|r| r.min));
+        if !self.initial_geometry
+            && let Some(origin) = outer
+        {
+            let position = origin + crate::chat::offset(base, actual);
+            self.rest_position = Some([position.x, position.y]);
+        }
+        let raw_monitor = ctx
+            .input(|i| i.viewport().monitor_size)
+            .filter(|m| m.x.is_finite() && m.y.is_finite() && m.x > 0.0 && m.y > 0.0);
+        let monitor_changed = self.last_monitor_size != raw_monitor;
+        self.last_monitor_size = raw_monitor;
+        if self.size_pending || self.chat_layout_open != self.chat.open || monitor_changed {
+            if let Some(window) = window {
+                let geometry = crate::window::conversation_screen(window);
+                self.space_above = geometry.map(|g| g.0);
+                self.work_area = geometry.map(|g| g.1);
+            }
+            let monitor = self.work_area.or(raw_monitor);
+            let desired =
+                crate::chat::dimensions_with_space(base, self.chat.open, monitor, self.space_above);
+            ctx.send_viewport_cmd(egui::ViewportCommand::InnerSize(desired));
+            let position = if self.initial_geometry {
+                self.rest_position.map(|p| egui::pos2(p[0], p[1]))
+            } else {
+                outer.map(|p| {
+                    p + crate::chat::offset(base, actual) - crate::chat::offset(base, desired)
+                })
+            };
+            if let Some(position) = position {
+                ctx.send_viewport_cmd(egui::ViewportCommand::OuterPosition(position));
+            }
+            self.placement.invalidate();
+            self.chat_layout_open = self.chat.open;
+            self.size_pending = false;
+            self.initial_geometry = false;
+        }
+    }
+    #[cfg(test)]
     fn show_ui(&mut self, ui: &mut egui::Ui) {
+        self.show_ui_with_window(ui, None);
+    }
+    fn show_ui_with_window(&mut self, ui: &mut egui::Ui, window: Option<&winit::window::Window>) {
         let ctx = ui.ctx().clone();
         self.hit_map.reset(ctx.content_rect().size());
         let now = Instant::now();
@@ -775,42 +845,68 @@ impl BuddyApp {
             ctx.send_viewport_cmd(egui::ViewportCommand::Close);
         }
         if ctx.input(|i| i.key_pressed(egui::Key::Escape)) {
+            self.chat.escape(&ctx);
             self.controls_open = false;
             self.close_history();
         }
-        ui.vertical_centered(|ui| {
-            ui.add_space(8.0);
-            if self.history_player.is_none() {
-                self.speech(ui, now);
-            }
-            if self.do_not_disturb {
-                let hint = ui.small("Nicht stören ist aktiv");
-                self.hit_map.add_rect(hint.rect, 0.0);
-            }
-            // Keep Beni's size and position stable when the controls toggle.
-            let history_height = if self.history_player.is_some() {
-                180.0
+        let mut base = self.size.dimensions();
+        let bounds = ctx.content_rect();
+        let side = self.chat.open && crate::chat::beside(base, bounds.size());
+        if self.chat.open && !side && bounds.height() != base.y && bounds.height() < base.y + 150.0
+        {
+            base.y = (bounds.height() - 200.0).max(160.0);
+        }
+        let extra = (bounds.height() - base.y).max(0.0);
+        if self.chat.open && (extra >= 150.0 || side) {
+            let bubble = if side {
+                Rect::from_min_max(
+                    bounds.min + egui::vec2(8.0, 8.0),
+                    egui::pos2(bounds.max.x - base.x - 20.0, bounds.max.y - 20.0),
+                )
             } else {
-                0.0
+                Rect::from_min_max(
+                    egui::pos2(bounds.min.x + 8.0, bounds.min.y + 8.0),
+                    egui::pos2(
+                        bounds.max.x - 8.0,
+                        bounds.min.y + extra + if self.error.is_none() { 58.0 } else { -20.0 },
+                    ),
+                )
             };
-            let stage_height = (ui.available_height() - 52.0 - history_height).max(100.0);
-            let (_, stage) = ui.allocate_space(Vec2::new(ui.available_width(), stage_height));
-            self.paint_avatar(ui, stage);
-            if self.history_player.is_some() {
-                self.history_ui(ui, now);
-            }
-            if self.controls_open {
-                self.controls(ui);
-            }
+            ui.scope_builder(egui::UiBuilder::new().max_rect(bubble), |ui| {
+                let rect = self.chat.show(ui, side);
+                self.hit_map.add_rect(rect, 16.0);
+            });
+        }
+        let buddy =
+            Rect::from_min_size(bounds.min + crate::chat::offset(base, bounds.size()), base);
+        ui.scope_builder(egui::UiBuilder::new().max_rect(buddy), |ui| {
+            ui.vertical_centered(|ui| {
+                ui.add_space(8.0);
+                if self.history_player.is_none() {
+                    self.speech(ui, now);
+                }
+                if self.do_not_disturb {
+                    let hint = ui.small("Nicht stören ist aktiv");
+                    self.hit_map.add_rect(hint.rect, 0.0);
+                }
+                let history_height = if self.history_player.is_some() {
+                    180.0
+                } else {
+                    0.0
+                };
+                let stage_height = (ui.available_height() - 52.0 - history_height).max(100.0);
+                let (_, stage) = ui.allocate_space(Vec2::new(ui.available_width(), stage_height));
+                self.paint_avatar(ui, stage);
+                if self.history_player.is_some() {
+                    self.history_ui(ui, now);
+                }
+                if self.controls_open {
+                    self.controls(ui);
+                }
+            });
         });
         self.menu(&ctx);
-        if let Some(rect) = self.chat.show(&ctx) {
-            self.hit_map.add_rect(rect, 0.0);
-        }
-        if self.size_pending {
-            ctx.send_viewport_cmd(egui::ViewportCommand::InnerSize(self.size.dimensions()));
-            self.size_pending = false;
-        }
+        self.sync_conversation_geometry(&ctx, window);
         ctx.request_repaint_after(self.repaint_delay(now, !self.hidden && !occluded));
     }
 }
@@ -954,7 +1050,8 @@ impl eframe::App for BuddyApp {
     }
 
     fn ui(&mut self, ui: &mut egui::Ui, frame: &mut eframe::Frame) {
-        self.show_ui(ui);
+        let window = frame.winit_window().cloned();
+        self.show_ui_with_window(ui, window.as_deref());
         if let Some(window) = frame.winit_window() {
             let enabled = self.click_through && self.tray.is_some() && !window.is_decorated();
             if let Err(message) = self.input.apply(window, &self.hit_map, ui.ctx(), enabled) {
@@ -976,6 +1073,9 @@ impl eframe::App for BuddyApp {
         self.hotkeys.save(storage);
         self.timer.save(storage);
         self.chat.save(storage);
+        if let Some(position) = self.rest_position {
+            eframe::set_value(storage, "buddy-rest-position", &position);
+        }
     }
 }
 
@@ -1021,11 +1121,18 @@ mod tests {
             history_player: None,
             chat: crate::chat::Chat::load(None),
             chat_player: None,
+            chat_cue: None,
+            chat_layout_open: false,
+            rest_position: None,
+            initial_geometry: true,
+            space_above: None,
+            work_area: None,
+            last_monitor_size: None,
             settings: Settings::default(),
             motion: crate::motion::MotionPreference::load(None),
             system_motion: crate::motion::SystemMotion::default(),
             last_tick: Instant::now(),
-            message: "Hoi aus der Test-Sprechblase!".into(),
+            message: "Hallo aus der Test-Sprechblase!".into(),
             message_until: Instant::now() + Duration::from_secs(10),
             message_source: None,
             active_status: false,
@@ -1036,7 +1143,7 @@ mod tests {
             controls_open: false,
             menu_open: false,
             settings_focused: false,
-            speech_draft: "Hoi von den Tests!".into(),
+            speech_draft: "Hallo von den Tests!".into(),
             error: None,
             last_render_error: None,
             tray: None,
@@ -1115,87 +1222,220 @@ mod tests {
     }
 
     #[test]
-    fn avatar_click_offers_chat_at_every_size_and_opens_a_separate_window() {
+    fn avatar_click_opens_an_attached_bubble_at_every_size_without_a_chat_viewport() {
         for size in BuddySize::ALL {
             let ctx = egui::Context::default();
-            let rig = NativeSettings::window(
-                &ctx,
-                crate::chat::id(),
-                "Mit Beni reden",
-                egui::vec2(420.0, 520.0),
-            );
+            ctx.enable_accesskit();
             let mut app = app(&ctx);
             app.size = size;
             app.player.paused = true;
+            app.message_until = Instant::now();
             let output = frame(&ctx, &mut app, 0.0, vec![]);
             let avatar = accesskit_node(&output, "Beni: Bedienleiste aufklappen").0;
-            let before = avatar_rect(&output, &app);
+            let original = avatar_rect(&output, &app);
             output.drop_without_applying_deltas();
             let output = frame(&ctx, &mut app, 0.1, vec![accessible_click(avatar)]);
             let talk = accesskit_node(&output, "Mit Beni reden").0;
-            let rect = text_rect(&output, "Reden");
-            assert!(rect.max.y <= size.dimensions().y && app.hit_map.contains(rect.center()));
-            assert_eq!(before, avatar_rect(&output, &app));
-            for label in ["Hoi!", "Reden", "Weiter", "Menü", "Beenden"] {
-                let rect = text_rect(&output, label);
-                assert!(
-                    rect.min.x >= 0.0
-                        && rect.max.x <= size.dimensions().x
-                        && rect.max.y <= size.dimensions().y
-                );
-            }
             output.drop_without_applying_deltas();
             let output = frame(&ctx, &mut app, 0.2, vec![accessible_click(talk)]);
-            assert!(app.chat.open && !app.controls_open && !app.menu_open);
-            assert!(!app.chat.busy());
-            assert_eq!(before, avatar_rect(&output, &app));
-            let child = rig.output.borrow();
-            text_rect(child.as_ref().unwrap(), "Lokales Ollama verbinden");
-            text_rect(child.as_ref().unwrap(), "Später");
-            assert_eq!(
-                rig.builders.borrow().last().unwrap().title.as_deref(),
-                Some("Mit Beni reden")
+            assert!(app.chat.open && !app.controls_open);
+            output.drop_without_applying_deltas();
+            let dimensions = crate::chat::dimensions(size.dimensions(), true, None);
+            let mut output = ctx.run_ui(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(egui::Pos2::ZERO, dimensions)),
+                    time: Some(0.3),
+                    ..Default::default()
+                },
+                |ui| app.show_ui(ui),
             );
-            assert_eq!(
-                rig.builders.borrow().last().unwrap().decorations,
-                Some(true)
+            output.textures_delta.clear();
+            assert_eq!(output.viewport_output.len(), 1);
+            let actual = avatar_rect(&output, &app);
+            assert!((actual.size() - original.size()).length() < 0.01);
+            assert!(actual.min.y >= crate::chat::EXTRA_HEIGHT);
+            let bounds = Rect::from_min_size(egui::Pos2::ZERO, dimensions);
+            for label in [
+                "Lokales Ollama verbinden",
+                "Senden",
+                "Abbrechen",
+                "Gespräch leeren",
+            ] {
+                let rect = text_rect(&output, label);
+                assert!(bounds.contains_rect(rect));
+                assert!(app.hit_map.contains(rect.center()));
+            }
+            let close = accesskit_node(&output, "Gespräch schliessen").0;
+            output.drop_without_applying_deltas();
+            let (_, token) = app
+                .chat
+                .session
+                .start("test", "private question", 0)
+                .unwrap();
+            let output = ctx.run_ui(
+                egui::RawInput {
+                    screen_rect: Some(bounds),
+                    time: Some(0.4),
+                    events: vec![accessible_click(close)],
+                    ..Default::default()
+                },
+                |ui| app.show_ui(ui),
             );
+            assert!(!app.chat.open && token.is_cancelled());
             assert!(
                 !output.viewport_output[&egui::ViewportId::ROOT]
                     .commands
                     .contains(&egui::ViewportCommand::Close)
             );
+            output.drop_without_applying_deltas();
         }
     }
 
     #[test]
-    fn closing_chat_cancels_pending_reply_and_keeps_beni_alive() {
+    fn emotions_use_existing_one_shots_without_restarting_and_restore_pause() {
+        for paused in [false, true] {
+            let ctx = egui::Context::default();
+            let mut app = app(&ctx);
+            app.player.paused = paused;
+            app.settings.reduced_motion = true;
+            let original = app.player.clone();
+            app.open_chat(&ctx);
+            let (request, _) = app.chat.session.start("test", "Frage", 0).unwrap();
+            let reply=buddy_chat::Reply::decode(r#"{"v":1,"segments":[{"text":"Hallo!","emotion":"friendly"},{"text":"Eine gute Idee!","emotion":"happy"}]}"#).unwrap();
+            app.chat
+                .receive(request.id(), buddy_chat::StreamEvent::Reply(reply), 1);
+            app.chat.receive(
+                request.id(),
+                buddy_chat::StreamEvent::Finished {
+                    reason: buddy_chat::FinishReason::Stop,
+                    usage: buddy_chat::Usage::default(),
+                },
+                2,
+            );
+            app.sync_chat_animation(Instant::now());
+            assert_eq!(app.player.state(), "hallo");
+            assert_eq!(app.player.paused, paused);
+            if !paused {
+                app.player.advance(&app.engine, 60_000.0, 1.0).unwrap();
+                let after = app.player.state().to_owned();
+                app.sync_chat_animation(Instant::now());
+                assert_eq!(
+                    app.player.state(),
+                    after,
+                    "same cue must not restart its one-shot"
+                );
+            }
+            app.chat.next_part();
+            app.sync_chat_animation(Instant::now());
+            assert_eq!(app.player.state(), "jubeln");
+            assert_eq!(app.player.paused, paused);
+            app.chat.close();
+            app.sync_chat_animation(Instant::now());
+            assert_eq!(app.player.state(), original.state());
+            assert_eq!(app.player.paused, paused);
+            assert!(app.settings.reduced_motion);
+            for emotion in buddy_chat::Emotion::ALL {
+                assert!(app.engine.animations.contains_key(emotion.animation()));
+            }
+        }
+    }
+
+    #[test]
+    fn conversation_geometry_preserves_the_avatar_anchor_and_reachable_controls() {
+        for size in BuddySize::ALL {
+            for monitor in [egui::vec2(1440.0, 900.0), egui::vec2(1024.0, 768.0)] {
+                let ctx = egui::Context::default();
+                ctx.enable_accesskit();
+                let mut app = app(&ctx);
+                app.size = size;
+                app.open_chat(&ctx);
+                let base = size.dimensions();
+                let desired =
+                    crate::chat::dimensions_with_space(base, true, Some(monitor), Some(16.0));
+                let origin = egui::pos2(700.0, 100.0);
+                let expanded = origin - crate::chat::offset(base, desired);
+                let mut raw = egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(egui::Pos2::ZERO, desired)),
+                    ..Default::default()
+                };
+                raw.viewports
+                    .entry(egui::ViewportId::ROOT)
+                    .or_default()
+                    .outer_rect = Some(Rect::from_min_size(expanded, desired));
+                raw.viewports
+                    .entry(egui::ViewportId::ROOT)
+                    .or_default()
+                    .monitor_size = Some(monitor);
+                app.initial_geometry = false;
+                app.chat_layout_open = true;
+                app.size_pending = false;
+                let mut output = ctx.run_ui(raw, |ui| app.show_ui(ui));
+                output.textures_delta.clear();
+                assert_eq!(app.rest_position, Some([origin.x, origin.y]));
+                let bounds = Rect::from_min_size(egui::Pos2::ZERO, desired);
+                for label in ["Senden", "Abbrechen", "Gespräch leeren"] {
+                    assert!(bounds.contains_rect(text_rect(&output, label)));
+                }
+                app.chat.close();
+                app.sync_conversation_geometry(&ctx, None);
+                assert_eq!(crate::chat::dimensions(base, false, Some(monitor)), base);
+            }
+        }
+    }
+
+    #[test]
+    fn explicit_conversation_takes_over_a_status_bubble_without_sending_its_text() {
         let ctx = egui::Context::default();
-        let rig = NativeSettings::window(
-            &ctx,
-            crate::chat::id(),
-            "Mit Beni reden",
-            egui::vec2(640.0, 720.0),
-        );
         let mut app = app(&ctx);
+        app.player.play(&app.engine, "daumen", true).unwrap();
+        app.player.paused = true;
+        app.active_status = true;
+        app.message = "private-status".into();
+        app.message_until = Instant::now() + Duration::from_secs(30);
         app.open_chat(&ctx);
-        let (_, token) = app
-            .chat
-            .session
-            .start("test", "private question", 0)
-            .unwrap();
-        rig.input
-            .borrow_mut()
-            .viewports
-            .entry(crate::chat::id())
-            .or_default()
-            .events = vec![egui::ViewportEvent::Close];
-        let output = frame(&ctx, &mut app, 0.0, vec![]);
-        assert!(!app.chat.open && !app.chat.busy() && token.is_cancelled());
+        assert!(!app.active_status && app.message_until <= Instant::now());
+        assert_eq!(app.player.state(), "warten");
+        assert!(app.player.paused);
+        let (request, _) = app.chat.session.start("test", "Frage", 0).unwrap();
+        app.sync_chat_animation(Instant::now());
+        assert_eq!(app.player.state(), "nachdenken");
         assert!(
-            !output.viewport_output[&egui::ViewportId::ROOT]
+            !request
+                .messages()
+                .iter()
+                .any(|m| m.text().contains("private-status"))
+        );
+    }
+
+    #[test]
+    fn changing_to_a_smaller_monitor_reflows_the_open_conversation() {
+        let ctx = egui::Context::default();
+        let mut app = app(&ctx);
+        app.size = BuddySize::Large;
+        app.open_chat(&ctx);
+        app.chat_layout_open = true;
+        app.size_pending = false;
+        app.initial_geometry = false;
+        app.last_monitor_size = Some(egui::vec2(1440.0, 1200.0));
+        app.space_above = Some(16.0);
+        let mut input = egui::RawInput {
+            screen_rect: Some(Rect::from_min_size(
+                egui::Pos2::ZERO,
+                egui::vec2(420.0, 900.0),
+            )),
+            ..Default::default()
+        };
+        input
+            .viewports
+            .entry(egui::ViewportId::ROOT)
+            .or_default()
+            .monitor_size = Some(egui::vec2(1024.0, 768.0));
+        let mut output = ctx.run_ui(input, |ui| app.show_ui(ui));
+        output.textures_delta.clear();
+        assert!(
+            output.viewport_output[&egui::ViewportId::ROOT]
                 .commands
-                .contains(&egui::ViewportCommand::Close)
+                .contains(&egui::ViewportCommand::InnerSize(egui::vec2(860.0, 560.0)))
         );
     }
 
@@ -2145,7 +2385,7 @@ mod tests {
         Rect::from_points(&points)
     }
     fn assert_controls_hidden(output: &egui::FullOutput) {
-        for label in ["Hoi!", "Pause", "Weiter", "Menü", "Beenden"] {
+        for label in ["Hallo!", "Pause", "Weiter", "Menü", "Beenden"] {
             assert!(
                 !output
                     .shapes
@@ -2452,7 +2692,7 @@ mod tests {
             previous_area = avatar.area();
             assert!(app.hit_map.contains(avatar.center()));
             assert!(!app.hit_map.contains(egui::pos2(2.0, 2.0)));
-            for label in ["Hoi!", "Weiter", "Menü", "Beenden", "×"] {
+            for label in ["Hallo!", "Weiter", "Menü", "Beenden", "×"] {
                 let rect = text_rect(&output, label);
                 assert!(screen.contains_rect(rect), "{size:?}: {label} {rect:?}");
                 assert!(app.hit_map.contains(rect.center()));
@@ -2500,7 +2740,7 @@ mod tests {
         assert!(app.controls_open);
         let (_, node) = accesskit_node(&output, "Beni: Bedienleiste zuklappen");
         assert_eq!(node.is_expanded(), Some(true));
-        for label in ["Hoi!", "Pause", "Menü", "Beenden"] {
+        for label in ["Hallo!", "Pause", "Menü", "Beenden"] {
             assert_eq!(accesskit_node(&output, label).1.role(), Role::Button);
         }
         output.drop_without_applying_deltas();
@@ -2616,7 +2856,7 @@ mod tests {
         click(&ctx, &mut app, avatar.center(), 0.1).drop_without_applying_deltas();
         assert!(app.controls_open);
         let output = frame(&ctx, &mut app, 0.2, vec![]);
-        for label in ["Hoi!", "Weiter", "Menü", "Beenden"] {
+        for label in ["Hallo!", "Weiter", "Menü", "Beenden"] {
             text_rect(&output, label);
         }
         assert_eq!(avatar_rect(&output, &app), avatar);
@@ -2700,7 +2940,7 @@ mod tests {
         app.controls_open = true;
         for i in 0..5 {
             let output = frame(&ctx, &mut app, i as f64 * 0.1, vec![]);
-            for label in ["Hoi!", "Pause", "Menü", "Beenden"] {
+            for label in ["Hallo!", "Pause", "Menü", "Beenden"] {
                 let rect = text_rect(&output, label);
                 assert!(
                     rect.min.x >= 0.0
@@ -2755,7 +2995,7 @@ mod tests {
             output.drop_without_applying_deltas();
             click(&ctx, &mut app, send, 0.5).drop_without_applying_deltas();
             assert_eq!(app.player.state(), "reden");
-            assert_eq!(app.message, "Hoi von den Tests!");
+            assert_eq!(app.message, "Hallo von den Tests!");
         }
     }
     #[test]
@@ -2846,7 +3086,7 @@ mod tests {
         assert!(app.error.is_none());
         app.play("unknown-state", "");
         assert!(app.error.is_some());
-        app.play("hallo", "Hoi!");
+        app.play("hallo", "Hallo!");
         assert!(app.error.is_none());
     }
 
@@ -3031,7 +3271,7 @@ mod tests {
             app.message_source = Some("W".repeat(48));
             assert!(app.message_until.duration_since(Instant::now()) > Duration::from_secs(20));
             let output = frame(&ctx, &mut app, 0.0, vec![]);
-            for label in ["Hoi!", "Pause", "Menü", "Beenden", "×"] {
+            for label in ["Hallo!", "Pause", "Menü", "Beenden", "×"] {
                 let rect = text_rect(&output, label);
                 assert!(
                     rect.min.y >= 0.0 && rect.max.y <= size.dimensions().y,
@@ -3117,10 +3357,10 @@ mod tests {
         assert_eq!(app.player.state(), "warten");
         assert!(app.player.paused);
         assert_eq!(app.error.as_ref().unwrap().message, "Testfehler");
-        app.play("hallo", "Hoi von mir");
+        app.play("hallo", "Hallo von mir");
         let deadline = app.message_until;
         app.set_do_not_disturb(true, Instant::now());
-        assert_eq!(app.message, "Hoi von mir");
+        assert_eq!(app.message, "Hallo von mir");
         assert_eq!(app.message_until, deadline);
         assert_eq!(app.player.state(), "hallo");
         assert!(!app.hidden);
@@ -3146,7 +3386,13 @@ mod tests {
             app.controls_open = true;
             app.dismiss_speech(Instant::now());
             let output = frame(&ctx, &mut app, 0.3, vec![]);
-            for label in ["Nicht stören ist aktiv", "Hoi!", "Pause", "Menü", "Beenden"] {
+            for label in [
+                "Nicht stören ist aktiv",
+                "Hallo!",
+                "Pause",
+                "Menü",
+                "Beenden",
+            ] {
                 let rect = text_rect(&output, label);
                 assert!(
                     rect.min.y >= 0.0 && rect.max.y <= size.dimensions().y,
@@ -3299,7 +3545,7 @@ mod tests {
             for label in [
                 "Meldungsverlauf (1)",
                 "Leeren",
-                "Hoi!",
+                "Hallo!",
                 "Pause",
                 "Menü",
                 "Beenden",

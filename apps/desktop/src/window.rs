@@ -15,6 +15,10 @@ impl Default for PlacementGuard {
     }
 }
 impl PlacementGuard {
+    pub fn invalidate(&mut self) {
+        self.window_size = None;
+        self.checked = std::time::Instant::now() - std::time::Duration::from_secs(1);
+    }
     pub fn check(&mut self, window: &Window, reset: bool) {
         let now = std::time::Instant::now();
         if !reset
@@ -130,6 +134,30 @@ pub fn restore(window: &Window, guard: &mut PlacementGuard, reset: bool) {
     window.set_minimized(false);
     guard.check(window, reset);
     window.focus_window();
+}
+pub fn conversation_screen(window: &Window) -> Option<(f32, eframe::egui::Vec2)> {
+    let (bounds, screens) = geometry(window)?;
+    let center = [
+        bounds.x + bounds.width * 0.5,
+        bounds.y + bounds.height * 0.5,
+    ];
+    let screen = screens.iter().find(|s| {
+        center[0] >= s.x
+            && center[0] <= s.x + s.width
+            && center[1] >= s.y
+            && center[1] <= s.y + s.height
+    })?;
+    #[cfg(target_os = "macos")]
+    let scale = 1.0;
+    #[cfg(not(target_os = "macos"))]
+    let scale = window.scale_factor();
+    Some((
+        ((bounds.y - screen.y).max(0.0) / scale) as f32,
+        eframe::egui::vec2(
+            (screen.width / scale) as f32,
+            (screen.height / scale) as f32,
+        ),
+    ))
 }
 pub fn tray_unavailable(window: &Window) {
     window.set_visible(true);

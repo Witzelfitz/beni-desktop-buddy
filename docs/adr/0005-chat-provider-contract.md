@@ -1,6 +1,6 @@
 # ADR 0005: Gemeinsame Chat-Grundlage vor den Anbieteradaptern
 
-Status: Grundlage implementiert; Anbieter, Oberfläche und Zugangsdaten folgen separat.
+Status: Grundlage und Ollama-Adapter implementiert. Die Entscheidung für einen eigenen Chat-Viewport wird im aktuellen Entwicklungs-PR durch [ADR 0006](0006-attached-conversation-emotions.md) ersetzt; Cloud-Zugangsdaten folgen separat.
 
 ## Auftrag
 

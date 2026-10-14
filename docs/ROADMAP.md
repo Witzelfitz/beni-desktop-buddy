@@ -58,6 +58,8 @@ Abnahme: Pakete werden auf sauberen Geräten installiert und sauber deinstallier
 
 ## 5 · Gespräche mit Beni
 
+- Aktueller Entwicklungs-PR: Gesprächsblase an der Figur, Hochdeutsch mit Schweizer Rechtschreibung, JSON-Antwortabschnitte und bekannte Emotionen/Gesten. Nutzer wünscht vorerst Text; Audio bleibt später. Öffentliche 0.1.4 enthält diese neue Darstellung noch nicht.
+
 - Gemergt: gemeinsamer Chatvertrag und begrenzte Sitzung in `buddy-chat`, R7a/PR #49, siehe [ADR 0005](adr/0005-chat-provider-contract.md).
 - Gemergt in PR #50 und in 0.1.4 veröffentlicht: Beni anklicken → «Reden», eigenes Chatfenster, freiwillige Ollama-Verbindung und vorhandenes geeignetes Textmodell. Native macOS-Chatabnahme bestanden; echte Chatabnahme auf Windows/Linux separat offen. [Chat-Anleitung](CHAT.md).
 - Sichere Zugangsdatenverwaltung vor Claude-/OpenAI-Verbindungen; jeder Anbieter mit eigenem PR.

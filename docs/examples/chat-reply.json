@@ -1,0 +1,21 @@
+{
+  "v": 1,
+  "segments": [
+    {
+      "text": "Hallo! Ich habe eine kleine Geschichte für dich.",
+      "emotion": "friendly"
+    },
+    {
+      "text": "Ein kleiner Roboter stand vor einem grossen Rätsel und dachte eine Weile nach.",
+      "emotion": "thoughtful"
+    },
+    {
+      "text": "Dann kam ihm eine Idee: Er teilte das Rätsel in kleine Schritte auf. Plötzlich fand er die Lösung!",
+      "emotion": "happy"
+    },
+    {
+      "text": "So können wir es auch machen: gemeinsam, Schritt für Schritt.",
+      "emotion": "encouraging"
+    }
+  ]
+}

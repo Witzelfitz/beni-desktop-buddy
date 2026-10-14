@@ -1,7 +1,7 @@
 //! Local-only Ollama transport. No proxy, redirect, cloud model or model pull.
 use buddy_chat::{
-    CancellationToken, ChatError, ChatProvider, ChatRequest, FinishReason, MAX_DELTA_BYTES,
-    MAX_RESPONSE_BYTES, MAX_STREAM_EVENTS, StreamEvent, Usage, valid_model_name,
+    CancellationToken, ChatError, ChatProvider, ChatRequest, FinishReason, MAX_REPLY_BYTES,
+    MAX_STREAM_EVENTS, Reply, StreamEvent, Usage, valid_model_name,
 };
 use serde::Deserialize;
 use serde_json::{Value, json};
@@ -117,7 +117,7 @@ impl ChatProvider for Ollama {
                 "content": m.text(),
             })).collect::<Vec<_>>();
                 let mut response = client.post(format!("{}/api/chat", self.endpoint))
-                .json(&json!({"model":selected.name,"messages":messages,"stream":true,"options":{"num_predict":request.max_output_tokens()}}))
+                .json(&json!({"model":selected.name,"messages":messages,"stream":true,"format":buddy_chat::reply_schema(),"options":{"num_predict":request.max_output_tokens(),"temperature":0.2}}))
                 .send().await.map_err(network_error)?;
                 status(response.status())?;
                 let mut decoder = Decoder::new(&selected.name);
@@ -283,7 +283,7 @@ struct Decoder {
     model: String,
     line: Vec<u8>,
     wire_bytes: usize,
-    text_bytes: usize,
+    reply: String,
     events: usize,
     done: bool,
 }
@@ -293,7 +293,7 @@ impl Decoder {
             model: model.into(),
             line: Vec::new(),
             wire_bytes: 0,
-            text_bytes: 0,
+            reply: String::new(),
             events: 0,
             done: false,
         }
@@ -364,18 +364,12 @@ impl Decoder {
             if message.role != "assistant" || !message.tool_calls.is_empty() {
                 return Err(ChatError::Protocol);
             }
-            if message.content.len() > MAX_RESPONSE_BYTES - self.text_bytes {
+            if message.content.len() > MAX_REPLY_BYTES - self.reply.len() {
                 return Err(ChatError::ResponseLimit);
             }
-            self.text_bytes += message.content.len();
-            let mut rest = message.content.as_str();
-            while !rest.is_empty() {
-                let mut end = rest.len().min(MAX_DELTA_BYTES);
-                while !rest.is_char_boundary(end) {
-                    end -= 1;
-                }
-                emit(StreamEvent::Delta(rest[..end].into()))?;
-                rest = &rest[end..];
+            if !message.content.is_empty() {
+                self.reply.push_str(&message.content);
+                emit(StreamEvent::Progress)?;
             }
         } else if !done {
             return Err(ChatError::Protocol);
@@ -386,6 +380,14 @@ impl Decoder {
                 "length" => FinishReason::Length,
                 _ => return Err(ChatError::Protocol),
             };
+            let reply = Reply::decode(&self.reply).map_err(|error| {
+                if reason == FinishReason::Length && error == ChatError::InvalidResponse {
+                    ChatError::ResponseLimit
+                } else {
+                    error
+                }
+            })?;
+            emit(StreamEvent::Reply(reply))?;
             emit(StreamEvent::Finished {
                 reason,
                 usage: Usage {

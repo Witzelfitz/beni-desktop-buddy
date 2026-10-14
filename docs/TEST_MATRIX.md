@@ -271,3 +271,29 @@ PASS: Chat-PR #50 mit drei grünen Plattformprüfungen gemergt. Neue Produktvers
 | Erstes Nutzergespräch nach Update, sichtbare Hook-Geste erneut prüfen, echte Windows-/Linux-Chatgespräche | NOT_RUN |
 
 Geschützte bisherige Einstellungssicherung bleibt erhalten; keine Produktionsapp durch QA-Prozesse ersetzt und keine Hook-Definitionen geändert. Die inzwischen installierte 0.1.4 wurde anschliessend nur lesend geprüft. Keine Modelle heruntergeladen und keine Cloud-Keys verwendet. Installer-Builds einmal je Ziel; die zusätzlichen Intel-Läufe prüfen bestehende finale Bytes. Die noch laufende doppelte PR-Prüfung von #52 wurde nach dem Merge beendet, die neue vollständige main-Prüfung ist bestanden. Veröffentlichte ältere Releases unverändert.
+
+## Gesprächsblase, Hochdeutsch und JSON-Emotionen (Entwicklungsstand)
+
+| Prüfung | Ergebnis |
+| --- | --- |
+| Sprachvorgabe: ausdrücklich Hochdeutsch mit Schweizer Rechtschreibung, kein Dialekt | PASS, feste Persona; bekannte Dialektgrüsse/-wörter abgewiesen, auch über Teilereignisse verteilt; Eszett normalisiert |
+| JSON-Antwortversion, erlaubte Emotionen, unbekannte Felder/Animationen, leere/übergrosse Texte, Steuerzeichen, Duplikate | PASS, positive und negative Root-/Decoder-Prüfungen; Beispiel-JSON geprüft |
+| Raw-NDJSON/JSON, internes Thinking, unvollständige/abgebrochene Antworten | PASS, kein Roh-JSON in der Oberfläche; keine unvollständigen Paare im Kontext |
+| Antworten als geprüfte Abschnitte, passende Gesten, je Abschnitt kein unbeabsichtigter Neustart | PASS, Controller-/Player-Tests; alle acht Emotionen referenzieren bestehende SDK-Animationen |
+| Pause, reduzierte Bewegung, Wiederherstellung des bisherigen Players | PASS, positive Zustandsprüfungen |
+| Blase im Root-Fenster, alle Grössen, Inputregion und erreichbare Bedienelemente | PASS, UI-/AX-Tests; kein weiterer Chat-Viewport |
+| Fensteranker, obere/seitliche Anordnung und Wechsel auf kleineren Monitor | PASS, pure/UI-Tests; aktuelle native Arbeitsfläche vor Layoutwechsel gelesen, ohne zusätzliche Abfrage je Idle-Frame |
+| Echter lokaler Ollama-Aufruf mit neuem JSON-Schema | PASS, bestehendes Modell gemma3:4b; kein Download und kein Cloud-Aufruf |
+| Native macOS-Eingabe und echte Antwort in zwei Abschnitten | PASS, eigene QA-Instanz mit eigenem Speicherpfad; eine native Fläche, 420 × 780 Punkte; Modellwahl/Verbindung klappen nach Auswahl zu |
+| Native seitliche Blase nahe oberem Rand, Bedienelemente und Anker nach Schliessen | PASS, eigene QA-Instanz: 700/100 → Root 260/100 bei 780 × 440 → 700/100 bei 340 × 440 |
+| Platzwahl nach Bewegen von oben nach unten | FAIL mit zwischengespeicherter Position; korrigiert durch aktuelle native Abfrage direkt beim UI-Layoutwechsel |
+| Native obere Blase nach Positionswechsel, Bedienelemente und Anker nach Schliessen | PASS, eigener Probeablauf: 150/661 → Root 110/321 bei 420 × 780 → 150/661 bei 340 × 440 |
+| Erstes Escape während Texteingabe | FAIL im ersten nativen Probeablauf; korrigiert mit vorherigem Fokuszustand und Regressionstest |
+| Escape nach Korrektur: zuerst Eingabe verlassen, danach nur Gespräch schliessen | PASS nativ; Buddy bleibt aktiv, anschliessend sauber beendet |
+| Modell/Opt-in nach Neustart erhalten, eigener Verlauf/Entwurf nicht gespeichert | PASS, native Wiederaufnahme und eigene Persistenzdatei geprüft |
+| Gespräch übernimmt eine aktive Statusblase, behält Pause und überträgt keine Statusinhalte | PASS, eigener positiver Controller-Test; angenommene Meldungen bleiben separat im Verlauf |
+| Asset-/Icon-Provenienz | PASS, vier importierte und fünf Icon-Dateien unverändert |
+| Neue Windows-/Linux-Plattformprüfungen | NOT_RUN lokal; reguläre PR-CI folgt, keine Installer-Matrix |
+| Native Chatbedienung auf Windows/Linux, physische Monitorwechsel, Sichtabnahme jeder Geste und neues öffentliches Paket | NOT_RUN |
+
+Root-/Desktop-fmt, Tests und Clippy bestehen lokal: 47 Roottests und 107 Desktoptests; gezielter Ollama-Test zusätzlich bestanden. Die Dialekt-Wortprüfung ist keine vollständige Sprach-/Grammatikprüfung. Audio wurde vom Nutzer ausdrücklich zurückgestellt. Normale Status-IPC und vorhandene Gesprächsgrenzen bleiben bestehen; Statusbläschen warten bei offener Gesprächsfläche. Neue lokale Tests verwenden separate QA-Daten und keine Production-Keys.

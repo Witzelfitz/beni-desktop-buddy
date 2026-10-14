@@ -16,6 +16,8 @@ Die native Rust-Grundlage ist auf macOS gestartet und visuell geprüft. Tests, C
 
 ## Mit Beni reden
 
+Nächste Version in Entwicklung: Gespräch direkt in einer Blase an der Figur, Hochdeutsch mit Schweizer Rechtschreibung und [JSON-Abschnitte mit Emotionen](docs/examples/chat-reply.json). Die veröffentlichte 0.1.4 verwendet noch das eigene Chatfenster. [Neue Darstellung und Vertrag](docs/CHAT.md).
+
 Ab 0.1.4 Beni anklicken → «Reden» → «Lokales Ollama verbinden». Ein vorhandenes lokales Textmodell auswählen und eine Nachricht senden. Ollama muss separat laufen; Beni lädt keine Modelle herunter. Antworten erscheinen laufend im eigenen Chatfenster, die Anfrage lässt sich abbrechen. Gesprächskontext ist vor dem Senden einsehbar und bleibt in der Sitzung. [Bedienung und Grenzen](docs/CHAT.md). Claude, OpenAI und eine allgemeine Ersteinrichtung folgen separat.
 
 ## Aktueller Stand
