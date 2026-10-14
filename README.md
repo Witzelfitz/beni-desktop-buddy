@@ -12,7 +12,11 @@ Die native Rust-Grundlage ist auf macOS gestartet und visuell geprüft. Tests, C
 
 ## Masterplan
 
-[Der verbindliche Masterplan](docs/MASTERPLAN.md) hält die nächsten Schritte fest: öffentliche Releases, Installer, `mini.witzelfitz.io/download` im getrennten Beni-Allrounder-Repo, Updates über das Menüleistensymbol und freiwillige Ersteinrichtung für Ollama, Claude und OpenAI. [Release-Vertrag und Versionierung](docs/RELEASES.md) sind vorbereitet; öffentliche Installer folgen als nächster Schritt.
+[Der verbindliche Masterplan](docs/MASTERPLAN.md) hält Fortschritt und nächste Schritte fest. [Version 0.1.4](https://github.com/Witzelfitz/beni-desktop-buddy/releases/tag/v0.1.4) ist für macOS und Linux über [die Downloadseite](https://mini.witzelfitz.io/download) verfügbar. Mac-Updates laufen über das Menüleistensymbol, Linux-Updates vorerst manuell. Windows wartet auf die Herausgebersignierung. [Release-Vertrag und Versionierung](docs/RELEASES.md).
+
+## Mit Beni reden
+
+Ab 0.1.4 Beni anklicken → «Reden» → «Lokales Ollama verbinden». Ein vorhandenes lokales Textmodell auswählen und eine Nachricht senden. Ollama muss separat laufen; Beni lädt keine Modelle herunter. Antworten erscheinen laufend im eigenen Chatfenster, die Anfrage lässt sich abbrechen. Gesprächskontext ist vor dem Senden einsehbar und bleibt in der Sitzung. [Bedienung und Grenzen](docs/CHAT.md). Claude, OpenAI und eine allgemeine Ersteinrichtung folgen separat.
 
 ## Aktueller Stand
 

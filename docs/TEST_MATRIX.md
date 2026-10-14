@@ -246,3 +246,28 @@ Lokale Schlussprüfung: PASS, Root-/Desktop-fmt und Clippy, 42 Roottests und 102
 ## Vorbereitung 0.1.4/Build 5
 
 PASS: Chat-PR #50 mit drei grünen Plattformprüfungen gemergt. Neue Produktversion/Buildnummer auf eigenem Versionsbranch; keine veröffentlichten Dateien ersetzt. Native neue Installer, Notarisierung, Release-Entwurf und Feed-Veröffentlichung folgen.
+
+## Veröffentlichung 0.1.4/Build 5, 14. Oktober 2026
+
+| Prüfung | Ergebnis |
+| --- | --- |
+| Chat PR #50, Version PR #51, Hauptprüfungen auf allen drei Plattformen | PASS, gemergt; 42 Root- und 102 Desktoptests, fmt und Clippy; echter lokaler Ollama-Test zusätzlich |
+| Native 0.1.4-Entwicklungsinstaller für beide Mac-Ziele | PASS, Lauf 38593716298, Quellcommit 46fc360d389801ff0841356d408bdf2b9d2e388d |
+| Linux 0.1.4: CLI, X11/Wayland, Menüinstallation/-entfernung | PASS, Lauf 38593717950, Ubuntu 22.04 |
+| Windows 0.1.4: Installation/Entfernung, CLI/Fenster, Schutz laufender App | PASS intern, Lauf 38593717950, Server 2025 mit isoliertem Mesa-Testtreiber; keine Herausgebersignatur |
+| Beide finalen Apps/DMGs: Developer ID, Apple-Notarisierung, Tickets/Gatekeeper und Ed25519 | PASS, unveränderte Bundle-ID und bestehender Vertrauensanker |
+| Finale ARM-Installation, CLI, sichtbares eigenes Fenster und Entfernung | PASS, Lauf 38595934492, macOS 15.7.9 |
+| Erste zwei finale Intel-Ticketprüfungen | FAIL, stapler-Code 68; dieselben Dateien lokal mit Tickets/Gatekeeper bestanden; genaue Ursache nicht belegt |
+| Öffentliche Ticketdiagnosen ohne rohe Apple-/Accountausgabe, Fehler bleiben Fehler | PASS, PR #52, 34 Packaging-Tests inkl. positiven/negativen Ticket- und Timeout-/Redaktionsfällen; actionlint; main-CI auf drei Plattformen grün |
+| Finale Intel-Installation, CLI, eigenes Fenster und Entfernung nach Diagnose-Ergänzung | PASS, gezielter Lauf 38597930353, macOS 15.7.9; kein neuer Installer-Build, keine Prüfung übersprungen |
+| Beide finalen Mac-Abnahmebelege stimmen mit Version, Build, Paket-SHA und Produkteingaben überein | PASS; Diagnose-Commit 33c3f4d ändert keine Produkteingaben gegenüber Quellcommit 46fc360 |
+| Öffentliches 0.1.4: exakt 13 Dateien, Upload-Digests und alle anonymen Bytes/Signaturen | PASS, Release-ID 412922378, Tag auf 46fc360d389801ff0841356d408bdf2b9d2e388d |
+| Live-Katalog und beide Stable-Feeds bieten 0.1.4/Build 5, Feeds bytegleich | PASS; exakt macOS aarch64/x86_64 und Linux x86_64; unveröffentlichter Beta-Feed bleibt 503 |
+| Windows-Veröffentlichung | BLOCKED, Nutzer bestätigt offene Firmenprüfung und verlangt Warten; Installer nur intern/lokal gesichert |
+| Website-Chat-Hilfe für 0.1.4 | PASS, 57 Node-Tests auf Node 22.23.3 und Build; PR #10 gemergt (`8e41e95`), Live-HTML bytegleich; beide Mac-Chips/Linux auswählbar, Windows fehlt, Mobilansicht ohne Überlauf |
+| Echter Browser-DMG-Download von öffentlicher Downloadseite | PASS, Chromium: Apple-Silicon-0.1.4-DMG bytegleich zum signierten Kandidaten, temporäre Datei entfernt |
+| Installierte Programme-App nach Veröffentlichung und neuer laufender Prozess | PASS, 0.1.4/Build 5; Release-Tag/Latest auf geprüftem Quellcommit |
+| Bestehende Produktpräferenzen und Codex-Hook nach Update | PASS, Buddy-Einstellungen/Grösse/Empfang/Click-through/Nicht stören/Bewegungsregel/Hotkeys/Timerwerte/Fenster unverändert gegenüber geschützter Sicherung; Hook bytegleich. Nur eguis interner UI-Speicher verändert |
+| Erstes Nutzergespräch nach Update, sichtbare Hook-Geste erneut prüfen, echte Windows-/Linux-Chatgespräche | NOT_RUN |
+
+Geschützte bisherige Einstellungssicherung bleibt erhalten; keine Produktionsapp durch QA-Prozesse ersetzt und keine Hook-Definitionen geändert. Die inzwischen installierte 0.1.4 wurde anschliessend nur lesend geprüft. Keine Modelle heruntergeladen und keine Cloud-Keys verwendet. Installer-Builds einmal je Ziel; die zusätzlichen Intel-Läufe prüfen bestehende finale Bytes. Die noch laufende doppelte PR-Prüfung von #52 wurde nach dem Merge beendet, die neue vollständige main-Prüfung ist bestanden. Veröffentlichte ältere Releases unverändert.

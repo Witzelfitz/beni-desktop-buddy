@@ -1,6 +1,6 @@
 # Roadmap
 
-Der verbindliche nächste Arbeitsabschnitt steht im [Masterplan für Distribution, Updates und KI](MASTERPLAN.md). macOS-/Linux-Version 0.1.3/Build 4 und Downloadseite sind veröffentlicht. Der Nutzer bestätigt das echte Mac-Update 0.1.2 → 0.1.3; installierte Version, geprüfte Einstellungen und IPC sind belegt. Chat-Grundlage PR #49 ist gemergt; Klickzugang und freiwilliger lokaler Ollama-Chat werden im nächsten Entwicklungs-PR abgenommen. Öffentliche 0.1.3 enthält noch keinen Chat. Windows-Signierung wartet auf die Firmenprüfung. Exaktes macOS 15.0, frische Nutzergeräte und zusätzliche manuelle Updatefälle bleiben separat offen.
+Der verbindliche nächste Arbeitsabschnitt steht im [Masterplan für Distribution, Updates und KI](MASTERPLAN.md). macOS-/Linux-Version 0.1.4/Build 5 ist veröffentlicht und über Downloadseite/beide Mac-Feeds verfügbar. Chat-Grundlage PR #49 und lokaler Ollama-Chat/Klickzugang PR #50 sind gemergt; «Reden» öffnet ein eigenes Fenster mit freiwilliger lokaler Modellwahl. Der Nutzer bestätigt das frühere echte Mac-Update 0.1.2 → 0.1.3; inzwischen sind installierte 0.1.4/Build 5, neuer laufender Prozess und erhaltene Produktpräferenzen/Hook geprüft. Nutzer-Chat nach diesem Update bleibt separat offen. Windows-Veröffentlichung wartet ausdrücklich auf die Firmenprüfung und Herausgebersignatur. Exaktes macOS 15.0, frische Nutzergeräte und zusätzliche manuelle Updatefälle bleiben separat offen.
 
 ## 1 · Desktop-Abnahme und erster Build
 
@@ -59,7 +59,7 @@ Abnahme: Pakete werden auf sauberen Geräten installiert und sauber deinstallier
 ## 5 · Gespräche mit Beni
 
 - Gemergt: gemeinsamer Chatvertrag und begrenzte Sitzung in `buddy-chat`, R7a/PR #49, siehe [ADR 0005](adr/0005-chat-provider-contract.md).
-- Implementiert im folgenden Entwicklungs-PR: Beni anklicken → «Reden», eigenes Chatfenster, freiwillige Ollama-Verbindung und vorhandenes geeignetes Textmodell. Native macOS-Abnahme bestanden; neuer öffentlicher Installer folgt. [Chat-Anleitung](CHAT.md).
+- Gemergt in PR #50 und in 0.1.4 veröffentlicht: Beni anklicken → «Reden», eigenes Chatfenster, freiwillige Ollama-Verbindung und vorhandenes geeignetes Textmodell. Native macOS-Chatabnahme bestanden; echte Chatabnahme auf Windows/Linux separat offen. [Chat-Anleitung](CHAT.md).
 - Sichere Zugangsdatenverwaltung vor Claude-/OpenAI-Verbindungen; jeder Anbieter mit eigenem PR.
 - Bestehende Gesten «Denken» und «Reden», keine neuen Animationen und keine Systemwerkzeuge.
 

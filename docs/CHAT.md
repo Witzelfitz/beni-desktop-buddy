@@ -1,6 +1,6 @@
 # Mit Beni reden
 
-Entwicklungsstand: Chatfenster und lokaler Ollama-Adapter sind implementiert und auf macOS geprüft. Noch kein neuer öffentlicher Installer; Version 0.1.3 enthält diesen Chat noch nicht. Claude und OpenAI sowie ein allgemeiner Ersteinrichtungsdialog folgen separat.
+Verfügbar ab [0.1.4/Build 5](https://github.com/Witzelfitz/beni-desktop-buddy/releases/tag/v0.1.4) für macOS und Linux. Auf dem Mac über das Menüleistensymbol aktualisieren, unter Linux das neue AppImage manuell ersetzen. Windows-Veröffentlichung wartet ausdrücklich auf die Microsoft-Firmenprüfung und Herausgebersignatur. Chatfenster und lokaler Ollama-Adapter sind auf macOS geprüft; echte Windows-/Linux-Chatgespräche bleiben separat offen. Version 0.1.3 enthält diesen Chat noch nicht. Claude und OpenAI sowie ein allgemeiner Ersteinrichtungsdialog folgen separat.
 
 ## Öffnen und verbinden
 
@@ -40,6 +40,6 @@ cargo test --manifest-path apps/desktop/Cargo.toml --locked \
   real_local_ollama_answers_without_downloading_a_model -- --ignored
 ```
 
-Dieser gezielte Test verwendet ein bereits vorhandenes lokales Chatmodell und einen festen, kurzen Testsatz. Er lädt keine Modelle herunter und verwendet keine Cloud-Keys. Native macOS-Abnahme: Klickzugang, eigenes Fenster, lokale Modellwahl, echte Antwort, Mindestgrösse, Modell-Popup schliessen, Abbruch und gespeicherte Modellwahl nach Neustart. Native Windows-/Linux-Chatabnahme und neue öffentliche Installer bleiben separat offen.
+Dieser gezielte Test verwendet ein bereits vorhandenes lokales Chatmodell und einen festen, kurzen Testsatz. Er lädt keine Modelle herunter und verwendet keine Cloud-Keys. Native macOS-Abnahme: Klickzugang, eigenes Fenster, lokale Modellwahl, echte Antwort, Mindestgrösse, Modell-Popup schliessen, Abbruch und gespeicherte Modellwahl nach Neustart. Finale 0.1.4-Installer bestehen Installation, CLI, eigenes Fenster und Entfernung auf beiden Mac-Zielen sowie Linux/X11/Wayland. Echte Windows-/Linux-Chatgespräche und tatsächlicher Nutzer-Chat nach dem Update bleiben separat offen; siehe [Testmatrix](TEST_MATRIX.md).
 
 Referenzen: [Ollama Chat](https://docs.ollama.com/api/chat), [Streaming](https://docs.ollama.com/api/streaming), [Modellliste](https://docs.ollama.com/api/tags), [offizieller API-Vertrag für Fähigkeits-/Remote-Angaben](https://github.com/ollama/ollama/blob/main/api/types.go), [reqwest 0.13.5](https://docs.rs/reqwest/0.13.5/reqwest/struct.ClientBuilder.html).
