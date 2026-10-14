@@ -297,3 +297,7 @@ Geschützte bisherige Einstellungssicherung bleibt erhalten; keine Produktionsap
 | Native Chatbedienung auf Windows/Linux, physische Monitorwechsel, Sichtabnahme jeder Geste und neues öffentliches Paket | NOT_RUN |
 
 Root-/Desktop-fmt, Tests und Clippy bestehen lokal: 47 Roottests und 107 Desktoptests; gezielter Ollama-Test zusätzlich bestanden. Die Dialekt-Wortprüfung ist keine vollständige Sprach-/Grammatikprüfung. Audio wurde vom Nutzer ausdrücklich zurückgestellt. Normale Status-IPC und vorhandene Gesprächsgrenzen bleiben bestehen; Statusbläschen warten bei offener Gesprächsfläche. Neue lokale Tests verwenden separate QA-Daten und keine Production-Keys.
+
+## Vorbereitung 0.1.5/Build 6
+
+PASS: Gesprächsblase und JSON-Emotionen aus PR #54 gemergt; drei Plattformprüfungen für PR und main grün. Neue Produktversion/Buildnummer auf eigenem Versionsbranch. Keine veröffentlichten Dateien ersetzt. Neue native Mac-/Linux-Installer, lokale Apple-Signierung und finale Paketabnahme folgen; Windows-Veröffentlichung bleibt auf Nutzerwunsch zurückgestellt.
