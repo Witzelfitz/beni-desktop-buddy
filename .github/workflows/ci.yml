@@ -29,6 +29,8 @@ concurrency:
 jobs:
   checks:
     timeout-minutes: 25
+    outputs:
+      native_required: ${{ steps.native-plan.outputs.required }}
     env:
       BENI_BUILD_PACKAGES: ${{ github.event_name == 'workflow_dispatch' && inputs.build_packages }}
     strategy:
@@ -38,6 +40,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+      - name: Select native smoke scope
+        id: native-plan
+        run: python scripts/ci-native.py plan
+      - name: CI policy checks
+        run: python scripts/check-ci.py
       - name: Rust toolchain
         run: |
           rustup toolchain install --no-self-update
@@ -52,7 +61,7 @@ jobs:
           save-if: ${{ github.ref == 'refs/heads/main' }}
       - name: Linux GUI dependencies
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y libxkbcommon-dev libxkbcommon-x11-dev libwayland-dev libx11-dev libxext-dev libxi-dev libxrandr-dev libxcursor-dev libgl1-mesa-dev xvfb xauth weston
+        run: sudo apt-get update && sudo apt-get install -y libxkbcommon-dev libxkbcommon-x11-dev libwayland-dev libx11-dev libxext-dev libxi-dev libxrandr-dev libxcursor-dev libgl1-mesa-dev
       - name: Release version consistency
         run: python scripts/release.py check-versions
       - name: macOS packaging policy tests
@@ -81,9 +90,6 @@ jobs:
         if: runner.os == 'Linux'
         run: python scripts/check-storage-sync.py
       - run: cargo clippy --manifest-path apps/desktop/Cargo.toml --all-targets --locked -- -D warnings
-      - name: Native Linux input-region smoke tests
-        if: runner.os == 'Linux'
-        run: bash scripts/check-input-linux.sh
       - name: Desktop debug build
         if: env.BENI_BUILD_PACKAGES != 'true'
         run: cargo build --manifest-path apps/desktop/Cargo.toml --locked
@@ -126,3 +132,29 @@ jobs:
             apps/desktop/Cargo.lock
             dist/*.tar.gz
           if-no-files-found: error
+      - name: Export already-built native Linux test executable
+        if: runner.os == 'Linux' && steps.native-plan.outputs.required == 'true'
+        run: python scripts/ci-native.py export --directory "${{ runner.temp }}/beni-native-probe"
+      - name: Store short-lived native probe
+        if: runner.os == 'Linux' && steps.native-plan.outputs.required == 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: native-linux-probe
+          retention-days: 1
+          path: ${{ runner.temp }}/beni-native-probe/*
+          if-no-files-found: error
+  linux-native:
+    needs: checks
+    if: needs.checks.outputs.native_required == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Native runtime dependencies
+        run: sudo apt-get update && sudo apt-get install -y libxkbcommon0 libxkbcommon-x11-0 libwayland-client0 libx11-6 libxext6 libxi6 libxrandr2 libxcursor1 libgl1-mesa-dri xvfb xauth weston
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: native-linux-probe
+          path: ${{ runner.temp }}/beni-native-probe
+      - name: Native input and hotkey probes using reviewed test executable
+        run: bash scripts/check-input-linux.sh --probe-directory "${{ runner.temp }}/beni-native-probe"
