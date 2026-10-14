@@ -1,6 +1,6 @@
 # Updatekette · macOS zuerst
 
-Stand 14. Oktober 2026: [R3a/PR #40](https://github.com/Witzelfitz/beni-desktop-buddy/pull/40) und [R3b/PR #41](https://github.com/Witzelfitz/beni-desktop-buddy/pull/41) sind gemergt. R3b ergänzt Sparkle im Mac-Bundle, die Tray-Aktion und die Neustart-Abfrage. Die öffentlich veröffentlichte Version 0.1.1 hat weiterhin keinen eingebauten Updater; die neuen Quellen sind noch nicht als neue Version veröffentlicht. Die Microsoft-Firmenprüfung blockiert diese macOS-Arbeit nicht.
+Stand 14. Oktober 2026: [Version 0.1.2/Build 3](https://github.com/Witzelfitz/beni-desktop-buddy/releases/tag/v0.1.2) ist als erstes updaterfähiges Mac-Bundle veröffentlicht. R3a/R3b/R3c und Versions-PR #43 sind gemergt; Website PR #7 ist deployed. Beide Architektur-Feeds und Downloadkatalog sind live und verwenden denselben authentifizierten Release. 0.1.1 und ältere Installationen benötigen einmalig die manuelle Installation von 0.1.2. Die Microsoft-Firmenprüfung blockiert diese macOS-Arbeit nicht.
 
 ## Anbindung im Buddy
 
@@ -71,7 +71,7 @@ Sie baut ein temporäres Testbundle, prüft Laden/Signaturen, gespeicherte autom
 
 Für eine getrennte GUI-Abnahme kann `BENI_BUDDY_DATA_DIR` einen absoluten Datenordner angeben. Relative Pfade werden abgelehnt. Der produktive Start verwendet weiterhin den bisherigen Standardpfad. Sparkle-Präferenzen müssen in Testkopien zusätzlich über einen eigenen `SUDefaultsDomain` isoliert werden; dieser muss sich vom Bundle-Identifier der Test-App unterscheiden.
 
-Website-/Pipeline-PRs sind gemergt, beide Feed-Routen sind live und warten mit 503 auf den neuen Release. Nächste Schritte: Bootstrap-Version 0.1.2 final abnehmen/veröffentlichen und echtes Update A → B. Downloadabbruch, nicht schreibbarer Installationsort und finaler Erhalt der Einstellungen nach Installation sind noch offen; siehe [ADR 0004](adr/0004-sparkle-update-chain.md).
+0.1.2 ist final abgenommen und veröffentlicht, beide Stable-Feeds sind live. Nächste Schritte: einmalige Nutzerinstallation A und echtes Update A → B. Downloadabbruch, nicht schreibbarer Installationsort und finaler Erhalt der Einstellungen nach Installation sind noch offen; siehe [ADR 0004](adr/0004-sparkle-update-chain.md).
 
 Die synchronen Persistenzprüfungen verwenden den tatsächlichen vendorten FileStorage-Quelltext:
 
@@ -80,3 +80,11 @@ python scripts/check-storage-sync.py
 ```
 
 Sie prüfen einen vorangegangenen Hintergrundschreibauftrag, den neuen Snapshot und einen Dateisystemfehler. Die Desktop-Prüfung bestätigt mit echtem isoliertem IPC, dass der Empfang bei einem Speicherfehler aktiv bleibt. Der [eframe-Patch](../vendor/eframe/BENI_PATCH.md) dokumentiert die begrenzte API-Erweiterung.
+
+## Veröffentlichung 0.1.2
+
+Alle 13 öffentlichen Dateien, beide Feed-Routen und der Live-Katalog stimmen bytegenau mit dem authentifizierten Release-Kandidaten überein. Ein echter Chromium-Download des Apple-Silicon-DMGs von der produktiven Downloadseite hat die erwartete Grösse und SHA-256; macOS-Vorauswahl und Version/Build stimmen. Sparkle 2.10.0 hat den tatsächlichen signierten Feed in einer isolierten Developer-ID-Probe geladen: Signaturprüfung erfolgreich, genau ein passendes Item für Build 3 und 0.1.2; natives Ergebnis «aktuelle Version». Der Probe-Server war ausschliesslich lokal, die produktive App behält ihre feste HTTPS-Adresse.
+
+Finale native Installerabnahme für Intel/Apple Silicon auf macOS 15.7.9 bestanden. Beim ersten Intel-Lauf schlug der Ticketcheck mit Exitcode 68 fehl; lokales DMG, App und kopierte App validierten korrekt. Gezieltes Wiederholen nur des Intel-Jobs bestand mit identischen Paketbytes. Linux 0.1.2 ist ebenfalls nativ unter X11/Wayland abgenommen. Bestehende Programme-Installation und Codex-Hook blieben bis zur Nutzerinstallation bytegleich.
+
+Die Nutzerinstallation und tatsächliche Aktualisierung A → B sind damit noch nicht bestätigt. Anschliessend folgen verschobener Neustart, Einstellungen/Empfang nach Installation, defekte Paketsignatur, Downloadabbruch und nicht schreibbarer Installationsort.
