@@ -1,6 +1,6 @@
 # ADR 0006: Gespräch an der Figur und geprüfte JSON-Emotionen
 
-Status: im Entwicklungs-PR implementiert; neuer öffentlicher Installer folgt nach Abnahme.
+Status: umgesetzt in PR #54; als 0.1.5/Build 6 nach nativer Paketabnahme veröffentlicht.
 
 ## Auftrag
 

@@ -12,13 +12,13 @@ Die native Rust-Grundlage ist auf macOS gestartet und visuell geprüft. Tests, C
 
 ## Masterplan
 
-[Der verbindliche Masterplan](docs/MASTERPLAN.md) hält Fortschritt und nächste Schritte fest. [Version 0.1.4](https://github.com/Witzelfitz/beni-desktop-buddy/releases/tag/v0.1.4) ist für macOS und Linux über [die Downloadseite](https://mini.witzelfitz.io/download) verfügbar. Mac-Updates laufen über das Menüleistensymbol, Linux-Updates vorerst manuell. Windows wartet auf die Herausgebersignierung. [Release-Vertrag und Versionierung](docs/RELEASES.md).
+[Der verbindliche Masterplan](docs/MASTERPLAN.md) hält Fortschritt und nächste Schritte fest. [Version 0.1.5](https://github.com/Witzelfitz/beni-desktop-buddy/releases/tag/v0.1.5) ist für macOS und Linux über [die Downloadseite](https://mini.witzelfitz.io/download) verfügbar. Mac-Updates laufen über das Menüleistensymbol, Linux-Updates vorerst manuell. Windows wartet auf die Herausgebersignierung. [Release-Vertrag und Versionierung](docs/RELEASES.md).
 
 ## Mit Beni reden
 
-Nächste Version in Entwicklung: Gespräch direkt in einer Blase an der Figur, Hochdeutsch mit Schweizer Rechtschreibung und [JSON-Abschnitte mit Emotionen](docs/examples/chat-reply.json). Die veröffentlichte 0.1.4 verwendet noch das eigene Chatfenster. [Neue Darstellung und Vertrag](docs/CHAT.md).
+Ab 0.1.5: Gespräch direkt in einer Blase an der Figur, Hochdeutsch mit Schweizer Rechtschreibung und [JSON-Abschnitte mit Emotionen](docs/examples/chat-reply.json). Passende vorhandene Gesten begleiten jeden Abschnitt; vorerst ohne Sprachausgabe. [Darstellung und Vertrag](docs/CHAT.md).
 
-Ab 0.1.4 Beni anklicken → «Reden» → «Lokales Ollama verbinden». Ein vorhandenes lokales Textmodell auswählen und eine Nachricht senden. Ollama muss separat laufen; Beni lädt keine Modelle herunter. Antworten erscheinen laufend im eigenen Chatfenster, die Anfrage lässt sich abbrechen. Gesprächskontext ist vor dem Senden einsehbar und bleibt in der Sitzung. [Bedienung und Grenzen](docs/CHAT.md). Claude, OpenAI und eine allgemeine Ersteinrichtung folgen separat.
+Beni anklicken → «Reden» → «Lokales Ollama verbinden». Ein vorhandenes lokales Textmodell auswählen und eine Nachricht senden. Ollama muss separat laufen; Beni lädt keine Modelle herunter. Geprüfte Antwortabschnitte erscheinen direkt bei Beni, die Anfrage lässt sich abbrechen. Gesprächskontext ist vor dem Senden einsehbar und bleibt in der Sitzung. [Bedienung und Grenzen](docs/CHAT.md). Claude, OpenAI und eine allgemeine Ersteinrichtung folgen separat.
 
 ## Aktueller Stand
 
