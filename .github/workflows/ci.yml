@@ -30,7 +30,7 @@ jobs:
   checks:
     timeout-minutes: 25
     env:
-      BENI_BUILD_PACKAGES: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.build_packages) }}
+      BENI_BUILD_PACKAGES: ${{ github.event_name == 'workflow_dispatch' && inputs.build_packages }}
     strategy:
       fail-fast: true
       matrix:
@@ -57,6 +57,8 @@ jobs:
         run: python scripts/release.py check-versions
       - name: macOS packaging policy tests
         run: python scripts/check-macos-packaging.py
+      - name: Windows and Linux packaging policy tests
+        run: python scripts/check-portable-packaging.py
       - name: Release schema and regression tests
         if: runner.os == 'Linux'
         run: |
