@@ -66,6 +66,7 @@ jobs:
           "${{ runner.temp }}/beni-release-venv/bin/python" -m pip install -r scripts/requirements-release.txt
           "${{ runner.temp }}/beni-release-venv/bin/python" scripts/check-release.py
           "${{ runner.temp }}/beni-release-venv/bin/python" scripts/check-local-release.py
+          "${{ runner.temp }}/beni-release-venv/bin/python" scripts/check-sparkle.py
       - run: cargo fmt --all --check
       - run: cargo fmt --manifest-path apps/desktop/Cargo.toml --check
       - run: cargo test --workspace --locked

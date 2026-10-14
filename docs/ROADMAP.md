@@ -1,6 +1,6 @@
 # Roadmap
 
-Der verbindliche nächste Arbeitsabschnitt steht im [Masterplan für Distribution, Updates und KI](MASTERPLAN.md). R0/R1 sind abgeschlossen, R2 für macOS veröffentlicht: beide finalen signierten Installer bestehen native Installation, CLI und GUI auf macOS 15.7.9; [0.1.0/Build 1](https://github.com/Witzelfitz/beni-desktop-buddy/releases/tag/v0.1.0) und alle acht anonymen Downloads geprüft. W1: Beni-Allrounder PR #1 gemergt, Downloadseite über Coolify deployed und live mit echtem Katalog/Browser-Download abgenommen. Danach R3 mit Updates über das Menüleistensymbol. Exaktes macOS 15.0 und frische Nutzergeräte separat offen.
+Der verbindliche nächste Arbeitsabschnitt steht im [Masterplan für Distribution, Updates und KI](MASTERPLAN.md). R0/R1 sind abgeschlossen; [0.1.1/Build 2](https://github.com/Witzelfitz/beni-desktop-buddy/releases/tag/v0.1.1) ist für macOS und Linux veröffentlicht, Downloadseite live abgenommen. Windows-Installer geprüft, Microsoft-Firmenvalidierung noch in Bearbeitung. Währenddessen beginnt R3 mit [authentifizierten Sparkle-Appcasts](UPDATES.md) und nativ geprüftem Signaturformat; Framework-/Tray-Anbindung und echtes Update folgen. Exaktes macOS 15.0 und frische Nutzergeräte separat offen.
 
 ## 1 · Desktop-Abnahme und erster Build
 
