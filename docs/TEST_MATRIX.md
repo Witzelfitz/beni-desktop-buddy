@@ -170,3 +170,9 @@ Keine neuen Installer für diese Vorbereitung gebaut; keine Produktionsschlüsse
 | Update-Downloadabbruch, defekte Paketsignatur und nicht schreibbarer Installationsort | NOT_RUN |
 
 Windows wartet weiter auf Microsofts Firmenprüfung. Kein neuer Windows-Installer gebaut; Installer-/CI-Builds gezielt einmal je benötigtem Ziel, ausschliesslich der fehlgeschlagene Intel-Abnahmejob ohne Rust-Build wiederholt.
+
+## Nutzerinstallation 0.1.2, 14. Oktober 2026
+
+PASS: Nutzer bestätigt die manuelle Installation und den Start. `/Applications/Beni Buddy.app` meldet 0.1.2/Build 3, freigegebenen Apple-Silicon-Stable-Feed und die unveränderte Produkt-Bundle-ID; der Prozess läuft aus dieser Programme-App.
+
+NOT_RUN: vom Nutzer bestätigtes Ergebnis «aktuelle Version» über die Tray-Aktion, Erhalt seiner Einstellungen und tatsächliches Update A → B. Diese Schritte folgen in der begleiteten Abnahme.
