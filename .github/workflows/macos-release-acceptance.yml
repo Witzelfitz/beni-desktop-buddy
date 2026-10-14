@@ -13,6 +13,10 @@ concurrency:
   cancel-in-progress: false
 jobs:
   acceptance:
+    if: github.ref == 'refs/heads/main'
+    # GitHub hides draft releases from identities without push access. API calls remain GET-only.
+    permissions:
+      contents: write
     timeout-minutes: 15
     strategy:
       fail-fast: false
@@ -26,9 +30,10 @@ jobs:
     env:
       BENI_RELEASE_TAG: ${{ inputs.tag }}
       BENI_ARCHITECTURE: ${{ matrix.architecture }}
-      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
       - name: Require reviewed main
         run: test "$GITHUB_REF" = refs/heads/main
       - name: Install verification dependencies
@@ -36,6 +41,8 @@ jobs:
           python3 -m venv "$RUNNER_TEMP/beni-release-venv"
           "$RUNNER_TEMP/beni-release-venv/bin/python" -m pip install -r scripts/requirements-release.txt
       - name: Download and authenticate final installer
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           "$RUNNER_TEMP/beni-release-venv/bin/python" scripts/local-release.py download-release \
             --tag "$BENI_RELEASE_TAG" --architecture "$BENI_ARCHITECTURE" --output "$RUNNER_TEMP/beni-final-release"
