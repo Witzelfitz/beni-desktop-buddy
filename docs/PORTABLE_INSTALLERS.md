@@ -40,7 +40,10 @@ GUI, CLI, bestehende Integrationsvorlagen und Lizenztexte sind enthalten. Die be
 
 Automatische Updates sind noch nicht enthalten. Ihre Adapter und echte Update-Abnahmen bleiben R3/R4/R5-Folgearbeit.
 
-## Aktuelle Abnahme
+## Aktuelle Abnahme, 14. Oktober 2026
 
-- **PASS lokal/macOS:** 111 Rusttests, fmt/clippy beider Workspaces; 9 portable Packaging-Tests, 23 lokale Release-Tests, 28 Mac-Packaging-Tests, 19 Schema-Tests, 11 Integrationsprüfungen; bestehende Assets und Icon-Provenienz unverändert.
-- **NOT_RUN:** Native Windows-/Linux-Installer-Workflows, öffentliche Pakete, vollständige manuelle Windows-11-/Linux-Desktopabnahme, Microsoft-Signierung, echte Updates. Nach den Workflows und Veröffentlichung mit konkreten Belegen ergänzen.
+- **PASS lokal/macOS:** 111 Rusttests, fmt/clippy beider Workspaces; 11 portable Packaging-Tests, 25 lokale Release-Tests, 28 Mac-Packaging-Tests, 19 Schema-Tests, 11 Integrationsprüfungen; bestehende Assets und Icon-Provenienz unverändert. Reguläre PR-CI auf drei Plattformen grün.
+- **PASS Linux:** [Run 38536064173](https://github.com/Witzelfitz/beni-desktop-buddy/actions/runs/38536064173), Ubuntu 22.04 x86_64: echter AppImage-Runtime-Start ohne FUSE, CLI, eigenes X11-Fenster, konfigurierte Wayland-Oberfläche, Menüinstallation/-entfernung und Erhalt zusätzlicher Dateien. Der andere Windows-Job dieses Laufs scheiterte am Fensterstart; nur der erfolgreiche Linux-Job wird übernommen.
+- **PASS Windows:** [Run 38537805266](https://github.com/Witzelfitz/beni-desktop-buddy/actions/runs/38537805266), Windows Server 2025 x86_64 mit isoliertem Mesa 26.2.4: echter Installer, installierte CLI, sichtbares eigenes Fenster, Verweigerung von Überschreiben/Deinstallation bei laufender App, anschliessende Deinstallation und Erhalt zusätzlicher Dateien. Authentifizierte Artefakte lokal unter `dist/windows-reviewed-0.1.1/`. Noch keine Herausgebersignatur.
+- **PASS Veröffentlichung:** [0.1.1/Build 2](https://github.com/Witzelfitz/beni-desktop-buddy/releases/tag/v0.1.1) enthält beide finalen notarierten Mac-DMGs und das Linux-AppImage. [Finale Mac-Abnahme](https://github.com/Witzelfitz/beni-desktop-buddy/actions/runs/38538384964) auf macOS 15.7.9 für beide CPUs bestanden. Elf anonyme Downloads bytegleich zum Ed25519-geprüften Kandidaten. Live-Katalog und echte automatische Linux-x64-Auswahl mit tatsächlichem Browser-Download und exakter Prüfsumme bestanden. Website PR #5 gemergt und live.
+- **NOT_RUN:** Vollständige manuelle Windows-11-/Linux-Desktop- und Hardwareabnahmen, Authenticode, öffentliche Windows-Ausgabe, echte Updates. Microsoft-Abonnement und Basic-Konto sind inzwischen eingerichtet; öffentliche Firmenprüfung, Zertifikatsprofil und OIDC folgen gemeinsam mit dem Nutzer.
