@@ -47,6 +47,14 @@ class StartupDiagnosticsTests(unittest.TestCase):
         self.assertIn('XOpenDisplayFailed', message); self.assertIn('Öffentlicher Fehlercode 5', message)
         self.assertNotIn('secret-message', message)
 
+    def test_wayland_protocol_reason_is_fixed_and_ignores_successful_requests(self):
+        process = Mock(); process.poll.return_value = 1
+        output = b'xdg_toplevel.set_min_size(300, 400)\nwl_display@1.error(20, 3, "xdg_surface has never been configured secret")\n'
+        message = installer.startup_summary(process, io.BytesIO(output), 'Linux/Wayland')
+        self.assertIn('Surface noch nicht konfiguriert', message)
+        self.assertIn('Wayland-Protokollcode 3', message)
+        self.assertNotIn('MinSize', message); self.assertNotIn('secret', message)
+
     def test_live_window_success_does_not_read_logs_and_timeout_stays_a_failure(self):
         process = Mock(); process.poll.return_value = None
         log = Mock()

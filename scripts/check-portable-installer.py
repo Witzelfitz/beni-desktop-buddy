@@ -55,6 +55,19 @@ def startup_summary(process, log, label):
             if marker in output and category not in details: details.append(category)
         code = re.search(r'(?:raw_code: some\(|code: )(-?[0-9]{1,6})\b', output)
         if code: details.append('Öffentlicher Fehlercode ' + code[1])
+        for line in output.splitlines():
+            if 'error' not in line: continue
+            for marker, category in (
+                ('xdg_surface', 'xdg_surface'), ('xdg_toplevel', 'xdg_toplevel'),
+                ('wl_surface', 'wl_surface'), ('wl_registry', 'wl_registry'),
+                ('never been configured', 'Surface noch nicht konfiguriert'),
+                ('unconfigured', 'Unconfigured'), ('invalid', 'Invalid'),
+                ('min_size', 'MinSize'), ('max_size', 'MaxSize'), ('buffer', 'Buffer'),
+                ('geometry', 'Geometry'), ('serial', 'Serial'), ('size', 'Size'),
+            ):
+                if marker in line and category not in details: details.append(category)
+            protocol_code = re.search(r'\.error\([^,]+,\s*([0-9]{1,5})\b', line)
+            if protocol_code: details.append('Wayland-Protokollcode ' + protocol_code[1])
     return f'{label}: ' + '; '.join(details) + '.'
 
 
@@ -140,6 +153,8 @@ def linux(image, folder):
                 client_log.seek(0); protocol = client_log.read().decode(errors='replace')
                 return 'xdg_toplevel' in protocol and 'set_title(' in protocol and 'ack_configure(' in protocol and '.commit(' in protocol
             try: wait_window(process, configured, label='Linux/Wayland', log=client_log)
+            except package.PackagingError as error:
+                raise package.PackagingError(str(error) + ' ' + startup_summary(compositor, weston_log, 'Testcompositor')) from error
             finally: stop(process)
         finally: stop(compositor)
     package.run([str(image),'--install-desktop'], 'Linux-Menü explizit installieren', env=env)
