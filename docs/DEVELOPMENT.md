@@ -27,14 +27,14 @@ sudo apt-get install libxkbcommon-dev libxkbcommon-x11-dev libwayland-dev libx11
 Die Release-Prüfungen verwenden die Versionen aus `scripts/requirements-release.txt`; native Installer-Workflows verwenden Python 3.13. Die Rust-Anwendung und ihre Chat-/Animationslogik benötigen keine Python-Laufzeit. Die optionale Linux-Menüintegration verwendet Python 3.
 
 ```sh
-python3 -m venv .venv-release
+python3.13 -m venv .venv-release
 .venv-release/bin/python -m pip install -r scripts/requirements-release.txt
 export BENI_RELEASE_PYTHON="$PWD/.venv-release/bin/python"
 ./scripts/check.sh
 ./scripts/check.sh --desktop
 ```
 
-Die bestehende Release-Pipeline bleibt in Python. Ein gemeinsamer Rust-Einstieg wird im Härtungsplan geprüft; eine vollständige Portierung braucht einen belegten Wartungsvorteil.
+Die Release-Pipeline bleibt in Python. [H5 / PR #62](https://github.com/Witzelfitz/beni-desktop-buddy/pull/62) ergänzt `docs/TOOLING.md`: derselbe Interpreter für alle Prüfungen, automatische Wahl des Projekt-Venv und frühzeitige Prüfung der festgelegten Abhängigkeiten. Eine vollständige Rust-Portierung braucht einen belegten Wartungsvorteil.
 
 ## CI und native Abnahme
 
@@ -42,7 +42,7 @@ Feature-Branches werden über PRs geprüft; Push-Prüfungen laufen nur auf main.
 
 Native Eingaberegionen und X11-Hotkeys: `bash scripts/check-input-linux.sh`, mit eigenem Xvfb-/Weston-Testserver. Weitere Plattform-/Hardwareabnahmen stehen in [TEST_MATRIX.md](TEST_MATRIX.md). CPU-/Repaint-Messungen stehen in [PERFORMANCE.md](PERFORMANCE.md).
 
-Die nächsten Härtungen trennen schnelle und native Prüfungen und grenzen Infrastruktur-Retries ein. Finale Installer-Abnahmen bleiben Voraussetzung für eine Veröffentlichung.
+[H2 / PR #59](https://github.com/Witzelfitz/beni-desktop-buddy/pull/59) trennt schnelle und native Prüfungen und begrenzt Infrastruktur-Retries; `docs/CI.md` beschreibt Pfadfilter, Artefaktübergabe und Fehlergrenzen. Finale Installer-Abnahmen bleiben Voraussetzung für eine Veröffentlichung.
 
 ## Architektur und Distribution
 
