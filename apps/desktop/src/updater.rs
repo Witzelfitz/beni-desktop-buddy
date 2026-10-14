@@ -149,6 +149,10 @@ impl Updater {
     pub fn ui(&mut self, ui: &mut egui::Ui) {
         ui.separator();
         ui.heading("Updates");
+        ui.label(format!(
+            "Installierte Version: {}",
+            env!("CARGO_PKG_VERSION")
+        ));
         if ui
             .add_enabled(
                 self.menu_enabled(),
