@@ -176,3 +176,9 @@ Windows wartet weiter auf Microsofts Firmenprüfung. Kein neuer Windows-Installe
 PASS: Nutzer bestätigt die manuelle Installation und den Start. `/Applications/Beni Buddy.app` meldet 0.1.2/Build 3, freigegebenen Apple-Silicon-Stable-Feed und die unveränderte Produkt-Bundle-ID; der Prozess läuft aus dieser Programme-App.
 
 NOT_RUN: vom Nutzer bestätigtes Ergebnis «aktuelle Version» über die Tray-Aktion, Erhalt seiner Einstellungen und tatsächliches Update A → B. Diese Schritte folgen in der begleiteten Abnahme.
+
+## Nutzerprüfung des Mac-Updaters, 14. Oktober 2026
+
+PASS: Nutzer öffnet «Nach Updates suchen …» in der installierten 0.1.2 und bestätigt «up to date». Native App, HTTPS-Feed und Oberfläche funktionieren in seiner tatsächlichen Installation zusammen.
+
+NOT_RUN: Installation A → B; dafür wird 0.1.3/Build 4 vorbereitet. Neue kleine UI-Ergänzung: installierte Version im Updatebereich sichtbar machen.
