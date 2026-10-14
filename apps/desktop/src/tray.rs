@@ -15,6 +15,7 @@ pub enum Action {
     DoNotDisturb,
     Settings,
     History,
+    CheckUpdates,
     Quit,
 }
 impl Action {
@@ -27,6 +28,7 @@ impl Action {
             "beni-do-not-disturb" => Some(Self::DoNotDisturb),
             "beni-settings" => Some(Self::Settings),
             "beni-history" => Some(Self::History),
+            "beni-check-updates" => Some(Self::CheckUpdates),
             "beni-quit" => Some(Self::Quit),
             _ => None,
         }
@@ -36,6 +38,7 @@ pub struct Tray {
     _icon: TrayIcon,
     pause: CheckMenuItem,
     do_not_disturb: CheckMenuItem,
+    updates: MenuItem,
 }
 impl Tray {
     pub fn new(
@@ -54,6 +57,7 @@ impl Tray {
             CheckMenuItem::with_id("beni-do-not-disturb", "Nicht stören", true, quiet, None);
         let settings = MenuItem::with_id("beni-settings", "Einstellungen", true, None);
         let history = MenuItem::with_id("beni-history", "Meldungsverlauf", true, None);
+        let updates = MenuItem::with_id("beni-check-updates", "Nach Updates suchen …", true, None);
         let quit = MenuItem::with_id("beni-quit", "Beenden", true, None);
         menu.append_items(&[
             &show,
@@ -64,6 +68,7 @@ impl Tray {
             &do_not_disturb,
             &settings,
             &history,
+            &updates,
             &PredefinedMenuItem::separator(),
             &quit,
         ])?;
@@ -87,6 +92,7 @@ impl Tray {
             _icon: icon,
             pause,
             do_not_disturb,
+            updates,
         })
     }
     pub fn set_paused(&self, paused: bool) {
@@ -94,6 +100,9 @@ impl Tray {
     }
     pub fn set_do_not_disturb(&self, quiet: bool) {
         self.do_not_disturb.set_checked(quiet);
+    }
+    pub fn set_updates_enabled(&self, enabled: bool) {
+        self.updates.set_enabled(enabled);
     }
 }
 fn avatar_icon(engine: &Engine) -> Result<Icon, Box<dyn std::error::Error + Send + Sync>> {

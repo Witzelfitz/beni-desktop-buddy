@@ -953,6 +953,14 @@ pub trait Storage {
 
     /// write-to-disk or similar
     fn flush(&mut self);
+
+    /// Persist current state before an external process termination. Backends
+    /// with asynchronous writes must wait for completion and report errors.
+    /// Synchronous/custom in-memory backends may use this default.
+    fn flush_sync(&mut self) -> std::io::Result<()> {
+        self.flush();
+        Ok(())
+    }
 }
 
 /// Get and deserialize the [RON](https://github.com/ron-rs/ron) stored at the given key.

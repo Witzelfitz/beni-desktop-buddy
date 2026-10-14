@@ -1,6 +1,6 @@
 # Roadmap
 
-Der verbindliche nächste Arbeitsabschnitt steht im [Masterplan für Distribution, Updates und KI](MASTERPLAN.md). R0/R1 sind abgeschlossen; [0.1.1/Build 2](https://github.com/Witzelfitz/beni-desktop-buddy/releases/tag/v0.1.1) ist für macOS und Linux veröffentlicht, Downloadseite live abgenommen. Windows-Installer geprüft, Microsoft-Firmenvalidierung noch in Bearbeitung. Währenddessen beginnt R3 mit [authentifizierten Sparkle-Appcasts](UPDATES.md) und nativ geprüftem Signaturformat; Framework-/Tray-Anbindung und echtes Update folgen. Exaktes macOS 15.0 und frische Nutzergeräte separat offen.
+Der verbindliche nächste Arbeitsabschnitt steht im [Masterplan für Distribution, Updates und KI](MASTERPLAN.md). R0/R1 sind abgeschlossen; [0.1.1/Build 2](https://github.com/Witzelfitz/beni-desktop-buddy/releases/tag/v0.1.1) ist für macOS und Linux veröffentlicht, Downloadseite live abgenommen. Windows-Installer geprüft, Microsoft-Firmenvalidierung noch in Bearbeitung. [R3a/PR #40](https://github.com/Witzelfitz/beni-desktop-buddy/pull/40) ist gemergt. R3b implementiert die Sparkle-/Bundle-/Tray-Anbindung und ist lokal nativ geprüft. Die koordinierte Feed-Veröffentlichung und echtes Update A → B folgen; veröffentlichte Pakete und bestehende Installation bleiben unverändert. Exaktes macOS 15.0 und frische Nutzergeräte separat offen.
 
 ## 1 · Desktop-Abnahme und erster Build
 

@@ -115,3 +115,21 @@ Belege: [Linux](https://github.com/Witzelfitz/beni-desktop-buddy/actions/runs/38
 | Downloadabbruch / nicht schreibbarer Installationsort / Einstellungen nach Update | NOT_RUN |
 
 Native Probe: `scripts/check-sparkle.py --sparkle-archive …`, SDK-Grösse und SHA-256 aus `release/sparkle-sdk.json` vor dem Entpacken geprüft. Keine App gestartet oder ersetzt, keine Hooks verändert. Die Signaturkompatibilität bestätigt noch keine echte Installation.
+
+## Updatekette R3b, 14. Oktober 2026
+
+| Prüfung | Ergebnis |
+| --- | --- |
+| SDK-Grösse/Hash, Symlinks, Lizenz und Helper-Signierreihenfolge; feste Schlüssel-/Kanal-/Sicherheitskonfiguration | PASS, 31 Packaging-Regressionsprüfungen |
+| Synchrones Speichern mit zwei echten FileStorage-Tests; IPC bei Schreibfehler erhalten | PASS, tatsächlicher Persistenzcode und isolierter IPC-Test |
+| Verzögerter Neustart; «Später» bleibt wirksam, ausdrückliche Bestätigung; Zugriff ohne laufende native Instanz | PASS, positive/negative Rust-/UI-Prüfungen |
+| Hauptthread-Grenze, Framework laden, gespeicherte automatische Prüfwahl über echte Neustarts, asynchroner Installationscallback genau einmal | PASS, temporäres Developer-ID-Bundle auf ARM macOS 26.6.2 |
+| Ungültiger lokaler Feed tatsächlich angefordert, nativer Fehlerdialog, keine Installation | PASS, eigener Loopback-Fixture-Server und Testprozess; keine produktive HTTP-Ausnahme |
+| Echte Rust-GUI: neues Tray-Item → unabhängige Einstellungen, Erklärung bei noch fehlendem Feed, native Prüfwahl vorhanden | PASS, separate App/Präferenzdomains und eigener Datenordner, ARM macOS 26.6.2 |
+| Updateaktion bei ausgeblendetem Buddy: Zurückholen, unabhängiges Fenster öffnen und schliessen | PASS, echter signierter Rust-Build nach Korrektur |
+| Neues Rust-/Sparkle-Bundle: Apple-Annahme, Ticket und Gatekeeper | PASS, lokale Notarisierung der separaten QA-App; kein öffentlicher Installer |
+| Bestehende Programme-Installation und Codex-Hook nach GUI-Abnahme bytegleich; nur eigener Testprozess beendet | PASS |
+| Neues Intel-/macOS-15-Bundle / produktive Feed-Freigabe / neue öffentliche Version | NOT_RUN |
+| Echtes Update A → B, Einstellungen nach Installation, Downloadabbruch, nicht schreibbarer Installationsort | NOT_RUN |
+
+Das normale Packaging enthält das gepinnte SDK und verwendet macOS 15.0 als Bundle-Mindestversion. Der öffentliche Feed bleibt durch `release/update-policy.json` gesperrt, bis Desktop-Pipeline und Website dieselben zusätzlichen Feeddateien unterstützen. Die Brückenprobe benötigt keinen Rust-Build und läuft bewusst lokal; keine zusätzliche automatische Installer-Matrix eingeführt. Die veröffentlichten Dateien von 0.1.1 bleiben unverändert.

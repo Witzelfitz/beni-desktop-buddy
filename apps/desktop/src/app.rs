@@ -28,6 +28,8 @@ pub struct BuddyApp {
     history: crate::history::History,
     timer: crate::timer::Timer,
     reminders: crate::reminders::Reminders,
+    updates: crate::updater::Updater,
+    updates_info: bool,
     history_player: Option<Player>,
     settings: Settings,
     motion: crate::motion::MotionPreference,
@@ -98,6 +100,8 @@ impl BuddyApp {
             history: crate::history::History::default(),
             timer: crate::timer::Timer::load(cc.storage),
             reminders: crate::reminders::Reminders::default(),
+            updates: crate::updater::Updater::default(),
+            updates_info: false,
             history_player: None,
             last_tick: Instant::now(),
             message: "Hoi! Ich bin Beni. Klick mich für die Bedienung an oder zieh mich an deinen Lieblingsplatz.".into(),
@@ -142,6 +146,12 @@ impl BuddyApp {
             message,
             until: now + Duration::from_secs(6),
         });
+    }
+    fn save_for_update(&mut self, storage: &mut dyn eframe::Storage) -> std::io::Result<()> {
+        eframe::App::save(self, storage);
+        storage.flush_sync()?;
+        self.stop_receiving();
+        Ok(())
     }
     fn expire_error(&mut self, now: Instant) {
         if self.error.as_ref().is_some_and(|error| now >= error.until) {
@@ -484,6 +494,7 @@ impl BuddyApp {
         self.hit_map.add_rect(response.rect, 14.0);
     }
     fn open_settings(&mut self, ctx: &egui::Context) {
+        self.updates_info = false;
         self.close_history();
         if !self.menu_open {
             self.settings_focused = false;
@@ -568,6 +579,9 @@ impl BuddyApp {
         if ui.button("Verlauf öffnen").clicked() {
             self.open_history();
         }
+        if self.updates_info {
+            self.updates.ui(ui);
+        }
         self.timer.ui(ui, Instant::now());
         self.reminders.ui(ui, Instant::now());
         ui.separator();
@@ -647,6 +661,9 @@ impl BuddyApp {
         }
         self.hotkeys.ui(ui);
         ui.small("Alt/Option + Q beendet Beni.");
+        if !self.updates_info {
+            self.updates.ui(ui);
+        }
     }
 }
 impl BuddyApp {
@@ -756,6 +773,14 @@ impl BuddyApp {
                 self.set_do_not_disturb(!self.do_not_disturb, Instant::now());
             }
             Action::Quit => ctx.send_viewport_cmd(egui::ViewportCommand::Close),
+            Action::CheckUpdates => {
+                if self.updates.check().is_err() {
+                    // Explain pending feeds/unsupported developer builds in the
+                    // independent settings window, including when Beni is hidden.
+                    self.handle_tray(Action::Settings, ctx, window);
+                    self.updates_info = true;
+                }
+            }
         }
     }
 }
@@ -766,6 +791,7 @@ impl eframe::App for BuddyApp {
         }
         let window = frame.winit_window().cloned();
         if let Some(window) = window.as_deref() {
+            self.updates.initialize();
             self.hotkeys.sync(ctx, window);
             if !self.tray_attempted {
                 self.tray_attempted = true;
@@ -807,6 +833,26 @@ impl eframe::App for BuddyApp {
         self.collect_history();
         self.advance_timer(Instant::now());
         self.advance_reminders(Instant::now());
+        self.updates.poll();
+        let busy = self.timer.has_session() || self.reminders.has_tasks();
+        if self.updates.needs_confirmation(busy) && !self.updates_info {
+            self.handle_tray(Action::Settings, ctx, window.as_deref());
+            self.updates_info = true;
+        }
+        if self.updates.ready_to_install(busy) {
+            // Persist preferences before Sparkle terminates the process. Do not
+            // change the stored IPC opt-in while closing its live transport.
+            if let Some(storage) = frame.storage_mut()
+                && self.save_for_update(storage).is_ok()
+            {
+                self.updates.finish_install();
+                return;
+            }
+            self.updates.defer_install();
+            self.report_error("Einstellungen konnten nicht gespeichert werden. Das Update wartet; bitte prüfe den Speicherort und versuche es erneut.".into(), Instant::now());
+            self.handle_tray(Action::Settings, ctx, window.as_deref());
+            self.updates_info = true;
+        }
         if !self.ipc_enabled {
             self.stop_receiving();
         }
@@ -824,6 +870,7 @@ impl eframe::App for BuddyApp {
         if let Some(tray) = &self.tray {
             tray.set_paused(self.player.paused);
             tray.set_do_not_disturb(self.do_not_disturb);
+            tray.set_updates_enabled(self.updates.menu_enabled());
         }
         self.expire_error(Instant::now());
         // Also check topology when hidden/occluded; avoid an animation loop in that state.
@@ -892,6 +939,8 @@ mod tests {
             history: crate::history::History::default(),
             timer: crate::timer::Timer::default(),
             reminders: crate::reminders::Reminders::default(),
+            updates: crate::updater::Updater::default(),
+            updates_info: false,
             history_player: None,
             settings: Settings::default(),
             motion: crate::motion::MotionPreference::load(None),
@@ -1958,6 +2007,56 @@ mod tests {
         fn flush(&mut self) {}
     }
     #[test]
+    fn update_save_waits_for_storage_and_keeps_ipc_alive_on_write_failure() {
+        struct CheckedStorage {
+            values: TestStorage,
+            fail: bool,
+        }
+        impl eframe::Storage for CheckedStorage {
+            fn get_string(&self, key: &str) -> Option<String> {
+                self.values.get_string(key)
+            }
+            fn set_string(&mut self, key: &str, value: String) {
+                self.values.set_string(key, value);
+            }
+            fn remove_string(&mut self, key: &str) {
+                self.values.remove_string(key);
+            }
+            fn flush(&mut self) {
+                panic!("update handoff must use the synchronous API");
+            }
+            fn flush_sync(&mut self) -> std::io::Result<()> {
+                if self.fail {
+                    Err(std::io::Error::other("fixture"))
+                } else {
+                    Ok(())
+                }
+            }
+        }
+        let endpoint = common::TestEndpoint::new();
+        let mut app = app(&egui::Context::default());
+        app.ipc_enabled = true;
+        app.server = Some(buddy_ipc::Server::start_at(endpoint.endpoint.clone(), || {}).unwrap());
+        let mut storage = CheckedStorage {
+            values: TestStorage::default(),
+            fail: true,
+        };
+        assert!(app.save_for_update(&mut storage).is_err());
+        assert!(app.server.is_some() && app.ipc_enabled);
+        buddy_ipc::notify(
+            &endpoint.endpoint,
+            buddy_core::notifications::Notification::new("Empfang bleibt aktiv"),
+        )
+        .unwrap();
+        storage.fail = false;
+        app.save_for_update(&mut storage).unwrap();
+        assert!(app.server.is_none() && app.ipc_enabled);
+        assert_eq!(
+            eframe::get_value::<bool>(&storage, "status-receiving"),
+            Some(true)
+        );
+    }
+    #[test]
     fn hotkey_actions_work_while_hidden_without_a_render_pass() {
         let ctx = egui::Context::default();
         let mut app = app(&ctx);
@@ -2621,6 +2720,7 @@ mod tests {
             Action::DoNotDisturb,
             Action::Settings,
             Action::History,
+            Action::CheckUpdates,
             Action::Quit,
         ] {
             app.tray_sender.try_send(action).unwrap();
@@ -2654,6 +2754,7 @@ mod tests {
                 ),
                 Action::Pause => assert!(app.player.paused),
                 Action::DoNotDisturb => assert!(app.do_not_disturb),
+                Action::CheckUpdates => assert!(app.menu_open),
             }
         }
         app.tray_sender.try_send(Action::Pause).unwrap();
@@ -2661,6 +2762,26 @@ mod tests {
             eframe::App::logic(&mut app, ctx, &mut native_frame);
         });
         assert!(!app.player.paused);
+    }
+
+    #[test]
+    fn update_action_restores_hidden_buddy_and_explains_missing_updater_without_changing_playback()
+    {
+        let ctx = egui::Context::default();
+        let mut app = app(&ctx);
+        app.hidden = true;
+        app.player.paused = true;
+        app.do_not_disturb = true;
+        let message = app.message.clone();
+        app.handle_tray(Action::CheckUpdates, &ctx, None);
+        assert!(app.menu_open && app.updates_info);
+        assert!(!app.hidden && app.player.paused && app.do_not_disturb);
+        assert_eq!(app.message, message);
+        app.open_settings(&ctx);
+        assert!(
+            !app.updates_info,
+            "ordinary settings retain their usual order"
+        );
     }
 
     #[test]

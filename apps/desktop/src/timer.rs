@@ -61,6 +61,9 @@ impl Default for Timer {
     }
 }
 impl Timer {
+    pub fn has_session(&self) -> bool {
+        self.session.is_some()
+    }
     pub fn load(storage: Option<&dyn eframe::Storage>) -> Self {
         let mut timer = Self::default();
         if let Some(minutes) = storage.and_then(|s| eframe::get_value(s, "timer-minutes")) {
@@ -205,14 +208,17 @@ mod tests {
     fn reaches_each_deadline_once_and_requires_explicit_next_start() {
         let now = Instant::now();
         let mut timer = Timer::default();
+        assert!(!timer.has_session());
         assert!(timer.tick(now).is_none());
         for (phase, seconds) in [(Phase::Focus, 1500), (Phase::Break, 300)] {
             timer.start(phase, now);
+            assert!(timer.has_session());
             let deadline = now + Duration::from_secs(seconds);
             assert!(timer.tick(deadline - Duration::from_nanos(1)).is_none());
             assert_eq!(timer.tick(deadline), Some((phase, deadline)));
             assert!(timer.tick(deadline + Duration::from_secs(1)).is_none());
             assert!(timer.session.is_none());
+            assert!(!timer.has_session());
             assert_eq!(timer.take_notice(deadline), Some(phase));
             assert!(timer.take_notice(deadline).is_none());
         }
@@ -223,6 +229,10 @@ mod tests {
         let mut timer = Timer::default();
         timer.start(Phase::Break, now);
         timer.toggle_pause(now + Duration::from_secs(100));
+        assert!(
+            timer.has_session(),
+            "paused timers also need a restart warning"
+        );
         assert!(timer.tick(now + Duration::from_secs(1000)).is_none());
         timer.toggle_pause(now + Duration::from_secs(1000));
         assert!(timer.tick(now + Duration::from_secs(1199)).is_none());
