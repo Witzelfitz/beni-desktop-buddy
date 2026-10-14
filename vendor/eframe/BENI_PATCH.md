@@ -1,4 +1,4 @@
-# Lokaler eframe-Patch: Accessibility in zusätzlichen Fenstern
+# Lokaler eframe-Patch: Accessibility und sichere Persistenz
 
 Basis: eframe 0.36.2 aus dem veröffentlichten [Crate-Archiv](https://static.crates.io/crates/eframe/eframe-0.36.2.crate), SHA-256 `55ad41fac6e3149abb4866e93df37dbd33baa95db525c3368c944584e95a5dc2`. Upstream-Commit `49682f8baa058bf49e011035cfbd6e825f88a5ef`, Pfad `crates/eframe`. MIT-/Apache-2.0-Lizenzen liegen bei.
 
@@ -13,3 +13,20 @@ Vor Entfernung des Patches bei einem Upstream-Update müssen die native Fensterp
 R3b ergänzt `Storage::flush_sync() -> std::io::Result<()>`. Der normale `flush()` startet im Original einen Hintergrundschreibthread; eine sofortige externe App-Beendigung durch Sparkle könnte diesen abschneiden. `FileStorage::flush_sync` wartet deshalb auf einen vorhandenen Schreibthread und schreibt anschliessend den aktuellen Snapshot synchron. Dateisystemfehler werden zurückgegeben; nur nach erfolgreichem Abschluss setzt Beni den Update-Neustart fort und schliesst IPC. Die normale periodische Speicherung bleibt asynchron. Eigene synchrone/In-Memory-Backends können die Default-Methode verwenden.
 
 Die zwei echten FileStorage-Prüfungen liegen im betroffenen Upstream-Modul. `scripts/check-storage-sync.py` kompiliert genau diesen Quelltext mit der echten eframe-Storage-Schnittstelle in einem temporären Testpaket. Es verwendet ausschliesslich bereits im Desktop-Lockfile freigegebene Versionen/Checksummen, läuft offline, übernimmt den bestehenden Zielcache und verändert keinen Repository-Lockfile. Damit wird kein GUI-Paket in den unabhängigen Kern-Workspace aufgenommen. Die Tests prüfen einen vorangegangenen asynchronen Schreibauftrag, den aktuellen synchron gespeicherten Snapshot und einen Schreibfehler. Die Desktop-Abnahme prüft zusätzlich, dass IPC bei einem Speicherfehler weiterläuft. Vor Entfernung dieser Ergänzung die Persistenz- und Update-Abnahmen wiederholen.
+
+## Automatische Umfangsprüfung
+
+`BENI_PATCH.json` hält Version, Upstream-Commit, Archivprüfsumme sowie Original- und Patch-Prüfsummen der drei Quelldateien fest. `python3 scripts/check-vendor.py` vergleicht alle Dateien mit dem veröffentlichten Archiv. Weitere Änderungen, fehlende Dateien, zusätzliche Quelltexte, veränderte Lizenzen und Symlinks führen zum Fehler. Ausnahmen sind ausdrücklich inventarisiert: der ausgelassene `Cargo.lock`, die zwei erhaltenen Workspace-Lizenzen und diese lokale Dokumentation mit ihrem Vertrag.
+
+Die Prüfung verwendet ein vorhandenes Cargo-Archiv oder lädt ausschliesslich das oben verlinkte öffentliche, unveränderliche Archiv mit Zeit- und Grössenbegrenzung. Ein Offline-Lauf benötigt das Archiv im Cargo-Cache. Es wird nichts entpackt oder am Workspace geändert. Die CI führt zusätzlich die negativen Prüfungen aus `scripts/check-vendor-tests.py` aus.
+
+Bei jeder bewussten Patchänderung müssen Vertrag und Review gemeinsam aktualisiert werden. Ein Versionswechsel erfordert den neuen Originalvergleich und eine Anpassung des fest verankerten Prüfvertrags; ein blosses Cargo-Update genügt nicht.
+
+## Weg zurück zu Upstream
+
+Der Patch wird erst entfernt, wenn beide Fähigkeiten nachweisbar ersetzt sind:
+
+1. Accessibility-Adapter für alle nativen Glow-Zusatzfenster vor ihrer ersten Sichtbarkeit, inklusive Schliessen und Neuerstellen.
+2. Eine bestätigte, synchrone Speicherung des aktuellen Snapshots nach früheren asynchronen Schreibaufträgen, inklusive weitergereichtem Dateisystemfehler vor einem Sparkle-Neustart.
+
+`raw-window-handle` allein erfüllt diese Voraussetzungen nicht: Es liefert einen Fensterbezug, übernimmt aber weder die Adapterinitialisierung im eframe-Lebenszyklus noch dessen Storage-Schreibthread. Eine Lösung ausserhalb des Forks muss diese Übergänge nachweisbar übernehmen und dieselben Abnahmen bestehen. Bis dahin bleibt die kleine, inventarisierte Anpassung erhalten. Ein Ersatz in einer neueren Upstream-Version wurde in diesem PR nicht bestätigt.
