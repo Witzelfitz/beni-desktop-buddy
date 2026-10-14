@@ -1,6 +1,6 @@
 # Roadmap
 
-Der verbindliche nächste Arbeitsabschnitt steht im [Masterplan für Distribution, Updates und KI](MASTERPLAN.md). macOS-/Linux-Version 0.1.3/Build 4 und Downloadseite sind veröffentlicht. Der Nutzer bestätigt das echte Mac-Update 0.1.2 → 0.1.3; installierte Version, geprüfte Einstellungen und IPC sind belegt. Der nächste Schritt ist die gemeinsame Chat-Grundlage und danach freiwilliger lokaler Ollama-Chat. Windows-Signierung wartet auf die Firmenprüfung. Exaktes macOS 15.0, frische Nutzergeräte und zusätzliche manuelle Updatefälle bleiben separat offen.
+Der verbindliche nächste Arbeitsabschnitt steht im [Masterplan für Distribution, Updates und KI](MASTERPLAN.md). macOS-/Linux-Version 0.1.3/Build 4 und Downloadseite sind veröffentlicht. Der Nutzer bestätigt das echte Mac-Update 0.1.2 → 0.1.3; installierte Version, geprüfte Einstellungen und IPC sind belegt. Chat-Grundlage PR #49 ist gemergt; Klickzugang und freiwilliger lokaler Ollama-Chat werden im nächsten Entwicklungs-PR abgenommen. Öffentliche 0.1.3 enthält noch keinen Chat. Windows-Signierung wartet auf die Firmenprüfung. Exaktes macOS 15.0, frische Nutzergeräte und zusätzliche manuelle Updatefälle bleiben separat offen.
 
 ## 1 · Desktop-Abnahme und erster Build
 
@@ -58,8 +58,8 @@ Abnahme: Pakete werden auf sauberen Geräten installiert und sauber deinstallier
 
 ## 5 · Gespräche mit Beni
 
-- Gemeinsamer Chatvertrag und begrenzte Sitzung in `buddy-chat` als R7a, siehe [ADR 0005](adr/0005-chat-provider-contract.md). Noch keine Anbieter oder Chatoberfläche freigeschaltet.
-- Danach lesbares Chatfenster, freiwillige Einrichtung und lokales Ollama mit vorhandenem geeignetem Chatmodell.
+- Gemergt: gemeinsamer Chatvertrag und begrenzte Sitzung in `buddy-chat`, R7a/PR #49, siehe [ADR 0005](adr/0005-chat-provider-contract.md).
+- Implementiert im folgenden Entwicklungs-PR: Beni anklicken → «Reden», eigenes Chatfenster, freiwillige Ollama-Verbindung und vorhandenes geeignetes Textmodell. Native macOS-Abnahme bestanden; neuer öffentlicher Installer folgt. [Chat-Anleitung](CHAT.md).
 - Sichere Zugangsdatenverwaltung vor Claude-/OpenAI-Verbindungen; jeder Anbieter mit eigenem PR.
 - Bestehende Gesten «Denken» und «Reden», keine neuen Animationen und keine Systemwerkzeuge.
 

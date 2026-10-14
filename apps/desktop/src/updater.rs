@@ -187,7 +187,7 @@ impl Updater {
         }
         if self.install_pending() {
             ui.label(
-                "Update bereit. Ein Neustart beendet laufende Timer und geplante Erinnerungen.",
+                "Update bereit. Ein Neustart beendet Timer, geplante Erinnerungen und den Chat dieser Sitzung.",
             );
             ui.horizontal(|ui| {
                 if ui.button("Später").clicked() {

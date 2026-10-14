@@ -15,6 +15,7 @@ pub enum Action {
     DoNotDisturb,
     Settings,
     History,
+    Chat,
     CheckUpdates,
     Quit,
 }
@@ -28,6 +29,7 @@ impl Action {
             "beni-do-not-disturb" => Some(Self::DoNotDisturb),
             "beni-settings" => Some(Self::Settings),
             "beni-history" => Some(Self::History),
+            "beni-chat" => Some(Self::Chat),
             "beni-check-updates" => Some(Self::CheckUpdates),
             "beni-quit" => Some(Self::Quit),
             _ => None,
@@ -57,6 +59,7 @@ impl Tray {
             CheckMenuItem::with_id("beni-do-not-disturb", "Nicht stören", true, quiet, None);
         let settings = MenuItem::with_id("beni-settings", "Einstellungen", true, None);
         let history = MenuItem::with_id("beni-history", "Meldungsverlauf", true, None);
+        let chat = MenuItem::with_id("beni-chat", "Mit Beni reden", true, None);
         let updates = MenuItem::with_id("beni-check-updates", "Nach Updates suchen …", true, None);
         let quit = MenuItem::with_id("beni-quit", "Beenden", true, None);
         menu.append_items(&[
@@ -68,6 +71,7 @@ impl Tray {
             &do_not_disturb,
             &settings,
             &history,
+            &chat,
             &updates,
             &PredefinedMenuItem::separator(),
             &quit,

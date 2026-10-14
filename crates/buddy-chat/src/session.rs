@@ -77,17 +77,8 @@ impl ChatSession {
         self.active.is_some()
     }
 
-    /// No provider call is made here. The UI obtains this request only after an
-    /// explicit send, then hands it and the token to its background adapter.
-    pub fn start(
-        &mut self,
-        model: &str,
-        input: &str,
-        now_ms: u64,
-    ) -> Result<(ChatRequest, CancellationToken), ChatError> {
-        if self.busy() {
-            return Err(ChatError::Busy);
-        }
+    /// Exact bounded messages for a visible preview, without starting a request.
+    pub fn preview(&self, input: &str) -> Result<Vec<Message>, ChatError> {
         // Check raw bytes first: surrounding whitespace cannot bypass the limit.
         if input.len() > MAX_INPUT_BYTES {
             return Err(ChatError::InputTooLong);
@@ -99,17 +90,6 @@ impl ChatSession {
         if input.is_empty() {
             return Err(ChatError::EmptyInput);
         }
-        let model = model.trim();
-        if model.is_empty()
-            || model.len() > 128
-            || !model
-                .bytes()
-                .all(|b| b.is_ascii_alphanumeric() || b"-_.:/".contains(&b))
-        {
-            return Err(ChatError::InvalidModel);
-        }
-        self.next_id = self.next_id.checked_add(1).ok_or(ChatError::Protocol)?;
-        let id = RequestId(self.next_id);
         let mut bytes = PERSONA.len() + input.len();
         let mut recent = Vec::new();
         for turn in self.history.iter().rev() {
@@ -137,6 +117,28 @@ impl ChatSession {
             role: Role::User,
             text: input.into(),
         });
+        Ok(messages)
+    }
+
+    /// No provider call is made here. The UI obtains this request only after an
+    /// explicit send, then hands it and the token to its background adapter.
+    pub fn start(
+        &mut self,
+        model: &str,
+        input: &str,
+        now_ms: u64,
+    ) -> Result<(ChatRequest, CancellationToken), ChatError> {
+        if self.busy() {
+            return Err(ChatError::Busy);
+        }
+        let messages = self.preview(input)?;
+        let input = input.trim();
+        let model = model.trim();
+        if !valid_model_name(model) {
+            return Err(ChatError::InvalidModel);
+        }
+        self.next_id = self.next_id.checked_add(1).ok_or(ChatError::Protocol)?;
+        let id = RequestId(self.next_id);
         let cancellation = CancellationToken::default();
         self.active = Some(Active {
             id,

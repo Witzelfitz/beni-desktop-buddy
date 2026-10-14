@@ -25,9 +25,12 @@ fn complete(session: &mut ChatSession, input: &str, output: &str) {
 #[test]
 fn streamed_reply_preserves_unicode_and_commits_complete_pairs() {
     let mut session = ChatSession::default();
+    let preview = session.preview("  Hoi Beni 😀  ").unwrap();
+    assert!(!session.busy());
     let (request, token) = session
         .start("gemma:small", "  Hoi Beni 😀  ", 100)
         .unwrap();
+    assert_eq!(preview, request.messages());
     assert_eq!(session.phase(), Phase::Waiting);
     assert!(!token.is_cancelled());
     assert_eq!(request.messages()[0].role(), Role::System);

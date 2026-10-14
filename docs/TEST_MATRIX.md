@@ -221,3 +221,24 @@ Die negativen SDK-Proben laufen ausschliesslich in eigenen temporären Testbundl
 | Echte Modellanfragen, Einrichtungs-/Chatfenster, Zugangsdatenverwaltung und Chat-Animationen | NOT_RUN, folgende eigene Umsetzungsschritte |
 
 Chat-Grundlage ohne neue externe Rust-Abhängigkeiten; kein HTTP-Aufruf oder Modell-Download. Keine Installer-Matrix oder neue Veröffentlichung für diesen Entwicklungsschritt.
+
+## Klickzugang und lokaler Ollama-Chat, 14. Oktober 2026
+
+| Prüfung | Ergebnis |
+| --- | --- |
+| Grundlage PR #49 | PASS, drei Plattformprüfungen; gemergt |
+| Klick auf Beni → benannter Chatbutton, eigene native Oberfläche, gleicher Avatar bei allen Grössen | PASS, positive UI-Prüfung und echter macOS-Klickzugang |
+| Modellliste: nur vorhandene lokale Completion-Modelle, keine Bild-/Embedding-/Cloud-Modelle; erneute ID-/Statusprüfung vor Chatdaten | PASS, eigener HTTP-Testserver; lokal zwei von vier Modellen angeboten |
+| Streaming mit geteilter UTF-8-Folge, interne Überlegungen ausgeblendet, Länge/Verbrauch/Abschluss | PASS, Offline-Decoder und echter lokaler Rust-Aufruf |
+| Abbruch bei wartendem HTTP-Body schliesst die Verbindung; begrenzter Kanal und vollständiges Leeren bei Worker-Ende | PASS, echter Socket und positive/negative Worker-Prüfungen |
+| Ungültige/übergrosse Metadaten oder Antwort, fehlender Abschluss, Tools, Redirects, rohe Fehlermeldungen | PASS, negative Offline-Prüfungen |
+| Bestehendes Modell gemma3:4b, echte native Chatantwort | PASS, eigene QA-Instanz und eigener Speicherpfad; kein Modell heruntergeladen |
+| Chat-Mindestgrösse: sechs Eingabe-/Footer-Bedienelemente innerhalb des eigenen Fensters | PASS, tatsächliche AX-Geometrie auf macOS |
+| Modellwahl nach Neustart erhalten; Gesprächstexte nicht im App-Speicher | PASS, native Speicherung/Neustart und unabhängige Persistenzprüfungen |
+| Modell-Popup nach Auswahl geschlossen; laufende Anfrage über Oberfläche abbrechen | PASS, aktuelle native QA-Instanz |
+| Denken/Reden aus Originalassets, Pause und Bewegungsreduktion erhalten, keine Übernahme in Statusverlauf | PASS, positive Zustands-/UI-Prüfungen; native Sichtprüfung beider Gesten separat offen |
+| Neues öffentliches Paket, tatsächlicher Nutzer-Chat nach Update, native Windows-/Linux-Chatabnahme | NOT_RUN |
+
+Der echte Ollama-Test ist in der regulären CI ignoriert und wird gezielt lokal ausgeführt. Der Animationskern und importierte Assets bleiben unverändert. Kein Zugriff auf Produktionsschlüssel, keine Änderung der installierten Programme-App oder Hook-Definitionen; native QA-Prozesse sauber beendet. Regelmässige Plattform-CI bleibt bei drei Jobs, keine Installer-Matrix für diesen PR.
+
+Lokale Schlussprüfung: PASS, Root-/Desktop-fmt und Clippy, 42 Roottests und 102 Desktoptests; gezielter ignorierter Ollama-Test zusätzlich bestanden. Release-/Versionsprüfungen: 20 + 27 Tests bestanden. Desktop-Debug-Build bestanden. PR-CI für diese Änderung folgt; keine erneuten Installer-Builds.
