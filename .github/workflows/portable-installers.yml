@@ -37,6 +37,8 @@ jobs:
             apps/desktop -> target
           shared-key: portable-installer-${{ matrix.platform }}-base-2026
           cache-bin: false
+          # Preserve successful compilation when the subsequent packaging/GUI check fails.
+          cache-on-failure: true
           save-if: ${{ github.ref == 'refs/heads/main' }}
       - name: Linux packaging and GUI dependencies
         if: runner.os == 'Linux'
