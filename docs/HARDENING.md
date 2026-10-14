@@ -10,7 +10,7 @@ Vom Nutzer am 14. Oktober 2026 angenommen. Umsetzung nacheinander, je ein eigene
 | H4 eframe | Upstream-Basis und tatsächlichen Patch automatisch abgrenzen; Accessibility und synchrones Speichern absichern, Ablösekriterien festhalten | Vorbereitet: [PR #61](https://github.com/Witzelfitz/beni-desktop-buddy/pull/61) |
 | H5 Werkzeuge | Python-Pipeline behalten; gemeinsamen Einstieg und Versions-/Abhängigkeitsregeln vereinfachen, keine Portierung nur wegen GitHub-Sprachanteilen | Vorbereitet: [PR #62](https://github.com/Witzelfitz/beni-desktop-buddy/pull/62) |
 
-Stand: alle fünf PRs sind zur Durchsicht vorbereitet, noch nicht gemergt. H5 baut auf H4 auf; #61 vor #62 integrieren. Kern- und separate Desktopprüfungen sowie die isolierte native macOS-Gesprächsprüfung sind erfolgreich. Die CI-Ergebnisse stehen bei den jeweiligen PRs. Die gemeinsame Integration wird vor dem Merge separat geprüft.
+Stand: alle fünf PRs sind zur Durchsicht vorbereitet, noch nicht gemergt. H5 baut auf H4 auf; #61 vor #62 integrieren. Kern- und separate Desktopprüfungen sowie die isolierte native macOS-Gesprächsprüfung sind erfolgreich. Die CI-Ergebnisse stehen bei den jeweiligen PRs. Die fünf Branches liessen sich in einer isolierten lokalen Integration ohne Konflikte zusammenführen. Dort bestanden die gemeinsamen CI-/Vendor-/Toolingprüfungen, beide Formatprüfungen und die lokalen Dokumentationslinks. Ein öffentlicher Merge oder Release ist damit noch nicht erfolgt.
 
 Eine kurze animierte Vorschau kann aus bestehenden SDK-Animationen entstehen; keine neuen Posen oder Bewegungsdaten. Die vorhandenen Screenshots bleiben für den Einstieg nutzbar. Eine echte Gesprächsdemo und weitere Geräteabnahmen werden getrennt dokumentiert.
 
