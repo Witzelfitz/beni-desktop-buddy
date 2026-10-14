@@ -11,6 +11,11 @@ resolver = "3"
 [dependencies]
 buddy-core = { path = "../../crates/buddy-core" }
 buddy-ipc = { path = "../../crates/buddy-ipc" }
+buddy-chat = { path = "../../crates/buddy-chat" }
+reqwest = { version = "=0.13.5", default-features = false, features = ["json"] }
+serde = { version = "=1.0.229", features = ["derive"] }
+serde_json = "=1.0.151"
+tokio = { version = "=1.53.2", features = ["rt", "time", "macros"] }
 winit = { version = "=0.30.13", default-features = false, features = ["x11", "wayland"] }
 tray-icon = { version = "=0.26.1", default-features = false, features = ["ksni"] }
 eframe = { version = "=0.36.2", default-features = false, features = ["accesskit", "default_fonts", "glow", "x11", "wayland", "persistence"] }

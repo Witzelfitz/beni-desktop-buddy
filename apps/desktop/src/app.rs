@@ -31,6 +31,8 @@ pub struct BuddyApp {
     updates: crate::updater::Updater,
     updates_info: bool,
     history_player: Option<Player>,
+    chat: crate::chat::Chat,
+    chat_player: Option<Player>,
     settings: Settings,
     motion: crate::motion::MotionPreference,
     system_motion: crate::motion::SystemMotion,
@@ -103,6 +105,8 @@ impl BuddyApp {
             updates: crate::updater::Updater::default(),
             updates_info: false,
             history_player: None,
+            chat: crate::chat::Chat::load(cc.storage),
+            chat_player: None,
             last_tick: Instant::now(),
             message: "Hoi! Ich bin Beni. Klick mich für die Bedienung an oder zieh mich an deinen Lieblingsplatz.".into(),
             message_until: Instant::now() + Duration::from_secs(10),
@@ -129,6 +133,7 @@ impl BuddyApp {
         })
     }
     fn play(&mut self, state: &str, message: &str) {
+        self.stop_chat_animation();
         self.close_history();
         if let Err(e) = self.player.play(&self.engine, state, true) {
             self.report_error(e.to_string(), Instant::now());
@@ -150,6 +155,7 @@ impl BuddyApp {
     fn save_for_update(&mut self, storage: &mut dyn eframe::Storage) -> std::io::Result<()> {
         eframe::App::save(self, storage);
         storage.flush_sync()?;
+        self.chat.cancel();
         self.stop_receiving();
         Ok(())
     }
@@ -192,6 +198,7 @@ impl BuddyApp {
         if self.do_not_disturb
             || !visible
             || self.history_player.is_some()
+            || self.chat.busy()
             || self.error.is_some()
             || (self.active_status && now < self.message_until)
         {
@@ -255,6 +262,8 @@ impl BuddyApp {
         }
     }
     fn open_history(&mut self) {
+        self.chat.close();
+        self.stop_chat_animation();
         self.collect_history();
         self.menu_open = false;
         self.controls_open = true;
@@ -471,8 +480,20 @@ impl BuddyApp {
             .inner_margin(8)
             .show(ui, |ui| {
                 ui.horizontal(|ui| {
+                    ui.spacing_mut().item_spacing.x = 4.0;
                     if ui.button("Hoi!").clicked() {
                         self.play("hallo", "Hoi! Schön bist du da.");
+                    }
+                    let talk = ui.button("Reden").on_hover_text("Mit Beni reden");
+                    talk.widget_info(|| {
+                        egui::WidgetInfo::labeled(
+                            egui::WidgetType::Button,
+                            talk.enabled(),
+                            "Mit Beni reden",
+                        )
+                    });
+                    if talk.clicked() {
+                        self.open_chat(ui.ctx());
                     }
                     let label = if self.player.paused {
                         "Weiter"
@@ -492,6 +513,54 @@ impl BuddyApp {
             })
             .response;
         self.hit_map.add_rect(response.rect, 14.0);
+    }
+    fn open_chat(&mut self, ctx: &egui::Context) {
+        self.close_history();
+        self.menu_open = false;
+        self.controls_open = false;
+        if !self.active_status {
+            self.message_until = Instant::now();
+        }
+        self.chat.open(ctx);
+    }
+    fn stop_chat_animation(&mut self) {
+        if let Some(mut previous) = self.chat_player.take() {
+            previous.paused = self.player.paused;
+            self.player = previous;
+        }
+    }
+    fn sync_chat_animation(&mut self, now: Instant) {
+        let state = if !self.hidden
+            && self.chat.open
+            && self.history_player.is_none()
+            && self.error.is_none()
+            && now >= self.message_until
+        {
+            match self.chat.session.phase() {
+                buddy_chat::Phase::Waiting => Some("nachdenken"),
+                buddy_chat::Phase::Speaking => Some("reden"),
+                _ => None,
+            }
+        } else {
+            None
+        };
+        let Some(state) = state else {
+            self.stop_chat_animation();
+            return;
+        };
+        if self.chat_player.is_none() {
+            self.chat_player = Some(self.player.clone());
+            self.idle.reset();
+        }
+        if self.player.state() != state {
+            let paused = self.player.paused;
+            if let Err(error) = self.player.play(&self.engine, state, false) {
+                self.stop_chat_animation();
+                self.report_error(error.to_string(), now);
+            } else {
+                self.player.paused = paused;
+            }
+        }
     }
     fn open_settings(&mut self, ctx: &egui::Context) {
         self.updates_info = false;
@@ -683,7 +752,7 @@ impl BuddyApp {
             self.settings = self.settings.clone().sanitize();
         }
         // Reading suspends the idle scheduler along with its saved Player.
-        if self.history_player.is_none() {
+        if self.history_player.is_none() && self.chat_player.is_none() {
             let enabled = !self.motion.reduced(self.settings.reduced_motion)
                 && !self.menu_open
                 && !self.controls_open
@@ -735,6 +804,9 @@ impl BuddyApp {
             }
         });
         self.menu(&ctx);
+        if let Some(rect) = self.chat.show(&ctx) {
+            self.hit_map.add_rect(rect, 0.0);
+        }
         if self.size_pending {
             ctx.send_viewport_cmd(egui::ViewportCommand::InnerSize(self.size.dimensions()));
             self.size_pending = false;
@@ -750,7 +822,7 @@ impl BuddyApp {
         window: Option<&winit::window::Window>,
     ) {
         match action {
-            Action::Show | Action::Recover | Action::Settings | Action::History => {
+            Action::Show | Action::Recover | Action::Settings | Action::History | Action::Chat => {
                 self.hidden = false;
                 ctx.send_viewport_cmd(egui::ViewportCommand::Visible(true));
                 ctx.send_viewport_cmd(egui::ViewportCommand::Minimized(false));
@@ -762,6 +834,8 @@ impl BuddyApp {
                     self.open_settings(ctx);
                 } else if action == Action::History {
                     self.open_history();
+                } else if action == Action::Chat {
+                    self.open_chat(ctx);
                 }
             }
             Action::Hide => {
@@ -833,8 +907,10 @@ impl eframe::App for BuddyApp {
         self.collect_history();
         self.advance_timer(Instant::now());
         self.advance_reminders(Instant::now());
+        self.chat.poll();
+        self.sync_chat_animation(Instant::now());
         self.updates.poll();
-        let busy = self.timer.has_session() || self.reminders.has_tasks();
+        let busy = self.timer.has_session() || self.reminders.has_tasks() || self.chat.busy();
         if self.updates.needs_confirmation(busy) && !self.updates_info {
             self.handle_tray(Action::Settings, ctx, window.as_deref());
             self.updates_info = true;
@@ -899,6 +975,7 @@ impl eframe::App for BuddyApp {
         self.size.save(storage);
         self.hotkeys.save(storage);
         self.timer.save(storage);
+        self.chat.save(storage);
     }
 }
 
@@ -942,6 +1019,8 @@ mod tests {
             updates: crate::updater::Updater::default(),
             updates_info: false,
             history_player: None,
+            chat: crate::chat::Chat::load(None),
+            chat_player: None,
             settings: Settings::default(),
             motion: crate::motion::MotionPreference::load(None),
             system_motion: crate::motion::SystemMotion::default(),
@@ -990,6 +1069,19 @@ mod tests {
     }
     impl NativeSettings {
         fn new(ctx: &egui::Context) -> Self {
+            Self::window(
+                ctx,
+                crate::settings_window::id(),
+                "Benis Einstellungen",
+                egui::vec2(520.0, 680.0),
+            )
+        }
+        fn window(
+            ctx: &egui::Context,
+            id: egui::ViewportId,
+            title: &'static str,
+            size: Vec2,
+        ) -> Self {
             use std::{cell::RefCell, rc::Rc};
             let rig = Self {
                 input: Rc::new(RefCell::new(egui::RawInput::default())),
@@ -1003,24 +1095,152 @@ mod tests {
             let output = rig.output.clone();
             let builders = rig.builders.clone();
             egui::Context::set_immediate_viewport_renderer(move |ctx, mut viewport| {
-                assert_eq!(viewport.ids.this, crate::settings_window::id());
+                assert_eq!(viewport.ids.this, id);
                 assert_eq!(viewport.ids.parent, egui::ViewportId::ROOT);
                 builders.borrow_mut().push(viewport.builder.clone());
                 let mut raw = input.borrow().clone();
                 raw.viewport_id = viewport.ids.this;
-                raw.screen_rect.get_or_insert(Rect::from_min_size(
-                    egui::Pos2::ZERO,
-                    egui::vec2(520.0, 680.0),
-                ));
+                raw.screen_rect
+                    .get_or_insert(Rect::from_min_size(egui::Pos2::ZERO, size));
                 let info = raw.viewports.entry(viewport.ids.this).or_default();
                 info.parent = Some(viewport.ids.parent);
-                info.title = Some("Benis Einstellungen".into());
+                info.title = Some(title.into());
                 info.inner_rect = raw.screen_rect;
                 let mut child = ctx.run_ui(raw, |ui| (viewport.viewport_ui_cb)(ui));
                 child.textures_delta.clear();
                 output.borrow_mut().replace(child);
             });
             rig
+        }
+    }
+
+    #[test]
+    fn avatar_click_offers_chat_at_every_size_and_opens_a_separate_window() {
+        for size in BuddySize::ALL {
+            let ctx = egui::Context::default();
+            let rig = NativeSettings::window(
+                &ctx,
+                crate::chat::id(),
+                "Mit Beni reden",
+                egui::vec2(420.0, 520.0),
+            );
+            let mut app = app(&ctx);
+            app.size = size;
+            app.player.paused = true;
+            let output = frame(&ctx, &mut app, 0.0, vec![]);
+            let avatar = accesskit_node(&output, "Beni: Bedienleiste aufklappen").0;
+            let before = avatar_rect(&output, &app);
+            output.drop_without_applying_deltas();
+            let output = frame(&ctx, &mut app, 0.1, vec![accessible_click(avatar)]);
+            let talk = accesskit_node(&output, "Mit Beni reden").0;
+            let rect = text_rect(&output, "Reden");
+            assert!(rect.max.y <= size.dimensions().y && app.hit_map.contains(rect.center()));
+            assert_eq!(before, avatar_rect(&output, &app));
+            for label in ["Hoi!", "Reden", "Weiter", "Menü", "Beenden"] {
+                let rect = text_rect(&output, label);
+                assert!(
+                    rect.min.x >= 0.0
+                        && rect.max.x <= size.dimensions().x
+                        && rect.max.y <= size.dimensions().y
+                );
+            }
+            output.drop_without_applying_deltas();
+            let output = frame(&ctx, &mut app, 0.2, vec![accessible_click(talk)]);
+            assert!(app.chat.open && !app.controls_open && !app.menu_open);
+            assert!(!app.chat.busy());
+            assert_eq!(before, avatar_rect(&output, &app));
+            let child = rig.output.borrow();
+            text_rect(child.as_ref().unwrap(), "Lokales Ollama verbinden");
+            text_rect(child.as_ref().unwrap(), "Später");
+            assert_eq!(
+                rig.builders.borrow().last().unwrap().title.as_deref(),
+                Some("Mit Beni reden")
+            );
+            assert_eq!(
+                rig.builders.borrow().last().unwrap().decorations,
+                Some(true)
+            );
+            assert!(
+                !output.viewport_output[&egui::ViewportId::ROOT]
+                    .commands
+                    .contains(&egui::ViewportCommand::Close)
+            );
+        }
+    }
+
+    #[test]
+    fn closing_chat_cancels_pending_reply_and_keeps_beni_alive() {
+        let ctx = egui::Context::default();
+        let rig = NativeSettings::window(
+            &ctx,
+            crate::chat::id(),
+            "Mit Beni reden",
+            egui::vec2(640.0, 720.0),
+        );
+        let mut app = app(&ctx);
+        app.open_chat(&ctx);
+        let (_, token) = app
+            .chat
+            .session
+            .start("test", "private question", 0)
+            .unwrap();
+        rig.input
+            .borrow_mut()
+            .viewports
+            .entry(crate::chat::id())
+            .or_default()
+            .events = vec![egui::ViewportEvent::Close];
+        let output = frame(&ctx, &mut app, 0.0, vec![]);
+        assert!(!app.chat.open && !app.chat.busy() && token.is_cancelled());
+        assert!(
+            !output.viewport_output[&egui::ViewportId::ROOT]
+                .commands
+                .contains(&egui::ViewportCommand::Close)
+        );
+    }
+
+    #[test]
+    fn chat_uses_original_gestures_and_restores_pause_and_keeps_status_history_out_of_storage() {
+        for paused in [false, true] {
+            let ctx = egui::Context::default();
+            let mut app = app(&ctx);
+            app.player.paused = paused;
+            app.settings.reduced_motion = true;
+            let original = app.player.clone();
+            app.open_chat(&ctx);
+            let (request, _) = app
+                .chat
+                .session
+                .start("test", "private-chat-question", 0)
+                .unwrap();
+            app.sync_chat_animation(Instant::now());
+            assert_eq!(app.player.state(), "nachdenken");
+            assert_eq!(app.player.paused, paused);
+            app.chat.session.receive(
+                request.id(),
+                buddy_chat::StreamEvent::Delta("private-chat-answer".into()),
+                1,
+            );
+            app.sync_chat_animation(Instant::now());
+            assert_eq!(app.player.state(), "reden");
+            assert_eq!(app.player.paused, paused);
+            app.chat.session.receive(
+                request.id(),
+                buddy_chat::StreamEvent::Finished {
+                    reason: buddy_chat::FinishReason::Stop,
+                    usage: buddy_chat::Usage::default(),
+                },
+                2,
+            );
+            app.sync_chat_animation(Instant::now());
+            assert_eq!(app.player.state(), original.state());
+            assert_eq!(app.player.paused, paused);
+            let mut storage = TestStorage::default();
+            eframe::App::save(&mut app, &mut storage);
+            assert!(storage.0.values().all(
+                |v| !v.contains("private-chat-question") && !v.contains("private-chat-answer")
+            ));
+            assert_eq!(app.history.len(), 0);
         }
     }
 
@@ -2041,7 +2261,13 @@ mod tests {
             values: TestStorage::default(),
             fail: true,
         };
+        let (_, chat_token) = app
+            .chat
+            .session
+            .start("test", "private-update-question", 0)
+            .unwrap();
         assert!(app.save_for_update(&mut storage).is_err());
+        assert!(app.chat.busy() && !chat_token.is_cancelled());
         assert!(app.server.is_some() && app.ipc_enabled);
         buddy_ipc::notify(
             &endpoint.endpoint,
@@ -2050,6 +2276,7 @@ mod tests {
         .unwrap();
         storage.fail = false;
         app.save_for_update(&mut storage).unwrap();
+        assert!(!app.chat.busy() && chat_token.is_cancelled());
         assert!(app.server.is_none() && app.ipc_enabled);
         assert_eq!(
             eframe::get_value::<bool>(&storage, "status-receiving"),
@@ -2720,6 +2947,7 @@ mod tests {
             Action::DoNotDisturb,
             Action::Settings,
             Action::History,
+            Action::Chat,
             Action::CheckUpdates,
             Action::Quit,
         ] {
@@ -2728,7 +2956,11 @@ mod tests {
                 eframe::App::logic(&mut app, ctx, &mut native_frame);
             });
             match action {
-                Action::Show | Action::Recover | Action::Settings | Action::History => {
+                Action::Show
+                | Action::Recover
+                | Action::Settings
+                | Action::History
+                | Action::Chat => {
                     let commands = &output.viewport_commands[&egui::ViewportId::ROOT];
                     for command in [
                         egui::ViewportCommand::Visible(true),
@@ -2742,6 +2974,8 @@ mod tests {
                     } else if action == Action::History {
                         assert!(app.history_player.is_some());
                         assert_eq!(app.player.state(), "nachdenken");
+                    } else if action == Action::Chat {
+                        assert!(app.chat.open);
                     }
                 }
                 Action::Hide => assert!(

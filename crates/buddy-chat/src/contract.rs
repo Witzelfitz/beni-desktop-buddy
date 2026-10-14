@@ -190,3 +190,12 @@ pub(crate) fn valid_text(text: &str) -> bool {
         .chars()
         .any(|c| c.is_control() && c != '\n' && c != '\t')
 }
+
+pub fn valid_model_name(model: &str) -> bool {
+    !model.is_empty()
+        && model.len() <= 128
+        && model == model.trim()
+        && model
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || b"-_.:/".contains(&b))
+}

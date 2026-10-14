@@ -44,7 +44,7 @@ def check_versions(root=ROOT, tag=None):
             raise ValueError(f"{relative}: Version muss vom Workspace geerbt werden.")
     expected = {
         "Cargo.lock": {"buddy-core", "buddy-cli", "buddy-ipc", "buddy-chat"},
-        "apps/desktop/Cargo.lock": {"beni-desktop-buddy", "buddy-core", "buddy-ipc"},
+        "apps/desktop/Cargo.lock": {"beni-desktop-buddy", "buddy-core", "buddy-ipc", "buddy-chat"},
     }
     for relative, names in expected.items():
         found = {p["name"]: p["version"] for p in toml_file(root / relative)["package"] if p["name"] in names}
