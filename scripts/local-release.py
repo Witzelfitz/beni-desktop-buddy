@@ -338,6 +338,73 @@ def install_candidate(staging, output):
         raise
 
 
+def download_release(tag, architecture, output, trusted_path):
+    """Authenticate existing final assets; never build, sign, or publish them."""
+    version, build = check_versions()
+    if tag != f"v{version}" or architecture not in package.ARCHITECTURES:
+        raise ReleaseError("Abnahmeziel muss zur eingecheckten Version und Mac-Architektur gehören.")
+    if output.exists() or output.is_symlink():
+        raise ReleaseError("Abnahmeordner existiert bereits; nichts überschrieben.")
+    key_id, trusted = public_key(trusted_path)
+    catalog = api("releases?per_page=100")
+    if not isinstance(catalog, list) or len(catalog) >= 100:
+        raise ReleaseError("Release-Katalog ist nicht vollständig.")
+    matches = [item for item in catalog if item.get("tag_name") == tag]
+    if len(matches) != 1:
+        raise ReleaseError("Genau ein eigener Release oder Entwurf benötigt.")
+    assets = matches[0].get("assets", [])
+    names = {asset.get("name"): asset for asset in assets}
+    if len(names) != len(assets):
+        raise ReleaseError("Release enthält doppelte Dateien.")
+    def fetch(name, directory, limit):
+        asset = names.get(name, {})
+        if (type(asset.get("id")) is not int or asset["id"] <= 0 or asset.get("state") != "uploaded"
+                or type(asset.get("size")) is not int or not 0 < asset["size"] <= limit):
+            raise ReleaseError("Release-Datei fehlt, ist unvollständig oder zu gross.")
+        data = command(["gh", "api", f"repos/{REPO}/releases/assets/{asset['id']}", "-H", "Accept: application/octet-stream"], timeout=180)
+        if (len(data) != asset["size"] or len(data) > limit
+                or asset.get("digest") != "sha256:" + hashlib.sha256(data).hexdigest()):
+            raise ReleaseError("Release-Dateigrösse oder GitHub-Digest stimmt nicht.")
+        path = directory / name
+        with path.open("xb") as stream:
+            stream.write(data)
+        return path
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="beni-final-release-", dir=output.parent) as folder:
+        directory = Path(folder)
+        manifest_path = fetch("release.json", directory, 256 * 1024)
+        fetch("release.json.sig", directory, 128)
+        verify_file(manifest_path, trusted, limit=256 * 1024)
+        manifest = read_manifest(manifest_path)
+        validate_manifest(manifest, version, build)
+        expected = {"release.json", "release.json.sig"}
+        for artifact in manifest["artifacts"]:
+            name = artifact["url"].rsplit("/", 1)[1]
+            expected.update((name, name + ".sig", name + ".sha256"))
+        if set(names) != expected:
+            raise ReleaseError("Release-Dateien entsprechen nicht dem authentifizierten Manifest.")
+        selected = [a for a in manifest["artifacts"] if a["platform"] == "macos" and a["architecture"] == architecture]
+        if len(selected) != 1 or selected[0]["signature"]["key_id"] != key_id:
+            raise ReleaseError("Mac-Ziel fehlt oder verwendet einen unvertrauten Schlüssel.")
+        artifact = selected[0]
+        name = artifact["url"].rsplit("/", 1)[1]
+        image = fetch(name, directory, MAX_PACKAGE_BYTES)
+        fetch(name + ".sig", directory, 128)
+        checksum = fetch(name + ".sha256", directory, 1024)
+        verify_file(image, trusted)
+        if (image.stat().st_size != artifact["size_bytes"] or hashlib.sha256(image.read_bytes()).hexdigest() != artifact["sha256"]
+                or checksum.read_text() != f"{artifact['sha256']}  {name}\n"):
+            raise ReleaseError("Finales Paket entspricht nicht dem authentifizierten Manifest.")
+        # Adapter for the existing native checker. Its signature/ticket checks confirm these claims;
+        # this derived receipt is neither published nor treated as a native test attestation.
+        (directory / (name + ".build.json")).write_text(json.dumps({"type": "macos-build-receipt", "version": version,
+            "build_number": build, "architecture": architecture, "minimum_os_version": package.MINIMUM_MACOS,
+            "filename": name, "signing": "developer_id", "notarized": True,
+            "sha256": artifact["sha256"], "size_bytes": artifact["size_bytes"]}) + "\n")
+        install_candidate(directory, output)
+    return output / name
+
+
 def prepare(args):
     if platform.system() != "Darwin":
         raise ReleaseError("Lokale Release-Signierung benötigt macOS.")
@@ -426,12 +493,20 @@ def main(argv=None):
     verify = commands.add_parser("verify")
     verify.add_argument("directory", type=Path)
     verify.add_argument("--public-key", type=Path, default=ROOT / "release/keys/beni-update-v1.json")
+    download = commands.add_parser("download-release")
+    download.add_argument("--tag", required=True)
+    download.add_argument("--architecture", required=True, choices=tuple(package.ARCHITECTURES))
+    download.add_argument("--output", required=True, type=Path)
+    download.add_argument("--public-key", type=Path, default=ROOT / "release/keys/beni-update-v1.json")
     args = parser.parse_args(argv)
     try:
         if args.command == "init-key":
             initialize_key(args.key_id, args.public_key)
         elif args.command == "prepare":
             prepare(args)
+        elif args.command == "download-release":
+            download_release(args.tag, args.architecture, args.output.resolve(), args.public_key)
+            print("PASS: finales Release-Paket authentifiziert; keine Signierung oder Veröffentlichung.")
         else:
             verify_candidate(args.directory, args.public_key)
             print("PASS: Manifest und sämtliche Paketbytes kryptografisch geprüft.")

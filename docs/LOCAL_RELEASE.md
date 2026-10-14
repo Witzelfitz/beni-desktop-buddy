@@ -63,3 +63,13 @@ Die Website W1 folgt erst mit diesem echten Download. Rust-Verifikation, Sparkle
 `dist/release-candidate-0.1.0` enthält den echten gemeinsamen Kandidaten 0.1.0/Build 1 aus dem nativen main-Lauf `38472531951`. Beide Apps und DMGs sind von Apple akzeptiert, Developer-ID-signiert, mit Tickets versehen und durch Gatekeeper sowie erneute temporäre Kopierinstallation geprüft. Alle zehn lokalen Dateien sind authentifiziert. Die finale ARM-CLI wurde nativ ausgeführt; die finale Intel-CLI und finale GUI beider Pakete bleiben separat offen. Der ältere notarisierte ARM-Installer unter `dist/macos/` und die installierte Programme-App bleiben unverändert.
 
 Der [Release-Entwurf](https://github.com/Witzelfitz/beni-desktop-buddy/releases/tag/untagged-24e439a84876b5dba873) enthält acht Dateien: beide DMGs jeweils mit `.sha256` und `.sig`, dazu `release.json` und `.sig`. Alle Assets wurden zurückgeladen und bytegleich sowie kryptografisch geprüft. `candidate.json` und seine Signatur bleiben ausschliesslich lokal. Der Entwurf ist nicht öffentlich freigegeben und reserviert `v0.1.0`; eine erneute `prepare`-Ausführung für dieselbe Version wird darum bewusst abgelehnt. Zum Fortsetzen den vorhandenen Kandidaten prüfen und den geprüften Entwurf verwenden, keine neuen Schlüssel erzeugen und keine vorhandenen Pakete überschreiben.
+
+## Finale native Abnahme ohne Neubau
+
+Der ausschliesslich manuelle Workflow **macOS release acceptance** prüft einen vorhandenen Release oder Entwurf auf `macos-15` und `macos-15-intel`. Er lädt Manifest und Paketdateien mit dem nur lesenden GitHub-Token, authentifiziert das Manifest vor dessen Auswertung mit dem eingecheckten öffentlichen Schlüssel und prüft Paketbytes, Signatur und Prüfsumme. `download-release` verlangt die eingecheckte Version, vollständige Release-Dateien, hochgeladene Assets und passende GitHub-Digests; vorhandene Zielordner werden nicht überschrieben. Der für den bestehenden Installer-Prüfer erzeugte Build-Beleg ist aus dem authentifizierten Manifest abgeleitet und kein nativer Abnahmebeleg.
+
+```sh
+gh workflow run macos-release-acceptance.yml --ref main -f tag=v0.1.0
+```
+
+Danach prüft der bestehende native Installer-Helfer die tatsächlichen Developer-ID-Signaturen, Runtime, Zeitstempel, Tickets, Gatekeeper, temporäre Installation, native CLI und ein eigenes sichtbares Fenster. Nur nach Erfolg und Entfernen der Testinstanz entsteht der `.native.json`-Abnahmebeleg mit finalem Paket-Hash und getesteter OS-Version. Beide Belege werden 30 Tage aufbewahrt. Kein Rust-Build, keine Signierung und keine Apple-Secrets; nur zwei gezielt gestartete Abnahmejobs. PRs, Pushes und Tags lösen diesen Workflow nicht aus. Die lokale Beni-Installation bleibt unabhängig davon.
