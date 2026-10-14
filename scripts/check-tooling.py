@@ -77,6 +77,11 @@ if [[ "$0" == */cargo ]]; then exit "$BENI_TEST_CARGO"; fi
         self.assertTrue(all('/chosen-python:' in call for call in calls if '/cargo:' not in call))
         self.assertTrue(any('apps/desktop/Cargo.toml' in call for call in calls))
 
+    def test_python3_fallback_works_without_a_project_venv(self):
+        code, calls = self.run_entry()
+        self.assertEqual(code, 0)
+        self.assertTrue(all('/python3:' in call for call in calls if '/cargo:' not in call))
+
     def test_missing_interpreter_preflight_and_cargo_errors_stop_immediately(self):
         self.env['BENI_RELEASE_PYTHON'] = str(self.root / 'missing-python')
         self.assertEqual(self.run_entry(), (2, []))
