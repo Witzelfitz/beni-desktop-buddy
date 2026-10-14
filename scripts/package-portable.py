@@ -130,9 +130,26 @@ def windows_installer(image, directory):
                  f'/DREMOVE_FILES={remove_path}', f'/DICON={ROOT / "assets/app-icon/Beni.ico"}', f'/DLICENSE={ROOT / "LICENSE-MIT"}',
                  str(ROOT / 'packaging/windows/installer.nsi')]
     run(arguments, 'NSIS-Installer erstellen')
+    if not image.is_file(): raise PackagingError('NSIS hat keinen Installer unter dem erwarteten Dateinamen erstellt.')
 
 
 SYSTEM_LIBRARIES = re.compile(r'^(?:ld-linux|libc\.|libm\.|libpthread\.|libdl\.|librt\.|libresolv\.|libGL\.|libEGL\.|libGLX|libGLdispatch|libdrm|libgbm)')
+
+
+def library_owner(path):
+    candidates = [path, path.resolve()]
+    if str(path).startswith('/lib/'):
+        candidates.append(Path('/usr')/path.relative_to('/'))
+    if str(path).startswith('/usr/lib/'):
+        candidates.append(Path('/')/path.relative_to('/usr'))
+    for candidate in dict.fromkeys(candidates):
+        result = subprocess.run(['dpkg-query','-S',str(candidate)], stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=15)
+        if result.returncode: continue
+        lines = result.stdout.decode('utf-8').splitlines()
+        if len(lines) != 1 or ': ' not in lines[0]: continue
+        owner = lines[0].split(': ',1)[0]
+        if re.fullmatch(r'[a-z0-9][a-z0-9+.-]*(?::amd64)?',owner): return owner.split(':',1)[0]
+    raise PackagingError('Bibliotheksherkunft kann auch nach Auflösung von /usr-merge nicht belegt werden.')
 
 
 def linux_libraries(appdir):
@@ -162,7 +179,7 @@ def linux_libraries(appdir):
             resolved = path.resolve()
             if not str(resolved).startswith(('/usr/lib/', '/lib/')): raise PackagingError('Fremder Bibliothekspfad wird nicht gebündelt.')
             shutil.copy2(resolved, destination / name)
-            owner = run(['dpkg-query', '-S', str(path)], 'Bibliotheksherkunft prüfen').split(': ', 1)[0].split(':', 1)[0]
+            owner = library_owner(path)
             license_path = Path('/usr/share/doc') / owner / 'copyright'
             if not license_path.is_file(): raise PackagingError('Bibliothekslizenz fehlt.')
             shutil.copy2(license_path, copyrights / (owner + '.copyright'))
@@ -225,7 +242,11 @@ def build(target, output):
         adopted = []
         try:
             for source, destination in zip((image, checksum_path, receipt_path), destinations):
-                os.link(source, destination); adopted.append(destination)
+                # Exclusive copies work on Windows volumes without hard-link support.
+                with destination.open('xb') as target_stream:
+                    adopted.append(destination)
+                    with source.open('rb') as source_stream: shutil.copyfileobj(source_stream, target_stream)
+                if target=='linux' and destination==output: destination.chmod(0o755)
         except OSError:
             for path in adopted: path.unlink()
             raise
@@ -239,7 +260,14 @@ def main():
     try:
         build(args.platform, path)
         print(f'PASS: {args.platform}-Installer erstellt; kein öffentlicher Release.')
-    except (PackagingError, OSError, ValueError, KeyError, zipfile.BadZipFile):
+    except PackagingError as error:
+        print(f'FAIL: {error}')
+        return 2
+    except OSError as error:
+        # Numeric error codes are sufficient to diagnose runner filesystem/network failures.
+        print(f'FAIL: Packaging-Systemfehler ({type(error).__name__}, errno={error.errno}, winerror={getattr(error,"winerror",None)}).')
+        return 2
+    except (ValueError, KeyError, zipfile.BadZipFile):
         print('FAIL: Installer-Build abgelehnt; Werkzeug, Architektur und Eingaben prüfen.')
         return 2
     return 0

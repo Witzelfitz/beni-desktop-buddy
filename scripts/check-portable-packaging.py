@@ -3,6 +3,7 @@
 import importlib.util
 from pathlib import Path
 import struct
+import subprocess
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -102,6 +103,18 @@ class InstallerTests(unittest.TestCase):
             with self.assertRaises(package.PackagingError): package.build('linux', output)
         self.assertEqual(sidecar.read_text(), 'keep'); self.assertFalse(output.exists())
 
+    def test_output_copies_are_exclusive_and_rollback_incomplete_packages(self):
+        output = self.folder/'image.AppImage'
+        def installer(image, directory): image.write_bytes(b'installer fixture')
+        with patch.object(package.platform,'system',return_value='Linux'), patch.object(package.platform,'machine',return_value='x86_64'), \
+                patch.object(package,'check_versions',return_value=('0.1.0',1)), patch.object(package,'linux_installer',side_effect=installer):
+            with patch.object(package.shutil,'copyfileobj',side_effect=OSError('fixture failed copy')):
+                with self.assertRaises(OSError): package.build('linux',output)
+            self.assertFalse(output.exists()); self.assertEqual(list(self.folder.iterdir()),[])
+            package.build('linux',output)
+            self.assertEqual(output.read_bytes(),b'installer fixture')
+            with self.assertRaises(package.PackagingError): package.build('linux',output)
+
     def test_tool_tampering_refuses_execution(self):
         tools = self.folder / 'packaging'; tools.mkdir()
         (tools / 'tools.json').write_text('{"nsis":{"version":"test","sha256":"'+'0'*64+'","url":"https://invalid.example"}}')
@@ -109,6 +122,15 @@ class InstallerTests(unittest.TestCase):
         (cache / 'nsis-test.zip').write_bytes(b'changed')
         with patch.object(package, 'ROOT', self.folder):
             with self.assertRaises(package.PackagingError): package.tool('nsis')
+
+    def test_library_ownership_uses_usr_merge_and_refuses_unowned_files(self):
+        missing = subprocess.CompletedProcess([],1,b'',b'no matching path')
+        found = subprocess.CompletedProcess([],0,b'libwayland-egl1:amd64: /usr/lib/x86_64-linux-gnu/libwayland-egl.so.1\n',b'')
+        with patch.object(package.subprocess,'run',side_effect=[missing,found]) as query:
+            self.assertEqual(package.library_owner(Path('/lib/x86_64-linux-gnu/libwayland-egl.so.1')),'libwayland-egl1')
+            self.assertIn('/usr/lib/',query.call_args.args[0][-1])
+        with patch.object(package.subprocess,'run',return_value=missing):
+            with self.assertRaises(package.PackagingError): package.library_owner(Path('/lib/x86_64-linux-gnu/foreign.so'))
 
 
 if __name__ == '__main__': unittest.main()
