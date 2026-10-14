@@ -34,7 +34,7 @@ export BENI_RELEASE_PYTHON="$PWD/.venv-release/bin/python"
 ./scripts/check.sh --desktop
 ```
 
-Die Release-Pipeline bleibt in Python. [H5 / PR #62](https://github.com/Witzelfitz/beni-desktop-buddy/pull/62) ergänzt `docs/TOOLING.md`: derselbe Interpreter für alle Prüfungen, automatische Wahl des Projekt-Venv und frühzeitige Prüfung der festgelegten Abhängigkeiten. Eine vollständige Rust-Portierung braucht einen belegten Wartungsvorteil.
+Die Release-Pipeline bleibt in Python. [Prüfeinstieg und Toolchains](TOOLING.md) beschreibt: derselbe Interpreter für alle Prüfungen, automatische Wahl des Projekt-Venv und frühzeitige Prüfung der festgelegten Abhängigkeiten. Eine vollständige Rust-Portierung braucht einen belegten Wartungsvorteil.
 
 ## CI und native Abnahme
 
@@ -42,7 +42,7 @@ Feature-Branches werden über PRs geprüft; Push-Prüfungen laufen nur auf main.
 
 Native Eingaberegionen und X11-Hotkeys: `bash scripts/check-input-linux.sh`, mit eigenem Xvfb-/Weston-Testserver. Weitere Plattform-/Hardwareabnahmen stehen in [TEST_MATRIX.md](TEST_MATRIX.md). CPU-/Repaint-Messungen stehen in [PERFORMANCE.md](PERFORMANCE.md).
 
-[H2 / PR #59](https://github.com/Witzelfitz/beni-desktop-buddy/pull/59) trennt schnelle und native Prüfungen und begrenzt Infrastruktur-Retries; `docs/CI.md` beschreibt Pfadfilter, Artefaktübergabe und Fehlergrenzen. Finale Installer-Abnahmen bleiben Voraussetzung für eine Veröffentlichung.
+[CI und native Prüfungen](CI.md) beschreibt die getrennten Jobs, Pfadfilter, Artefaktübergabe und begrenzten Infrastruktur-Retries. Finale Installer-Abnahmen bleiben Voraussetzung für eine Veröffentlichung.
 
 ## Architektur und Distribution
 
