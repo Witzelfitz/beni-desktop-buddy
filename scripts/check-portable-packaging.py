@@ -40,6 +40,13 @@ class StartupDiagnosticsTests(unittest.TestCase):
         self.assertIn('Panikstelle app.rs:10:7', message)
         self.assertNotIn('/private', message); self.assertNotIn('secret-message', message)
 
+    def test_fixed_winit_error_kinds_and_numeric_codes_are_public(self):
+        process = Mock(); process.poll.return_value = 1
+        log = io.BytesIO(b'Error: Winit(Os(XNotSupported(XOpenDisplayFailed))) code: 5 secret-message')
+        message = installer.startup_summary(process, log, 'Linux/Wayland')
+        self.assertIn('XOpenDisplayFailed', message); self.assertIn('Öffentlicher Fehlercode 5', message)
+        self.assertNotIn('secret-message', message)
+
     def test_live_window_success_does_not_read_logs_and_timeout_stays_a_failure(self):
         process = Mock(); process.poll.return_value = None
         log = Mock()

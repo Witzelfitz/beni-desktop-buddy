@@ -42,8 +42,19 @@ def startup_summary(process, log, label):
             ('glibc_', 'GLIBC-Konflikt'), ('winit', 'Winit'), ('glutin', 'Glutin'),
             ('wayland', 'Wayland'), ('x11', 'X11'), ('opengl', 'OpenGL'), ('egl', 'EGL'),
             ('dbus', 'D-Bus'), ('d-bus', 'D-Bus'), ('display', 'Display'),
+            ('xopendisplayfailed', 'XOpenDisplayFailed'), ('xnotsupported', 'XNotSupported'),
+            ('notsupported', 'NotSupported'), ('not supported', 'Nicht unterstützt'),
+            ('unsupported', 'Unsupported'), ('protocolerror', 'ProtocolError'),
+            ('protocol error', 'Protokollfehler'), ('connectionclosed', 'ConnectionClosed'),
+            ('broken pipe', 'Broken pipe'), ('invalidsize', 'InvalidSize'),
+            ('initializationfailed', 'InitializationFailed'), ('exitfailure', 'ExitFailure'),
+            ('eventloopclosed', 'EventLoopClosed'), ('cannotconnect', 'CannotConnect'),
+            ('badmessage', 'BadMessage'), ('invalidid', 'InvalidId'), ('ioerror', 'IoError'),
+            ('connection reset', 'Verbindung zurückgesetzt'),
         ):
             if marker in output and category not in details: details.append(category)
+        code = re.search(r'(?:raw_code: some\(|code: )(-?[0-9]{1,6})\b', output)
+        if code: details.append('Öffentlicher Fehlercode ' + code[1])
     return f'{label}: ' + '; '.join(details) + '.'
 
 
