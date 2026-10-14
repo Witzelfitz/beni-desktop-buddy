@@ -6,9 +6,11 @@ python3 scripts/check-macos-packaging.py
 if [[ -n "${BENI_RELEASE_PYTHON:-}" ]]; then
   "$BENI_RELEASE_PYTHON" scripts/check-release.py
   "$BENI_RELEASE_PYTHON" scripts/check-local-release.py
+  "$BENI_RELEASE_PYTHON" scripts/check-sparkle.py
 else
   python3 scripts/check-release.py
   python3 scripts/check-local-release.py
+  python3 scripts/check-sparkle.py
 fi
 cargo fmt --all --check
 cargo test --workspace --locked

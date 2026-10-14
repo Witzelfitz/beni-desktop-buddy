@@ -100,3 +100,18 @@ Nach PR #31/#32 bestehen am 14. Oktober 2026 auch beide finalen Developer-ID-Pak
 | Physische Windows-11-/Linux-Desktop-/GPU-Abnahme / echte Updates | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |
 
 Belege: [Linux](https://github.com/Witzelfitz/beni-desktop-buddy/actions/runs/38536064173), [Windows](https://github.com/Witzelfitz/beni-desktop-buddy/actions/runs/38537805266), [finale Mac-DMGs](https://github.com/Witzelfitz/beni-desktop-buddy/actions/runs/38538384964). Die älteren Zeilen oben halten die früheren manuellen Produktabnahmen fest. Diese Ergänzung bestätigt Installer und native Smoke-Tests, keine vollständige manuelle Bedienung auf Windows/Linux. Elf öffentliche Dateien wurden anonym zurückgeladen und bytegleich/authentifiziert geprüft. Das Linux-AppImage wurde zusätzlich über den echten Downloadbutton der Live-Seite geladen und per Hash verglichen.
+
+## Updatekette R3a, 14. Oktober 2026
+
+| Prüfung | Ergebnis |
+| --- | --- |
+| Authentifizierter Kandidat → Architektur-/Kanal-Feeds; Release-Felder und Paketsignaturen identisch | PASS, Offline-Fixtures |
+| Ableitung für beide Mac-Ziele des echten authentifizierten 0.1.1-Kandidaten | PASS, nur gelesen, keine Produktions-Appcasts signiert oder geschrieben |
+| Feed-/Manifest-/Paket-/Herkunftsmanipulation, fremder Schlüssel, falsche Länge, zusätzliche/verlinkte Dateien | PASS, negative Offline-Prüfungen |
+| Vorhandene Ausgabe und Kandidat vor Änderungen schützen; ungültige Eingaben vor Schlüsselzugriff ablehnen | PASS, Offline-Fixtures |
+| Sparkle 2.10.0 akzeptiert Python-Paket-/Feed-Signaturen, erzeugt bytegleichen Feed und lehnt manipulierte Bytes ab | PASS, native Probe auf dem Entwickler-Mac; nur kurzlebiger Testschlüssel |
+| Produktions-Appcasts erzeugen / veröffentlichen | NOT_RUN |
+| Framework im signierten Bundle / Tray-Aktion / echtes Update A → B | NOT_RUN |
+| Downloadabbruch / nicht schreibbarer Installationsort / Einstellungen nach Update | NOT_RUN |
+
+Native Probe: `scripts/check-sparkle.py --sparkle-archive …`, SDK-Grösse und SHA-256 aus `release/sparkle-sdk.json` vor dem Entpacken geprüft. Keine App gestartet oder ersetzt, keine Hooks verändert. Die Signaturkompatibilität bestätigt noch keine echte Installation.
