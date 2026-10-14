@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "upstream_version": "0.36.2",
+  "archive_sha256": "55ad41fac6e3149abb4866e93df37dbd33baa95db525c3368c944584e95a5dc2",
+  "upstream_commit": "49682f8baa058bf49e011035cfbd6e825f88a5ef",
+  "changed": {
+    "src/epi.rs": {
+      "original": "9dad50a69b22c031c125df16b76d9bed59e8695c97639f927b8f7f8ccb3fe820",
+      "patched": "0b0b096957f0a46146a242073df10dbd1deca7026e70ff3fbb9cdae6eaf56e61"
+    },
+    "src/native/file_storage.rs": {
+      "original": "6bab3eabf013b42121d2e0ea4940e0e3c11d9820781aa4dbba0fa7bde8e13ffc",
+      "patched": "284452e3f1a780b34f200ffbdc1708814b1d4b24723bd435f6fdcf692e7ca7ee"
+    },
+    "src/native/glow_integration.rs": {
+      "original": "65a3542c285c387ab83e7983add4cb9969aba1416278e511cdcf99e2ec5fc76a",
+      "patched": "dd30741d06fb934662acac923f9dba889478a6604561d8f6e4a2b5740b845605"
+    }
+  },
+  "omitted": [
+    "Cargo.lock"
+  ],
+  "added": {
+    "LICENSE-MIT": "95ca92f5f8ea5231f1580b3a2a799e8260af3114b900e1def5355a7f44bcf60c",
+    "LICENSE-APACHE": "8173d5c29b4f956d532781d2b86e4e30f83e6b7878dce18c919451d6ba707c90"
+  }
+}

@@ -59,6 +59,11 @@ jobs:
         run: python scripts/check-macos-packaging.py
       - name: Windows and Linux packaging policy tests
         run: python scripts/check-portable-packaging.py
+      - name: Vendored eframe patch inventory
+        if: runner.os == 'Linux'
+        run: |
+          python scripts/check-vendor-tests.py
+          python scripts/check-vendor.py
       - name: Release schema and regression tests
         if: runner.os == 'Linux'
         run: |
