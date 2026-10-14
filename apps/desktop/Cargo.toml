@@ -34,6 +34,7 @@ strip = true
 
 [build-dependencies]
 embed-resource = "=3.0.11"
+cc = "=1.8.0"
 
 [patch.crates-io]
 eframe = { path = "../../vendor/eframe" }

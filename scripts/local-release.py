@@ -26,7 +26,8 @@ REPO = "Witzelfitz/beni-desktop-buddy"
 MAX_PACKAGE_BYTES = 128 * 1024 * 1024
 BUILD_INPUTS = ("Cargo.toml", "Cargo.lock", "rust-toolchain.toml", "apps", "crates", "vendor", "assets",
                 "integrations", "packaging", "scripts/package-macos.py", "scripts/package-portable.py",
-                "LICENSE.md", "LICENSE-MIT", "docs/INTEGRATIONS.md")
+                "LICENSE.md", "LICENSE-MIT", "docs/INTEGRATIONS.md", "scripts/sparkle_sdk.py",
+                "release/sparkle-sdk.json", "release/update-policy.json", "release/keys/beni-update-v1.json")
 
 
 class ReleaseError(Exception):
@@ -86,8 +87,9 @@ def build_fingerprint(commit, target=None):
     inputs = BUILD_INPUTS
     if target is not None:
         if target not in ('macos','windows','linux'): raise ReleaseError('Ungültige Build-Plattform.')
-        common = tuple(p for p in BUILD_INPUTS if p != 'packaging' and not p.startswith('scripts/package-'))
-        specific = ('packaging/macos', 'scripts/package-macos.py') if target=='macos' else (
+        mac_update = ('scripts/sparkle_sdk.py', 'release/sparkle-sdk.json', 'release/update-policy.json', 'release/keys/beni-update-v1.json')
+        common = tuple(p for p in BUILD_INPUTS if p != 'packaging' and not p.startswith('scripts/package-') and p not in mac_update)
+        specific = ('packaging/macos', 'scripts/package-macos.py', *mac_update) if target=='macos' else (
             'packaging/'+target, 'packaging/tools.json', 'scripts/package-portable.py')
         inputs = common + specific
     records = command(["git", "ls-tree", "-rz", commit, "--", *inputs])
@@ -145,7 +147,7 @@ def extract_artifact(data, artifact, architecture, directory, source_commit):
     image = directory / name
     receipt = json_bytes(Path(str(image) + ".build.json").read_bytes(), 8192)
     required = {"type": "macos-build-receipt", "version": version, "build_number": build,
-                "architecture": architecture, "minimum_os_version": package.MINIMUM_MACOS,
+                "architecture": architecture, "minimum_os_version": package.BUNDLE_MINIMUM_MACOS,
                 "filename": name, "signing": "ad_hoc", "notarized": False}
     if any(type(receipt.get(k)) is not type(v) or receipt.get(k) != v for k, v in required.items()):
         raise ReleaseError("Native Build-Belege stimmen nicht mit dem Produkt und Ziel überein.")
@@ -475,7 +477,7 @@ def download_release(tag, architecture, output, trusted_path):
         # Adapter for the existing native checker. Its signature/ticket checks confirm these claims;
         # this derived receipt is neither published nor treated as a native test attestation.
         (directory / (name + ".build.json")).write_text(json.dumps({"type": "macos-build-receipt", "version": version,
-            "build_number": build, "architecture": architecture, "minimum_os_version": package.MINIMUM_MACOS,
+            "build_number": build, "architecture": architecture, "minimum_os_version": package.BUNDLE_MINIMUM_MACOS,
             "filename": name, "signing": "developer_id", "notarized": True,
             "sha256": artifact["sha256"], "size_bytes": artifact["size_bytes"]}) + "\n")
         install_candidate(directory, output)

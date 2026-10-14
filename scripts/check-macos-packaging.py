@@ -46,6 +46,55 @@ def fake_dmg(app, directory, image, identity):
 
 
 class PackagingTests(unittest.TestCase):
+    def test_sparkle_symlinks_licenses_and_inside_out_signing(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            source = root / "sdk"; source.mkdir()
+            framework = source / "Sparkle.framework"
+            version = framework / "Versions/B"; version.mkdir(parents=True)
+            (version / "Sparkle").write_text("fixture library")
+            (framework / "Versions/Current").symlink_to("B", target_is_directory=True)
+            (framework / "Sparkle").symlink_to("Versions/Current/Sparkle")
+            for name in ("XPCServices/Downloader.xpc", "XPCServices/Installer.xpc", "Updater.app"):
+                (version / name).mkdir(parents=True)
+            (version / "Autoupdate").write_text("fixture helper")
+            (source / "LICENSE").write_text("original SDK licence")
+            app = root / "Buddy.app"
+            resources = app / "Contents/Resources"; resources.mkdir(parents=True)
+            with patch.object(package, "sdk", return_value=contextlib.nullcontext(source)), patch.object(package, "sign") as signer, patch.object(package, "verify_signature"):
+                package.embed_sparkle(app, resources, "identity")
+                self.assertEqual([call.args[0].name for call in signer.call_args_list],
+                                 ["Downloader.xpc", "Installer.xpc", "Updater.app", "Autoupdate", "Sparkle.framework"])
+                for call in signer.call_args_list:
+                    self.assertEqual(call.kwargs, {"executable": True, "preserve_entitlements": True})
+            self.assertTrue((app / "Contents/Frameworks/Sparkle.framework/Sparkle").is_symlink())
+            self.assertEqual((resources / "Sparkle-LICENSE.txt").read_text(), "original SDK licence")
+
+    def test_update_configuration_pins_key_channel_and_security_defaults(self):
+        for architecture in package.ARCHITECTURES:
+            for version, channel in (("0.1.2", "stable"), ("0.1.2-beta.1", "beta")):
+                info = package.update_configuration(architecture, version)
+                self.assertEqual(info["SUFeedURL"], f"https://mini.witzelfitz.io/updates/macos/{architecture}/{channel}.xml")
+                self.assertEqual(info["BeniUpdateChannel"], channel)
+                self.assertEqual(len(base64.b64decode(info["SUPublicEDKey"])), 32)
+                for setting in ("SUEnableAutomaticChecks", "SUAutomaticallyUpdate", "SUAllowsAutomaticUpdates", "SUEnableSystemProfiling", "SUSendProfileInfo", "SUEnableJavaScript"):
+                    self.assertIs(info[setting], False)
+                self.assertIs(info["SURequireSignedFeed"], True)
+                self.assertIs(info["SUVerifyUpdateBeforeExtraction"], True)
+                self.assertEqual(info["SUSignedFeedFailureExpirationInterval"], 0)
+
+    def test_sparkle_archive_hash_size_and_symlinks_are_checked(self):
+        from sparkle_sdk import verify_archive
+        with tempfile.TemporaryDirectory() as folder:
+            archive = Path(folder) / "sdk.tar.xz"
+            archive.write_bytes(b"fixture pinned SDK")
+            pinned = {"size_bytes": archive.stat().st_size, "sha256": hashlib.sha256(archive.read_bytes()).hexdigest()}
+            verify_archive(archive, pinned)
+            alias = archive.with_name("alias.tar.xz"); alias.symlink_to(archive)
+            for path, data in ((alias, pinned), (archive, {**pinned, "size_bytes": 1}), (archive, {**pinned, "sha256": "0" * 64})):
+                with self.assertRaises(ValueError):
+                    verify_archive(path, data)
+
     def test_unsigned_nested_helper_is_signed_before_main_executable_and_bundle(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
@@ -57,7 +106,7 @@ class PackagingTests(unittest.TestCase):
                 if path.name == "beni-desktop-buddy" and "beni-buddy-cli" not in signed:
                     raise package.PackagingError("Unsigned nested helper blocks signing the surrounding app.")
                 signed.append(path.name)
-            with patch.object(package, "check_binary"), patch.object(package, "run", return_value=""), patch.object(package, "sign", side_effect=sign), patch.object(package, "verify_signature"):
+            with patch.object(package, "check_binary"), patch.object(package, "embed_sparkle"), patch.object(package, "run", return_value=""), patch.object(package, "sign", side_effect=sign), patch.object(package, "verify_signature"):
                 package.make_bundle(root / "Buddy.app", "x86_64", "-", binaries=binaries)
             self.assertEqual(signed, ["beni-buddy-cli", "beni-desktop-buddy", "Buddy.app"])
 
@@ -321,7 +370,7 @@ class InstallerReceiptTests(unittest.TestCase):
                 image = Path(directory) / "beni-buddy-0.1.0-macos-aarch64-unnotarized.dmg"
                 image.write_bytes(b"synthetic disk")
                 receipt = {"type": "macos-build-receipt", "architecture": "aarch64", "version": "0.1.0",
-                           "build_number": 1, "minimum_os_version": "11.0", "filename": image.name,
+                           "build_number": 1, "minimum_os_version": installer.package.BUNDLE_MINIMUM_MACOS, "filename": image.name,
                            "sha256": hashlib.sha256(image.read_bytes()).hexdigest(), "size_bytes": image.stat().st_size,
                            "signing": "developer_id", "notarized": False}
                 receipt[field] = value

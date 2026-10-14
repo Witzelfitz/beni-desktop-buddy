@@ -38,6 +38,9 @@ impl Default for Reminders {
     }
 }
 impl Reminders {
+    pub fn has_tasks(&self) -> bool {
+        !self.scheduled.is_empty() || !self.pending.is_empty()
+    }
     fn prune(&mut self, now: Instant) {
         self.pending
             .retain(|r| now.saturating_duration_since(r.deadline) < NOTICE_TTL);
@@ -198,10 +201,12 @@ mod tests {
     #[test]
     fn orders_by_deadline_then_creation_and_delivers_each_once() {
         let mut reminders = Reminders::default();
+        assert!(!reminders.has_tasks());
         let now = Instant::now();
         reminders.schedule("Später", 2, now).unwrap();
         reminders.schedule("Zuerst", 1, now).unwrap();
         reminders.schedule("Auch bald", 1, now).unwrap();
+        assert!(reminders.has_tasks());
         assert!(reminders.tick(now + Duration::from_secs(59)).is_empty());
         let due = reminders.tick(now + Duration::from_secs(60));
         assert_eq!(

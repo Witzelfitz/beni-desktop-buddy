@@ -42,7 +42,7 @@ def native_archive():
     image = b"fixture native disk image"
     digest = hashlib.sha256(image).hexdigest()
     receipt = {"type": "macos-build-receipt", "version": "0.1.0", "build_number": 1, "architecture": "x86_64",
-               "minimum_os_version": "11.0", "filename": name, "signing": "ad_hoc", "notarized": False,
+               "minimum_os_version": release.package.BUNDLE_MINIMUM_MACOS, "filename": name, "signing": "ad_hoc", "notarized": False,
                "sha256": digest, "size_bytes": len(image)}
     native = {"type": "macos-native-install-check", "source_commit": "a" * 40, "architecture": "x86_64", "version": "0.1.0",
               "build_number": 1, "tested_os_version": "15.7.9", "package_sha256": digest,

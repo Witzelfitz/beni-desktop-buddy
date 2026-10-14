@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Build macOS bundles and DMGs; public packages require successful notarization."""
 import argparse
+import base64
 import hashlib
 import json
 import os
@@ -14,10 +15,12 @@ import sys
 import tempfile
 
 from release import check_versions
+from sparkle_sdk import sdk
 
 ROOT = Path(__file__).resolve().parents[1]
 ARCHITECTURES = {"aarch64": "arm64", "x86_64": "x86_64"}
 MINIMUM_MACOS = "11.0"
+BUNDLE_MINIMUM_MACOS = "15.0"
 
 
 class PackagingError(Exception):
@@ -104,10 +107,12 @@ def check_binary(path, architecture):
         raise PackagingError("Binary-Mindestversion fehlt oder übersteigt die Paketangabe.")
 
 
-def sign(path, identity, executable=False):
+def sign(path, identity, executable=False, preserve_entitlements=False):
     options = ["--timestamp=none"] if identity == "-" else ["--timestamp"]
     if executable and identity != "-":
         options += ["--options", "runtime"]
+    if preserve_entitlements:
+        options += ["--preserve-metadata=entitlements"]
     kind = "DMG" if path.suffix == ".dmg" else ("App-Bundle" if path.suffix == ".app" else "Executable")
     run(["codesign", "--force", "--sign", identity, *options, str(path)], f"Codesignierung ({kind})")
 
@@ -120,6 +125,47 @@ def verify_signature(path, production=False):
             raise PackagingError("Developer-ID-Signatur oder sicherer Zeitstempel fehlt.")
         if path.suffix != ".dmg" and not re.search(r"\bflags=0x[0-9a-fA-F]+\([^\n)]*\bruntime\b", details):
             raise PackagingError("Hardened Runtime fehlt.")
+
+
+def embed_sparkle(destination, resources, identity):
+    with sdk() as source:
+        framework = destination / "Contents/Frameworks/Sparkle.framework"
+        framework.parent.mkdir(parents=True)
+        shutil.copytree(source / "Sparkle.framework", framework, symlinks=True)
+        shutil.copy2(source / "LICENSE", resources / "Sparkle-LICENSE.txt")
+    # The SDK is universal. Preserve its internal symlinks and sign real nested
+    # code from the leaves inwards with the app's identity (library validation).
+    version = framework / "Versions/B"
+    nested = [version / "XPCServices/Downloader.xpc", version / "XPCServices/Installer.xpc",
+              version / "Updater.app", version / "Autoupdate", framework]
+    for path in nested:
+        if not path.exists():
+            raise PackagingError("Sparkle-Hilfsprogramm fehlt; kein unvollständiges Bundle erstellen.")
+        sign(path, identity, executable=True, preserve_entitlements=True)
+        verify_signature(path, production=identity != "-")
+
+
+def update_configuration(architecture, version):
+    key = json.loads((ROOT / "release/keys/beni-update-v1.json").read_bytes())
+    raw = base64.b64decode(key["public_key_base64"], validate=True)
+    if key["algorithm"] != "ed25519" or key["key_id"] != "beni-update-v1" or len(raw) != 32:
+        raise PackagingError("Der feste Update-Vertrauensanker ist ungültig.")
+    policy = json.loads((ROOT / "release/update-policy.json").read_bytes())
+    if (set(policy) != {"macos_feed_ready", "feed_base_url"} or type(policy["macos_feed_ready"]) is not bool
+            or policy["feed_base_url"] != "https://mini.witzelfitz.io/updates/macos"):
+        raise PackagingError("Update-Feed-Freigabe oder fester HTTPS-Verweis ist ungültig.")
+    channel = "beta" if "-beta." in version else "stable"
+    return {
+        "SUFeedURL": f"{policy['feed_base_url']}/{architecture}/{channel}.xml",
+        "SUPublicEDKey": key["public_key_base64"],
+        "BeniUpdateFeedReady": policy["macos_feed_ready"],
+        "BeniUpdateChannel": channel,
+        "SUEnableAutomaticChecks": False, "SUAutomaticallyUpdate": False,
+        "SUAllowsAutomaticUpdates": False, "SUEnableSystemProfiling": False,
+        "SUSendProfileInfo": False,
+        "SUEnableJavaScript": False, "SUVerifyUpdateBeforeExtraction": True,
+        "SURequireSignedFeed": True, "SUSignedFeedFailureExpirationInterval": 0,
+    }
 
 
 def make_bundle(destination, architecture, identity, binaries=None):
@@ -150,11 +196,13 @@ def make_bundle(destination, architecture, identity, binaries=None):
         "CFBundleIdentifier": "io.witzelfitz.beni-buddy", "CFBundleExecutable": "beni-desktop-buddy",
         "CFBundleIconFile": "Beni.icns", "CFBundlePackageType": "APPL",
         "CFBundleShortVersionString": version.split("-")[0], "CFBundleVersion": str(build),
-        "LSMinimumSystemVersion": MINIMUM_MACOS, "LSUIElement": True, "NSHighResolutionCapable": True,
+        "LSMinimumSystemVersion": BUNDLE_MINIMUM_MACOS, "LSUIElement": True, "NSHighResolutionCapable": True,
+        **update_configuration(architecture, version),
     }
     with (destination / "Contents/Info.plist").open("wb") as stream:
         plistlib.dump(info, stream, sort_keys=False)
     run(["plutil", "-lint", str(destination / "Contents/Info.plist")], "Bundle-Plist prüfen")
+    embed_sparkle(destination, resources, identity)
     # Signing the main executable can make codesign inspect the entire surrounding app.
     # Sign nested helpers first; x86_64 linkers do not provide arm64's implicit ad-hoc signature.
     for source in sorted(binaries, key=lambda path: path.name == "beni-desktop-buddy"):
@@ -262,7 +310,7 @@ def install_dmg(args, identity):
             digest = hashlib.file_digest(stream, "sha256").hexdigest()
         metadata = {
             "type": "macos-build-receipt", "version": version, "build_number": build,
-            "architecture": args.architecture, "minimum_os_version": MINIMUM_MACOS,
+            "architecture": args.architecture, "minimum_os_version": BUNDLE_MINIMUM_MACOS,
             "filename": filename, "size_bytes": image.stat().st_size, "sha256": digest,
             "signing": "ad_hoc" if args.mode == "development" else "developer_id",
             "notarized": args.mode == "release",

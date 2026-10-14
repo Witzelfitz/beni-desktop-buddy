@@ -12,6 +12,7 @@ mod settings_window;
 mod size;
 mod timer;
 mod tray;
+mod updater;
 mod window;
 
 use buddy_core::{Engine, Settings};
@@ -22,6 +23,9 @@ fn main() -> eframe::Result {
         eframe::icon_data::from_png_bytes(include_bytes!("../../../assets/app-icon/beni-256.png"))
             .expect("validated embedded Beni app icon");
     let options = eframe::NativeOptions {
+        // Explicit test/development isolation, without changing HOME or the
+        // installed app's settings. Relative overrides are rejected.
+        persistence_path: data_directory(std::env::var_os("BENI_BUDDY_DATA_DIR"))?,
         viewport: egui::ViewportBuilder::default()
             .with_title("Beni Desktop Buddy")
             .with_app_id("io.witzelfitz.beni-buddy")
@@ -49,4 +53,30 @@ fn main() -> eframe::Result {
             Ok(Box::new(app::BuddyApp::new(cc, engine, settings)?))
         }),
     )
+}
+
+fn data_directory(value: Option<std::ffi::OsString>) -> eframe::Result<Option<std::path::PathBuf>> {
+    let Some(value) = value else { return Ok(None) };
+    let path = std::path::PathBuf::from(value);
+    if !path.is_absolute() {
+        return Err(eframe::Error::AppCreation(
+            "BENI_BUDDY_DATA_DIR benötigt einen absoluten Pfad.".into(),
+        ));
+    }
+    Ok(Some(path))
+}
+
+#[cfg(test)]
+mod startup_tests {
+    #[test]
+    fn only_explicit_absolute_data_directory_overrides_are_accepted() {
+        assert!(super::data_directory(None).unwrap().is_none());
+        assert!(super::data_directory(Some("relative".into())).is_err());
+        assert!(super::data_directory(Some("".into())).is_err());
+        let path = std::env::temp_dir().join("beni-isolated-settings");
+        assert_eq!(
+            super::data_directory(Some(path.clone().into())).unwrap(),
+            Some(path)
+        );
+    }
 }

@@ -4,9 +4,11 @@ Status: angenommen am 14. Oktober 2026. R3 beginnt auf Nutzerwunsch während der
 
 ## Entscheidung
 
-macOS behält Rust und egui/eframe. Der Plattformadapter verwendet Sparkles native Updateoberfläche und Installer. Der erste Integrationsschritt prüft das Signaturformat und erzeugt lokale Appcasts; Framework-Einbettung, Tray-Aktion und Veröffentlichung folgen separat.
+macOS behält Rust und egui/eframe. Der Plattformadapter verwendet Sparkles native Updateoberfläche und Installer. R3a prüft das Signaturformat und erzeugt lokale Appcasts; R3b ergänzt Framework-Einbettung und Tray-Aktion. Feed-Veröffentlichung und Update A → B folgen separat.
 
-Der geprüfte SDK-Stand ist Sparkle 2.10.0. URL, Dateigrösse und SHA-256 liegen in `release/sparkle-sdk.json`. Das SDK wird noch nicht mit Beni ausgeliefert. Die native Probe entpackt ausschliesslich das gepinnte Archiv und verwendet einen kurzlebigen Testschlüssel; kein Zugang zum Produktionsschlüssel ist nötig.
+Der geprüfte SDK-Stand ist Sparkle 2.10.0. URL, Dateigrösse und SHA-256 liegen in `release/sparkle-sdk.json`. Neue Mac-Bundles enthalten das SDK mit seinen Symlinks, Hilfsprogrammen und der Lizenz. Eine kleine Objective-C-Brücke wird beim Mac-Cargo-Build statisch eingebunden und lädt ausschliesslich das Framework im eigenen App-Bundle dynamisch. Das SDK wird beim normalen Rust-Build nicht benötigt. Der Rust-Adapter ist an den Hauptthread gebunden; UI-/Netzwerk-/Installationscode gelangt nicht in den Animationskern.
+
+Der öffentliche Feed bleibt über eine eingecheckte, signierte Bundle-Einstellung ausgeschaltet, bis beide Repositories dessen Veröffentlichung unterstützen. Ein deaktivierter Feed führt zur verständlichen Erklärung statt zu einem HTTP-Fehler. Die Bundle-Mindestversion steigt auf die bereits freigegebene Produktanforderung 15.0; die nativen Rust-/Bridge-Binaries behalten ihr Buildziel 11.0. Sparkles fertiges SDK benötigt 12.0 und darf keine niedrigere Bundle-Mindestanforderung erhalten.
 
 Appcasts werden ausschliesslich aus einem vollständig authentifizierten Release-Kandidaten abgeleitet. Der bestehende Prüfer authentifiziert die Manifestbytes vor dem Interpretieren und prüft Paketbytes, Schlüsselzuordnung und signierte Herkunftsbelege. Buildnummer, Version, Paketadresse, Grösse und Mindestanforderungen werden daraus übernommen. Jeder Mac-Architektur und jedem Kanal gehört eine eigene Feeddatei. Ein fehlendes Ziel wird nicht durch eine andere Architektur ersetzt.
 
@@ -16,15 +18,15 @@ Der private Produktionsschlüssel bleibt in 1Password und gelangt nur in den Spe
 
 ## Nächste Integrationsschritte
 
-1. Sparkle mit seinen Hilfsprogrammen und Lizenzen ins Bundle einbetten, von innen nach aussen mit derselben Developer ID signieren und notarisieren. Den Adapter ausschliesslich auf dem Hauptthread betreiben; ungepackte Entwicklungsstarts bleiben möglich.
-2. «Nach Updates suchen …» im Menüleistensymbol anbinden. Automatische Prüfungen sind eine Nutzerauswahl und anfangs ausgeschaltet; Sparkles gespeicherte Auswahl nicht bei jedem Start zurücksetzen. Installation und Neustart bleiben bewusst. Laufende Timer und Erinnerungen berücksichtigen.
-3. `SUPublicEDKey` fest einbinden, `SURequireSignedFeed` und `SUVerifyUpdateBeforeExtraction` aktivieren. `SUSignedFeedFailureExpirationInterval=0` verhindert den zeitgesteuerten Fallback bei ungültigen Feed-Signaturen. Systemprofiling, JavaScript und automatische Installation bleiben ausgeschaltet.
+1. R3b implementiert: Sparkle mit Hilfsprogrammen und Lizenz einbetten, von innen nach aussen mit derselben Developer ID signieren. Native Brücke und separate Rust-QA-App samt Notarisierung auf ARM macOS 26.6.2 geprüft; Intel/macOS 15 separat offen. Adapter ausschliesslich auf dem Hauptthread; ungepackte Entwicklungsstarts bleiben möglich.
+2. R3b implementiert: Tray «Nach Updates suchen …», anfangs ausgeschaltete automatische Prüfwahl, Einstellungen vor Neustart speichern, IPC kontrolliert schliessen und Timer-/Erinnerungsabfrage. Native Callback-/Rust-UI-Prüfung bestanden; echter Update-Neustart bleibt Schritt 5.
+3. R3b konfiguriert: `SUPublicEDKey`, `SURequireSignedFeed`, `SUVerifyUpdateBeforeExtraction` und `SUSignedFeedFailureExpirationInterval=0`. Systemprofiling, JavaScript und automatische Installation ausgeschaltet. Öffentliche Feed-Freigabe bleibt bis Schritt 4 deaktiviert.
 4. Feeddateien und die strenge Dateimengenprüfung von Release-Pipeline und Website gemeinsam erweitern. Erst danach eine neue unveränderliche Veröffentlichung und einen Stable-Verweis freigeben. Beta bekommt einen getrennten Verweis; GitHubs Latest-Link darf keinen Beta-Feed bestimmen.
 5. Zwei updaterfähige Versionen A → B tatsächlich installieren und Neustart, Einstellungen, defekte Signatur, Downloadabbruch sowie einen nicht schreibbaren Installationsort prüfen. Die heutige Version 0.1.1 hat noch keinen Updater und benötigt einmalig die manuelle Installation des ersten updaterfähigen Bundles.
 
 ## Abnahmen und Grenzen
 
-Offline-Regressionsprüfungen laufen einmal im Linux-CI-Job. Die native Sparkle-Probe läuft bewusst lokal mit dem gepinnten SDK; sie startet keine App, lädt kein Update, ändert keine Hooks und benötigt keinen Rust-/Installer-Neubau. Ein erfolgreicher Signaturtest bestätigt noch keinen funktionierenden Desktop-Updater. Windows- und Linux-Updateadapter bleiben eigene Schritte.
+Offline-Appcast-Prüfungen laufen einmal im Linux-CI-Job. Die native Signaturprobe verwendet einen kurzlebigen Testschlüssel, ohne Produktionsschlüsselzugriff. Die zusätzliche Brückenprobe startet ausschliesslich ein temporäres signiertes Testbundle und einen lokalen Fixture-Server, prüft gespeicherte Auswahl und Fehlerdialog und entfernt eigene Test-Präferenzen. Eine separate echte Rust-GUI-Abnahme verwendet einen eigenen Datenordner. Beide lassen Installation und Hooks bestehen und benötigen keine neuen Installer für alle Plattformen. Die tatsächliche Installation A → B ist weiterhin eine eigene Abnahme. Windows- und Linux-Updateadapter bleiben eigene Schritte.
 
 ## Referenzen
 

@@ -2,7 +2,7 @@
 
 R2 baut ein schreibgeschütztes DMG mit Beni-App, bestehendem Icon, «Programme»-Link und kurzer Installationshilfe. Die App enthält CLI, eingecheckte Integrationsvorlagen und die eigenen Lizenztexte. Lokale Hook-Konfigurationen und nicht eingecheckte Dateien werden nicht übernommen. Vor dem Ersetzen einer vorhandenen App Beni beenden; aktive Timer und Erinnerungen enden dabei. Nutzer ziehen die App nach Programme und öffnen sie dort, danach wird das DMG ausgeworfen. Zur Deinstallation Beni beenden und das Bundle löschen; die bisherigen Einstellungen bleiben erhalten.
 
-Apple Silicon (`aarch64`) und Intel (`x86_64`) erhalten getrennte Pakete. Native Builds verwenden vorhandene Cargo-Caches. Cross-Builds benötigen ein zuvor bewusst installiertes Rust-Ziel. `lipo` prüft beide Executables, `otool` deren Mindestversion. Buildziel und Bundleangabe sind macOS 11.0; eine reale Abnahme auf diesem alten System bleibt offen.
+Apple Silicon (`aarch64`) und Intel (`x86_64`) erhalten getrennte Pakete. Native Builds verwenden vorhandene Cargo-Caches. Cross-Builds benötigen ein zuvor bewusst installiertes Rust-Ziel. `lipo` prüft beide Executables, `otool` deren Mindestversion. Das Rust-/Bridge-Buildziel bleibt macOS 11.0; neue Bundles deklarieren 15.0 entsprechend der freigegebenen Produktanforderung. Sparkle 2.10.0 wird mit Hilfsprogrammen und Lizenz eingebettet und benötigt mindestens 12.0. Die öffentlich veröffentlichten älteren Pakete werden nicht verändert. Eine reale Abnahme auf 11.0 bleibt offen und gehört nicht zum aktuellen Angebot.
 
 ## Drei eindeutig getrennte Modi
 

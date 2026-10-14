@@ -381,6 +381,7 @@ dependencies = [
  "block2 0.6.2",
  "buddy-core",
  "buddy-ipc",
+ "cc",
  "eframe",
  "embed-resource",
  "global-hotkey",

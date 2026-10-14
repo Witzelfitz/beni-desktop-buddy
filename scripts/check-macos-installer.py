@@ -68,7 +68,7 @@ def main(argv=None):
         receipt = json.loads(data)
         if receipt["type"] != "macos-build-receipt" or receipt["architecture"] != args.architecture:
             raise package.PackagingError("Build-Beleg gehört nicht zum gewählten Ziel.")
-        if receipt["minimum_os_version"] != package.MINIMUM_MACOS:
+        if receipt["minimum_os_version"] != package.BUNDLE_MINIMUM_MACOS:
             raise package.PackagingError("Systemanforderung stimmt nicht mit der Paketbasis überein.")
         expected = package.installer_filename(receipt["version"], args.architecture, args.mode)
         if receipt["filename"] != image.name or image.name != expected:

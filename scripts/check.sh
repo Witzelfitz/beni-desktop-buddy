@@ -21,6 +21,7 @@ python3 scripts/check-assets.py
 if [[ "${1:-}" == "--desktop" ]]; then
   cargo fmt --manifest-path apps/desktop/Cargo.toml --check
   cargo test --manifest-path apps/desktop/Cargo.toml --locked
+  python3 scripts/check-storage-sync.py
   cargo clippy --manifest-path apps/desktop/Cargo.toml --all-targets --locked -- -D warnings
   cargo build --manifest-path apps/desktop/Cargo.toml --locked
 fi

@@ -180,7 +180,9 @@ impl crate::Storage for FileStorage {
             let result = std::thread::Builder::new()
                 .name("eframe_persist".to_owned())
                 .spawn(move || {
-                    save_to_disk(&file_path, &kv);
+                    if let Err(err) = save_to_disk(&file_path, &kv) {
+                        log::warn!("Failed to save app state: {err}");
+                    }
                 });
             match result {
                 Ok(join_handle) => {
@@ -192,37 +194,34 @@ impl crate::Storage for FileStorage {
             }
         }
     }
+
+    fn flush_sync(&mut self) -> std::io::Result<()> {
+        if let Some(writer) = self.last_save_join_handle.take() {
+            writer
+                .join()
+                .map_err(|_| std::io::Error::other("Persistence worker failed"))?;
+        }
+        // Always write the current snapshot, even if an earlier async attempt
+        // cleared dirty before failing. Failed synchronous writes remain dirty.
+        self.dirty = true;
+        save_to_disk(&self.ron_filepath, &self.kv)?;
+        self.dirty = false;
+        Ok(())
+    }
 }
 
-fn save_to_disk(file_path: &PathBuf, kv: &HashMap<String, String>) {
+fn save_to_disk(file_path: &PathBuf, kv: &HashMap<String, String>) -> std::io::Result<()> {
     profiling::function_scope!();
 
-    if let Some(parent_dir) = file_path.parent()
-        && !parent_dir.exists()
-        && let Err(err) = std::fs::create_dir_all(parent_dir)
-    {
-        log::warn!("Failed to create directory {}: {err}", parent_dir.display());
+    if let Some(parent_dir) = file_path.parent() {
+        std::fs::create_dir_all(parent_dir)?;
     }
-
-    match std::fs::File::create(file_path) {
-        Ok(file) => {
-            let mut writer = std::io::BufWriter::new(file);
-            let config = Default::default();
-
-            profiling::scope!("ron::serialize");
-            if let Err(err) = ron::Options::default()
-                .to_io_writer_pretty(&mut writer, &kv, config)
-                .and_then(|()| writer.flush().map_err(|err| err.into()))
-            {
-                log::warn!("Failed to serialize app state: {err}");
-            } else {
-                log::trace!("Persisted to {}", file_path.display());
-            }
-        }
-        Err(err) => {
-            log::warn!("Failed to create file {}: {err}", file_path.display());
-        }
-    }
+    let file = std::fs::File::create(file_path)?;
+    let mut writer = std::io::BufWriter::new(file);
+    ron::Options::default()
+        .to_io_writer_pretty(&mut writer, &kv, Default::default())
+        .map_err(std::io::Error::other)?;
+    writer.flush()
 }
 
 // ----------------------------------------------------------------------------
@@ -253,6 +252,40 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::Storage as _;
+
+    #[test]
+    fn synchronous_flush_waits_for_async_write_and_persists_latest_snapshot() {
+        let root = std::env::temp_dir().join(format!(
+            "beni-eframe-sync-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        std::fs::create_dir_all(&root).unwrap();
+        let path = root.join("app.ron");
+        let mut storage = FileStorage::from_ron_filepath(&path);
+        storage.set_string("value", "before".into());
+        storage.flush();
+        storage.set_string("value", "latest".into());
+        storage.flush_sync().unwrap();
+        let persisted: HashMap<String, String> = read_ron(&path).unwrap();
+        assert_eq!(persisted.get("value").map(String::as_str), Some("latest"));
+        assert!(storage.last_save_join_handle.is_none());
+        drop(storage);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn synchronous_flush_reports_failure_and_preserves_pending_state() {
+        let mut storage = FileStorage::from_ron_filepath(std::env::temp_dir());
+        storage.set_string("value", "not lost".into());
+        assert!(storage.flush_sync().is_err());
+        assert!(storage.dirty);
+        assert_eq!(storage.get_string("value").as_deref(), Some("not lost"));
+    }
 
     fn directories_storage_dir(app_id: &str) -> Option<PathBuf> {
         directories::ProjectDirs::from("", "", app_id)
