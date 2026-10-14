@@ -142,7 +142,9 @@ def linux(image, folder):
     wayland_env = dict(env, XDG_RUNTIME_DIR=str(runtime), WAYLAND_DISPLAY='beni-test', WINIT_UNIX_BACKEND='wayland', WAYLAND_DEBUG='1')
     wayland_env.pop('DISPLAY', None)
     with tempfile.TemporaryFile() as weston_log, tempfile.TemporaryFile() as client_log:
-        compositor = subprocess.Popen(['weston','--backend=headless-backend.so','--use-pixman','--no-config','--socket=beni-test','--idle-time=0'],
+        # Weston 10's headless Pixman renderer crashed in the native 0.1.5 probe.
+        # Exercise the actual GL client with software Mesa and Weston's GL renderer.
+        compositor = subprocess.Popen(['weston','--backend=headless-backend.so','--use-gl','--no-config','--socket=beni-test','--idle-time=0'],
                                      env=wayland_env, stdout=weston_log, stderr=weston_log)
         try:
             deadline = time.monotonic()+15
@@ -150,6 +152,7 @@ def linux(image, folder):
             if not (runtime/'beni-test').exists(): raise package.PackagingError('Wayland-Testcompositor startet nicht.')
             process = subprocess.Popen([str(appdir/'AppRun')], env=wayland_env, stdout=client_log, stderr=client_log)
             def configured():
+                if compositor.poll() is not None: return False
                 client_log.seek(0); protocol = client_log.read().decode(errors='replace')
                 return 'xdg_toplevel' in protocol and 'set_title(' in protocol and 'ack_configure(' in protocol and '.commit(' in protocol
             try: wait_window(process, configured, label='Linux/Wayland', log=client_log)
