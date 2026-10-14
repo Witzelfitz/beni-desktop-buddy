@@ -6,6 +6,11 @@ on:
         description: 'Bereits vorbereiteter Release oder Entwurf, z. B. v0.1.0'
         required: true
         type: string
+      architecture:
+        description: 'Welche endgültigen Installer prüfen?'
+        type: choice
+        options: [both, aarch64, x86_64]
+        default: both
 permissions:
   contents: read
 concurrency:
@@ -21,11 +26,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - architecture: aarch64
-            runner: macos-15
-          - architecture: x86_64
-            runner: macos-15-intel
+        include: ${{ fromJSON(inputs.architecture == 'x86_64' && '[{"architecture":"x86_64","runner":"macos-15-intel"}]' || (inputs.architecture == 'aarch64' && '[{"architecture":"aarch64","runner":"macos-15"}]' || '[{"architecture":"aarch64","runner":"macos-15"},{"architecture":"x86_64","runner":"macos-15-intel"}]')) }}
     runs-on: ${{ matrix.runner }}
     env:
       BENI_RELEASE_TAG: ${{ inputs.tag }}
@@ -36,6 +37,10 @@ jobs:
           persist-credentials: false
       - name: Require reviewed main
         run: test "$GITHUB_REF" = refs/heads/main
+      - name: Python verification runtime
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.13'
       - name: Install verification dependencies
         run: |
           python3 -m venv "$RUNNER_TEMP/beni-release-venv"

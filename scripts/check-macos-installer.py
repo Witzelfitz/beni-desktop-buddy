@@ -19,6 +19,34 @@ package = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(package)
 
 
+def validate_ticket(target):
+    """Report bounded public failure codes, never raw Apple/account output."""
+    kind = "DMG" if target.suffix == ".dmg" else "App"
+    try:
+        result = subprocess.run(["xcrun", "stapler", "validate", "-v", str(target)],
+                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                text=True, errors="replace", timeout=90)
+    except (OSError, subprocess.TimeoutExpired) as error:
+        raise package.PackagingError(f"Notarisierungsticket ({kind}): Werkzeug nicht verfügbar oder Zeitlimit erreicht.") from error
+    if result.returncode:
+        output = result.stdout[:65536]
+        details = []
+        status = re.search(r"Status Code: ([1-5][0-9]{2})", output)
+        if status:
+            details.append(f"Apple-HTTP {status[1]}")
+        network = re.search(r"Error Domain=NSURLErrorDomain Code=(-?[0-9]{1,5})\b", output)
+        if network:
+            details.append(f"URL-Fehler {network[1]}")
+        for fragment, message in (("CloudKit query failed", "CloudKit-Abfrage fehlgeschlagen"),
+                                  ("CloudKit's response is inconsistent", "Unerwartete CloudKit-Antwort"),
+                                  ("RECORD_NOT_FOUND", "Apple-Ticket nicht gefunden"),
+                                  ("Could not validate ticket", "Ticket nicht validiert")):
+            if fragment in output:
+                details.append(message)
+        summary = "; ".join(details) or "Keine bekannte öffentliche Diagnose"
+        raise package.PackagingError(f"Notarisierungsticket ({kind}) fehlgeschlagen (Exitcode {result.returncode}): {summary}.")
+
+
 def launch_on_runner(app, directory):
     if os.environ.get("GITHUB_ACTIONS") != "true" or os.environ.get("RUNNER_OS") != "macOS":
         raise package.PackagingError("Der Fenster-Starttest ist auf frische macOS-Actions-Runner begrenzt.")
@@ -114,7 +142,7 @@ def main(argv=None):
                 package.run([str(installed / "Contents/MacOS/beni-buddy-cli"), "validate-assets"], "Installierte CLI starten")
                 if args.mode == "release":
                     for target in (image, installed):
-                        package.run(["xcrun", "stapler", "validate", str(target)], "Installiertes Notarisierungsticket prüfen")
+                        validate_ticket(target)
                     package.run(["spctl", "--assess", "--type", "execute", str(installed)], "Installierte App mit Gatekeeper prüfen")
                 if args.launch:
                     launch_on_runner(installed, directory)
