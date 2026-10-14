@@ -138,6 +138,25 @@ class LocalReleaseTests(unittest.TestCase):
                     else:
                         self.assertEqual(release.extract_portable(archive,metadata,target,Path(folder),'a'*40).read_bytes(),data)
 
+    def test_failed_other_platform_never_substitutes_for_successful_target(self):
+        run = {'status':'completed','conclusion':'failure','path':'.github/workflows/portable-installers.yml',
+               'event':'workflow_dispatch','head_branch':'main','head_sha':'a'*40,
+               'repository':{'full_name':release.REPO},'head_repository':{'full_name':release.REPO}}
+        artifact = {'id':1,'size_in_bytes':20,'expired':False,'name':'portable-linux-x86_64','workflow_run':{'head_sha':'a'*40}}
+        steps = [{'name':name,'conclusion':'success'} for name in ('Build native installer','Native Linux installation, X11 and Wayland test','Store reviewed installers')]
+        for successful, complete in ((True,True),(False,True),(True,False)):
+            jobs = {'jobs':[{'name':'installer (linux, ubuntu-22.04)','conclusion':'success' if successful else 'failure',
+                             'steps':steps if complete else steps[:1]}]}
+            with patch.object(release,'api',side_effect=[run,jobs,{'artifacts':[artifact]}]), \
+                    patch.object(release,'command',return_value=b'archive'), patch.object(release,'build_fingerprint',return_value='same'), \
+                    patch.object(release,'extract_portable',return_value=Path('fixture.AppImage')) as extract:
+                if successful and complete:
+                    self.assertEqual(release.download_portable('123','linux',Path('fixture'), 'b'*40)[1],'a'*40)
+                    extract.assert_called_once()
+                else:
+                    with self.assertRaises(release.ReleaseError): release.download_portable('123','linux',Path('fixture'),'b'*40)
+                    extract.assert_not_called()
+
     def final_release_fixture(self, root):
         source = root / "source"
         source.mkdir()

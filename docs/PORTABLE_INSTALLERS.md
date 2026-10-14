@@ -1,10 +1,12 @@
 # Windows- und Linux-Installer
 
-Die Installer werden mit dem manuellen Workflow **Windows and Linux installers** gebaut. Er veröffentlicht nichts. Erst ein vollständig erfolgreicher Lauf mit Paket, Prüfsumme, Build-Beleg und nativer Abnahme darf in die lokale Release-Vorbereitung eingehen. Der Workflow läuft nicht bei jedem Push oder PR.
+Die Installer werden mit dem manuellen Workflow **Windows and Linux installers** gebaut. Er veröffentlicht nichts. Erst ein vollständig erfolgreiches Ziel mit Paket, Prüfsumme, Build-Beleg und nativer Abnahme darf in die lokale Release-Vorbereitung eingehen. Ein fehlgeschlagenes anderes Ziel wird dadurch nicht angeboten. Der Workflow läuft nicht bei jedem Push oder PR und erlaubt gezielte Windows-/Linux-Läufe.
 
 ## Windows
 
 Ziel: Windows 11 oder neuer auf Intel/AMD x86_64. Ein Windows-Server-Runner bestätigt Paket und Fensterstart; die vollständige manuelle Windows-11-Abnahme auf einem Endgerät bleibt separat.
+
+Der virtuelle Windows-Runner benötigt für den Fenstertest einen versionierten, SHA-256-geprüften Mesa-Softwaretreiber in seinem eigenen temporären Installationsordner. Dieser Treiber gehört nicht zum Installer und verändert keine Systembibliotheken. Der native Beleg kennzeichnet dieses Grafikbackend ausdrücklich. Quelle: [Mesa-Windows-Build und Anwendungshinweise](https://github.com/mmozeiko/build-mesa).
 
 NSIS installiert ohne Administratorrechte unter `%LOCALAPPDATA%\Programs\Beni Buddy`. Eintrag und Deinstallation stehen im Startmenü und unter den installierten Apps. Es wird kein Autostart eingerichtet. Vor einer erneuten Installation Beni über sein Menü beenden. Der Installer und die Deinstallation verweigern Änderungen, solange die vorhandene GUI-Datei gesperrt ist. Einstellungen bleiben bei der Deinstallation erhalten, ebenso zusätzliche Dateien im Installationsordner.
 
