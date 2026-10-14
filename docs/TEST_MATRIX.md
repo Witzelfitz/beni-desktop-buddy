@@ -242,3 +242,7 @@ Chat-Grundlage ohne neue externe Rust-Abhängigkeiten; kein HTTP-Aufruf oder Mod
 Der echte Ollama-Test ist in der regulären CI ignoriert und wird gezielt lokal ausgeführt. Der Animationskern und importierte Assets bleiben unverändert. Kein Zugriff auf Produktionsschlüssel, keine Änderung der installierten Programme-App oder Hook-Definitionen; native QA-Prozesse sauber beendet. Regelmässige Plattform-CI bleibt bei drei Jobs, keine Installer-Matrix für diesen PR.
 
 Lokale Schlussprüfung: PASS, Root-/Desktop-fmt und Clippy, 42 Roottests und 102 Desktoptests; gezielter ignorierter Ollama-Test zusätzlich bestanden. Release-/Versionsprüfungen: 20 + 27 Tests bestanden. Desktop-Debug-Build bestanden. PR-CI für diese Änderung folgt; keine erneuten Installer-Builds.
+
+## Vorbereitung 0.1.4/Build 5
+
+PASS: Chat-PR #50 mit drei grünen Plattformprüfungen gemergt. Neue Produktversion/Buildnummer auf eigenem Versionsbranch; keine veröffentlichten Dateien ersetzt. Native neue Installer, Notarisierung, Release-Entwurf und Feed-Veröffentlichung folgen.
