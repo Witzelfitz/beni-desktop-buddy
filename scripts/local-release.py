@@ -25,7 +25,8 @@ spec.loader.exec_module(package)
 REPO = "Witzelfitz/beni-desktop-buddy"
 MAX_PACKAGE_BYTES = 128 * 1024 * 1024
 BUILD_INPUTS = ("Cargo.toml", "Cargo.lock", "rust-toolchain.toml", "apps", "crates", "vendor", "assets",
-                "integrations", "packaging", "LICENSE.md", "LICENSE-MIT", "docs/INTEGRATIONS.md")
+                "integrations", "packaging", "scripts/package-macos.py", "scripts/package-portable.py",
+                "LICENSE.md", "LICENSE-MIT", "docs/INTEGRATIONS.md")
 
 
 class ReleaseError(Exception):
@@ -79,10 +80,17 @@ def check_catalog(version, build, trusted):
             raise ReleaseError("Release-Tag oder global steigende Buildnummer stimmt nicht.")
 
 
-def build_fingerprint(commit):
+def build_fingerprint(commit, target=None):
     if not re.fullmatch(r"[0-9a-f]{40}", commit):
         raise ReleaseError("Build-Commit ist ungültig.")
-    records = command(["git", "ls-tree", "-rz", commit, "--", *BUILD_INPUTS])
+    inputs = BUILD_INPUTS
+    if target is not None:
+        if target not in ('macos','windows','linux'): raise ReleaseError('Ungültige Build-Plattform.')
+        common = tuple(p for p in BUILD_INPUTS if p != 'packaging' and not p.startswith('scripts/package-'))
+        specific = ('packaging/macos', 'scripts/package-macos.py') if target=='macos' else (
+            'packaging/'+target, 'packaging/tools.json', 'scripts/package-portable.py')
+        inputs = common + specific
+    records = command(["git", "ls-tree", "-rz", commit, "--", *inputs])
     if not records:
         raise ReleaseError("Produkteingaben fehlen.")
     return hashlib.sha256(records).hexdigest()
@@ -99,7 +107,7 @@ def reviewed_run(run, architecture, jobs, current_commit):
     if not re.fullmatch(r"[0-9a-f]{40}", sha):
         raise ReleaseError("Installer-Commit ist ungültig.")
     command(["git", "merge-base", "--is-ancestor", sha, "origin/main"])
-    if build_fingerprint(sha) != build_fingerprint(current_commit):
+    if build_fingerprint(sha, 'macos') != build_fingerprint(current_commit, 'macos'):
         raise ReleaseError("Native Installer und lokaler Stand haben unterschiedliche Produkteingaben.")
     runner = "macos-15" if architecture == "aarch64" else "macos-15-intel"
     selected = [j for j in jobs if j.get("name") == f"installer ({architecture}, {runner})"]
@@ -187,7 +195,7 @@ def download_portable(run_id, target, directory, current_commit):
     sha = run.get('head_sha', '')
     if not re.fullmatch(r'[0-9a-f]{40}', sha): raise ReleaseError('Ungültiger Installer-Commit.')
     command(['git', 'merge-base', '--is-ancestor', sha, 'origin/main'])
-    if build_fingerprint(sha) != build_fingerprint(current_commit):
+    if build_fingerprint(sha, target) != build_fingerprint(current_commit, target):
         raise ReleaseError('Native Pakete haben unterschiedliche Produkteingaben.')
     runner = 'windows-2025' if target == 'windows' else 'ubuntu-22.04'
     jobs = api(f'actions/runs/{run_id}/jobs?per_page=100')['jobs']

@@ -70,8 +70,8 @@ Section "Beni Buddy"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\io.witzelfitz.beni-buddy" "Publisher" "Witzelfitz Consulting GmbH"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\io.witzelfitz.beni-buddy" "InstallLocation" "$INSTDIR"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\io.witzelfitz.beni-buddy" "DisplayIcon" "$INSTDIR\beni-desktop-buddy.exe"
-  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\io.witzelfitz.beni-buddy" "UninstallString" '$"$INSTDIR\Uninstall.exe$"'
-  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\io.witzelfitz.beni-buddy" "QuietUninstallString" '$"$INSTDIR\Uninstall.exe$" /S'
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\io.witzelfitz.beni-buddy" "UninstallString" '"$INSTDIR\Uninstall.exe"'
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\io.witzelfitz.beni-buddy" "QuietUninstallString" '"$INSTDIR\Uninstall.exe" /S'
   WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\io.witzelfitz.beni-buddy" "NoModify" 1
   WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\io.witzelfitz.beni-buddy" "NoRepair" 1
 SectionEnd

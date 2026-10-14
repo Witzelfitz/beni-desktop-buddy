@@ -10,6 +10,7 @@ import json
 import os
 from pathlib import Path
 import stat
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -93,6 +94,27 @@ class LocalReleaseTests(unittest.TestCase):
         # Historical release fixtures must remain independent of the next product version.
         versions = patch.object(release, 'check_versions', return_value=('0.1.0', 1))
         versions.start(); self.addCleanup(versions.stop)
+
+    def test_platform_inputs_allow_unrelated_changes_but_reject_product_changes(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            def git(*args):
+                return subprocess.check_output(['git',*args],cwd=root).decode().strip()
+            def commit():
+                git('add','.'); git('-c','user.name=Fixture','-c','user.email=fixture@example.invalid','commit','-qm','fixture')
+                return git('rev-parse','HEAD')
+            git('init','-q','--initial-branch=fixture')
+            (root/'Cargo.toml').write_text('common product')
+            for target in ('macos','windows'):
+                path = root/'packaging'/target/'input'; path.parent.mkdir(parents=True); path.write_text('original')
+            first = commit()
+            (root/'packaging/windows/input').write_text('fixed Windows installer'); second = commit()
+            (root/'Cargo.toml').write_text('changed product'); third = commit()
+            with patch.object(release,'ROOT',root):
+                self.assertEqual(release.build_fingerprint(first,'macos'),release.build_fingerprint(second,'macos'))
+                self.assertNotEqual(release.build_fingerprint(first,'windows'),release.build_fingerprint(second,'windows'))
+                for target in ('windows','macos'):
+                    self.assertNotEqual(release.build_fingerprint(second,target),release.build_fingerprint(third,target))
 
     def test_native_portable_bytes_and_required_window_proofs(self):
         for target in ('windows','linux'):
