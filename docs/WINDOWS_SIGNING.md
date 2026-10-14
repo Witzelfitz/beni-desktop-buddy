@@ -1,6 +1,6 @@
 # Windows-Herausgebersignatur einrichten
 
-Stand: 14. Oktober 2026. Die Kosten für Artifact Signing Basic sind ausdrücklich freigegeben. Anmeldung im Azure-Portal ist bestätigt; Einrichtung des regulären Abonnements läuft gemeinsam mit dem Nutzer. Es wurde noch keine Signierressource angelegt. Die Installer-Pipeline baut derzeit ohne Authenticode-Herausgebersignatur. Unsere Ed25519-Downloadsignatur ersetzt diese nicht.
+Stand: 14. Oktober 2026. Kosten für Artifact Signing Basic ausdrücklich freigegeben. Aktives Azure-Abonnement mit Besitzerrolle und `Microsoft.CodeSigning`-Registrierung durch den Nutzer bestätigt. Konto `witzelfitzbeni` in Ressourcengruppe `beni-release-signing`, Switzerland North, Basic und Konto-URI im Portal-Screenshot geprüft. Die Identity-Verifier-Rolle wurde dem eigenen Benutzerkonto zugewiesen. **Nächster Schritt: öffentliche Firmenprüfung.** Noch kein Public-Trust-Profil, keine OIDC-Anbindung und keine Authenticode-Signierung. Die Ed25519-Downloadsignatur ersetzt diese nicht.
 
 ## 1. Azure-Abonnement
 
@@ -40,6 +40,7 @@ Auch ein korrekt signierter neuer Download kann anfangs eine [SmartScreen-Reputa
 
 ## Abnahme
 
-- **PASS:** Preis und Schweizer Organisationsverfügbarkeit anhand offizieller Quellen geprüft; Anleitung vorbereitet.
-- **NOT_RUN:** Abonnement, Ressourcen, Firmenprüfung, OIDC-Anbindung und Authenticode-Signierung. Dafür fehlen derzeit Abonnement und freigegebene Ressourcen.
-- **Separat:** Windows-Installer und Linux-AppImage werden ohne diesen externen Schritt gebaut und auf nativen Runnern abgenommen. Öffentliche Verfügbarkeit ist im Release und auf der Downloadseite zu bestätigen.
+- **PASS:** Preis und Schweizer Organisationsverfügbarkeit anhand offizieller Quellen geprüft; Basic-Kosten freigegeben. Aktives Abonnement/Provider-Registrierung durch den Nutzer bestätigt; Basic-Konto mit Region und URI im Portal-Screenshot geprüft; eigene Identity-Verifier-Rolle zugewiesen.
+- **PASS Windows-Paket:** Nativer Installer und eigenes Fenster auf dem Server-2025-Runner mit isoliertem Mesa-Softwaretreiber abgenommen, [Run 38537805266](https://github.com/Witzelfitz/beni-desktop-buddy/actions/runs/38537805266). Diese unsigned Ausgabe ist nicht als öffentlicher Download angeboten.
+- **NOT_RUN:** Öffentliche Firmenprüfung, Public-Trust-Profil, OIDC, Authenticode und öffentliche Windows-Veröffentlichung. Bisher wird der Nutzer durch die Portal-Einrichtung geführt; keine API-Anmeldung für Azure eingerichtet. Identitätsnachweise und allfällige weitere Microsoft-Prüfung bleiben beim Nutzer/Microsoft.
+- **Separat abgeschlossen:** Linux-AppImage und beide Mac-DMGs sind als 0.1.1 öffentlich verfügbar und auf der Downloadseite geprüft; siehe [Installerabnahme](PORTABLE_INSTALLERS.md).

@@ -86,3 +86,17 @@ Die lokalen Erinnerungen wurden am 13. Oktober 2026 im signierten macOS-Bundle m
 Am 14. Oktober 2026 wurde der gemeinsame Release-Kandidat 0.1.0/Build 1 lokal aus dem nativen Installer-Lauf `38472531951` erzeugt. Beide Apps und DMGs sind Developer-ID-signiert, von Apple akzeptiert und mit Tickets/Gatekeeper geprüft. Die finalen DMGs wurden schreibgeschützt geöffnet und ihre Apps in temporäre Ordner kopiert: Inhalt, Version, Architektur, ausführbare Dateien und Signaturen bestanden; ARM-CLI nativ mit `validate-assets` gestartet, anschliessend Kopien entfernt und Volumes ausgeworfen. Alle zehn lokalen Dateien sind unverändert authentifiziert. Die acht hochgeladenen Release-Dateien wurden aus dem unveröffentlichten GitHub-Entwurf zurückgeladen und gegen lokale Bytes und Signaturen geprüft. Kein finales GUI-Fenster gestartet und keine Intel-CLI auf ARM ausgeführt; native Entwicklungs-GUI-Abnahmen auf macOS 15.7.9 ersetzen diese offenen finalen Prüfungen nicht. Bestehende Programme-Installation und Hooks unverändert.
 
 Nach PR #31/#32 bestehen am 14. Oktober 2026 auch beide finalen Developer-ID-Pakete die [native Abnahme](https://github.com/Witzelfitz/beni-desktop-buddy/actions/runs/38524476222) auf macOS 15.7.9: enthaltene CLI und eigenes sichtbares Fenster, Installation, Signaturen/Tickets/Gatekeeper und vollständige Entfernung. Die heruntergeladenen Abnahmebelege passen zu den finalen Paket-Hashes. Release 0.1.0/Build 1 ist veröffentlicht; alle acht anonymen HTTPS-Downloads stimmen bytegenau mit dem authentifizierten lokalen Kandidaten überein. Die zuvor offene finale GUI-/Intel-CLI-Abnahme ist damit erledigt. Exakte 15.0-/11.0-Geräte und frische Nutzerbedienung bleiben offen.
+
+
+## Installer-Ergänzung 0.1.1, 14. Oktober 2026
+
+| Prüfung | macOS Intel/ARM | Windows x86_64 | Linux X11 | Linux Wayland |
+| --- | --- | --- | --- | --- |
+| Installation / CLI / eigenes sichtbares Fenster bzw. konfigurierte Oberfläche / Deinstallation | PASS, 15.7.9 | PASS, Server 2025 mit Mesa-Testtreiber | PASS, Ubuntu 22.04 | PASS, Ubuntu 22.04 |
+| Laufende App vor Überschreiben/Deinstallation schützen | NOT_RUN | PASS | NOT_RUN | NOT_RUN |
+| AppImage-Menüeinbindung/-entfernung / zusätzliche Dateien erhalten | NOT_RUN | NOT_RUN | PASS | PASS (gemeinsamer Installer) |
+| Finale Publisher-Signatur / native finale Paketabnahme | PASS, Developer ID + Apple-Notarisierung | NOT_RUN | Ed25519 PASS; native Paketbytes unverändert | Ed25519 PASS; native Paketbytes unverändert |
+| Öffentliche Downloads / authentifizierter Katalog / echte Live-Browserauswahl | PASS, 0.1.1 | NOT_RUN, wartet auf Microsoft-Signierung | PASS, 0.1.1 | PASS, gleiches AppImage |
+| Physische Windows-11-/Linux-Desktop-/GPU-Abnahme / echte Updates | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |
+
+Belege: [Linux](https://github.com/Witzelfitz/beni-desktop-buddy/actions/runs/38536064173), [Windows](https://github.com/Witzelfitz/beni-desktop-buddy/actions/runs/38537805266), [finale Mac-DMGs](https://github.com/Witzelfitz/beni-desktop-buddy/actions/runs/38538384964). Die älteren Zeilen oben halten die früheren manuellen Produktabnahmen fest. Diese Ergänzung bestätigt Installer und native Smoke-Tests, keine vollständige manuelle Bedienung auf Windows/Linux. Elf öffentliche Dateien wurden anonym zurückgeladen und bytegleich/authentifiziert geprüft. Das Linux-AppImage wurde zusätzlich über den echten Downloadbutton der Live-Seite geladen und per Hash verglichen.
