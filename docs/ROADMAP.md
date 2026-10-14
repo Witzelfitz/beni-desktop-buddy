@@ -1,6 +1,6 @@
 # Roadmap
 
-Der verbindliche nächste Arbeitsabschnitt steht im [Masterplan für Distribution, Updates und KI](MASTERPLAN.md). R0/R1 sind abgeschlossen. R2: PR #25/#27/#28 gemergt, erstes Apple-Silicon-DMG notarisiert/installiert, beide nativen Entwicklungsinstaller auf macOS 15.7.9 bestanden. Gemeinsamer Release-Kandidat wartet auf 1Password-Zugriff; finale GUI-/Alt-OS-Abnahmen und öffentliche Downloads bleiben offen. Den Plan bei jeder Fortsetzung lesen und nach jedem abgeschlossenen PR aktualisieren.
+Der verbindliche nächste Arbeitsabschnitt steht im [Masterplan für Distribution, Updates und KI](MASTERPLAN.md). R0/R1 sind abgeschlossen. R2: lokale Pipeline gemergt, beide nativen Entwicklungsinstaller auf macOS 15.7.9 bestanden. Der echte gemeinsame Release-Kandidat für Intel und Apple Silicon ist signiert, notarisiert und geprüft; alle acht Assets des unveröffentlichten Release-Entwurfs wurden bytegleich zurückgeladen und authentifiziert. Finale native GUI-/Intel-CLI-/Alt-OS-Abnahmen und öffentliche Freigabe bleiben offen. Den Plan bei jeder Fortsetzung lesen und nach jedem abgeschlossenen PR aktualisieren.
 
 ## 1 · Desktop-Abnahme und erster Build
 
@@ -46,7 +46,7 @@ Abnahme: Zeit und Ereignisse sind testbar; Nachrichten sind begrenzt; externe St
 
 - Erledigt in PR #23: gemeinsamer [Release-Vertrag](RELEASES.md) mit Schema, Stable-/Beta-Beispielen, Offline-Prüfung und verbindlicher Cargo-Version/Buildnummer. Öffentliche Installer und echte Updateprüfung bleiben Folgearbeit.
 - Gemergt in PR #25: [macOS-DMG und Release-Buildweg](MACOS_INSTALLER.md), erstes Apple-Silicon-DMG tatsächlich notarisiert, Tickets/Gatekeeper und Nutzerinstallation bestanden. PR #28 korrigiert die Intel-Signierreihenfolge; beide nativen Entwicklungsinstaller auf macOS 15.7.9 geprüft.
-- Gemergt in PR #27: [lokale Release-Pipeline](LOCAL_RELEASE.md) nach [ADR 0003](adr/0003-local-release-signing.md). Native CI ohne Apple-Schlüssel, lokale Signierung/Notarisierung und Ed25519 für Pakete/Manifest. Echte gemeinsame Kandidatenerzeugung wartet auf 1Password-Schlüsselzugriff; Veröffentlichung bleibt ein eigener Schritt. Actions-Signing-Secrets nicht erforderlich.
+- Gemergt in PR #27: [lokale Release-Pipeline](LOCAL_RELEASE.md) nach [ADR 0003](adr/0003-local-release-signing.md). Native CI ohne Apple-Schlüssel, lokale Signierung/Notarisierung und Ed25519 für Pakete/Manifest. Echter gemeinsamer Kandidat 0.1.0/Build 1 für Intel und Apple Silicon erstellt und geprüft, Release-Entwurf mit acht zurückgeladenen/authentifizierten Assets vorhanden. Öffentliche Veröffentlichung bleibt ein eigener Schritt. Actions-Signing-Secrets nicht erforderlich.
 - Erledigt: Beni-App-Icon (PNG/ICNS/ICO), Windows-Exe-Ressource und Linux-Desktop-Vorlage in den plattformspezifischen Paketen.
 - Erledigt: macOS-Entwicklungsbundle ad hoc signieren und streng prüfen; Apple-Silicon-Release mit Developer ID signieren und notarisieren. Windows-Signierung bleibt offen.
 - Reproduzierbare Releases aus freigegebenen Tags.
