@@ -25,12 +25,58 @@ def stop(process):
         except subprocess.TimeoutExpired: process.kill(); process.wait(timeout=5)
 
 
-def wait_window(process, check):
+def startup_summary(process, log, label):
+    """Only fixed categories and numeric exits; never echo application output."""
+    status = process.poll()
+    details = ['Prozess läuft' if status is None else f'Prozess-Exitcode {status}']
+    if log is not None:
+        # Wayland protocol output can be long; the final error is at the end.
+        log.seek(0, os.SEEK_END)
+        log.seek(max(0, log.tell() - 16 * 1024))
+        output = log.read(16 * 1024).decode(errors='replace').lower()
+        panic = re.search(r'panicked at (?:[^\s:]+/)*([a-z0-9_.-]{1,80}\.rs):([0-9]{1,6})(?::([0-9]{1,5}))?', output)
+        if panic:
+            details.append('Panikstelle ' + ':'.join(part for part in panic.groups() if part is not None))
+        for marker, category in (
+            ('panicked at', 'Rust-Panik'), ('error while loading shared libraries', 'Fehlende Laufzeitbibliothek'),
+            ('glibc_', 'GLIBC-Konflikt'), ('winit', 'Winit'), ('glutin', 'Glutin'),
+            ('wayland', 'Wayland'), ('x11', 'X11'), ('opengl', 'OpenGL'), ('egl', 'EGL'),
+            ('dbus', 'D-Bus'), ('d-bus', 'D-Bus'), ('display', 'Display'),
+            ('xopendisplayfailed', 'XOpenDisplayFailed'), ('xnotsupported', 'XNotSupported'),
+            ('notsupported', 'NotSupported'), ('not supported', 'Nicht unterstützt'),
+            ('unsupported', 'Unsupported'), ('protocolerror', 'ProtocolError'),
+            ('protocol error', 'Protokollfehler'), ('connectionclosed', 'ConnectionClosed'),
+            ('broken pipe', 'Broken pipe'), ('invalidsize', 'InvalidSize'),
+            ('initializationfailed', 'InitializationFailed'), ('exitfailure', 'ExitFailure'),
+            ('eventloopclosed', 'EventLoopClosed'), ('cannotconnect', 'CannotConnect'),
+            ('badmessage', 'BadMessage'), ('invalidid', 'InvalidId'), ('ioerror', 'IoError'),
+            ('connection reset', 'Verbindung zurückgesetzt'),
+        ):
+            if marker in output and category not in details: details.append(category)
+        code = re.search(r'(?:raw_code: some\(|code: )(-?[0-9]{1,6})\b', output)
+        if code: details.append('Öffentlicher Fehlercode ' + code[1])
+        for line in output.splitlines():
+            if 'error' not in line: continue
+            for marker, category in (
+                ('xdg_surface', 'xdg_surface'), ('xdg_toplevel', 'xdg_toplevel'),
+                ('wl_surface', 'wl_surface'), ('wl_registry', 'wl_registry'),
+                ('never been configured', 'Surface noch nicht konfiguriert'),
+                ('unconfigured', 'Unconfigured'), ('invalid', 'Invalid'),
+                ('min_size', 'MinSize'), ('max_size', 'MaxSize'), ('buffer', 'Buffer'),
+                ('geometry', 'Geometry'), ('serial', 'Serial'), ('size', 'Size'),
+            ):
+                if marker in line and category not in details: details.append(category)
+            protocol_code = re.search(r'\.error\([^,]+,\s*([0-9]{1,5})\b', line)
+            if protocol_code: details.append('Wayland-Protokollcode ' + protocol_code[1])
+    return f'{label}: ' + '; '.join(details) + '.'
+
+
+def wait_window(process, check, *, label='Fensterstart', log=None):
     deadline = time.monotonic()+25
     while time.monotonic() < deadline and process.poll() is None:
         if check(): return
         time.sleep(0.5)
-    raise package.PackagingError('Die installierte App hat kein eigenes sichtbares Fenster geöffnet.')
+    raise package.PackagingError('Die installierte App hat kein eigenes sichtbares Fenster geöffnet. ' + startup_summary(process, log, label))
 
 
 def windows(image, folder):
@@ -89,13 +135,16 @@ def linux(image, folder):
         process = subprocess.Popen([str(appdir/'AppRun')], env=dict(env, WINIT_UNIX_BACKEND='x11'), stdout=log, stderr=log)
         try:
             wait_window(process, lambda: subprocess.run(['xdotool','search','--onlyvisible','--pid',str(process.pid)],
-                                                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=5).returncode == 0)
+                                                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=5).returncode == 0,
+                        label='Linux/X11', log=log)
         finally: stop(process)
     runtime = folder/'wayland-runtime'; runtime.mkdir(mode=0o700)
     wayland_env = dict(env, XDG_RUNTIME_DIR=str(runtime), WAYLAND_DISPLAY='beni-test', WINIT_UNIX_BACKEND='wayland', WAYLAND_DEBUG='1')
     wayland_env.pop('DISPLAY', None)
     with tempfile.TemporaryFile() as weston_log, tempfile.TemporaryFile() as client_log:
-        compositor = subprocess.Popen(['weston','--backend=headless-backend.so','--use-pixman','--no-config','--socket=beni-test','--idle-time=0'],
+        # Weston 10's headless Pixman renderer crashed in the native 0.1.5 probe.
+        # Exercise the actual GL client with software Mesa and Weston's GL renderer.
+        compositor = subprocess.Popen(['weston','--backend=headless-backend.so','--use-gl','--no-config','--socket=beni-test','--idle-time=0'],
                                      env=wayland_env, stdout=weston_log, stderr=weston_log)
         try:
             deadline = time.monotonic()+15
@@ -103,9 +152,12 @@ def linux(image, folder):
             if not (runtime/'beni-test').exists(): raise package.PackagingError('Wayland-Testcompositor startet nicht.')
             process = subprocess.Popen([str(appdir/'AppRun')], env=wayland_env, stdout=client_log, stderr=client_log)
             def configured():
+                if compositor.poll() is not None: return False
                 client_log.seek(0); protocol = client_log.read().decode(errors='replace')
                 return 'xdg_toplevel' in protocol and 'set_title(' in protocol and 'ack_configure(' in protocol and '.commit(' in protocol
-            try: wait_window(process, configured)
+            try: wait_window(process, configured, label='Linux/Wayland', log=client_log)
+            except package.PackagingError as error:
+                raise package.PackagingError(str(error) + ' ' + startup_summary(compositor, weston_log, 'Testcompositor')) from error
             finally: stop(process)
         finally: stop(compositor)
     package.run([str(image),'--install-desktop'], 'Linux-Menü explizit installieren', env=env)

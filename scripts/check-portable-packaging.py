@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """Offline installer tests; no builds, signing keys or installed applications."""
 import importlib.util
+import io
 from pathlib import Path
 import struct
 import subprocess
 import tempfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 
 def load(name, path):
@@ -18,6 +19,51 @@ def load(name, path):
 ROOT = Path(__file__).resolve().parents[1]
 package = load('portable_package', ROOT / 'scripts/package-portable.py')
 menu = load('linux_menu', ROOT / 'packaging/linux/install-desktop.py')
+installer = load('portable_installer', ROOT / 'scripts/check-portable-installer.py')
+
+
+class StartupDiagnosticsTests(unittest.TestCase):
+    def test_failure_identifies_backend_and_exit_without_echoing_output(self):
+        process = Mock(); process.poll.return_value = 1
+        log = io.BytesIO(b'protocol-output\n' * 2000 + b'Error: Glutin: EGL Display failed. secret-token user-text\n')
+        with self.assertRaises(installer.package.PackagingError) as failure:
+            installer.wait_window(process, lambda: False, label='Linux/Wayland', log=log)
+        message = str(failure.exception)
+        self.assertIn('Linux/Wayland', message); self.assertIn('Prozess-Exitcode 1', message)
+        self.assertIn('Glutin', message); self.assertIn('EGL', message)
+        self.assertNotIn('secret-token', message); self.assertNotIn('user-text', message)
+
+    def test_panic_location_excludes_paths_and_raw_message(self):
+        process = Mock(); process.poll.return_value = 101
+        log = io.BytesIO(b"thread 'main' panicked at /private/user/path/app.rs:10:7:\nsecret-message\n")
+        message = installer.startup_summary(process, log, 'Linux/Wayland')
+        self.assertIn('Panikstelle app.rs:10:7', message)
+        self.assertNotIn('/private', message); self.assertNotIn('secret-message', message)
+
+    def test_fixed_winit_error_kinds_and_numeric_codes_are_public(self):
+        process = Mock(); process.poll.return_value = 1
+        log = io.BytesIO(b'Error: Winit(Os(XNotSupported(XOpenDisplayFailed))) code: 5 secret-message')
+        message = installer.startup_summary(process, log, 'Linux/Wayland')
+        self.assertIn('XOpenDisplayFailed', message); self.assertIn('Öffentlicher Fehlercode 5', message)
+        self.assertNotIn('secret-message', message)
+
+    def test_wayland_protocol_reason_is_fixed_and_ignores_successful_requests(self):
+        process = Mock(); process.poll.return_value = 1
+        output = b'xdg_toplevel.set_min_size(300, 400)\nwl_display@1.error(20, 3, "xdg_surface has never been configured secret")\n'
+        message = installer.startup_summary(process, io.BytesIO(output), 'Linux/Wayland')
+        self.assertIn('Surface noch nicht konfiguriert', message)
+        self.assertIn('Wayland-Protokollcode 3', message)
+        self.assertNotIn('MinSize', message); self.assertNotIn('secret', message)
+
+    def test_live_window_success_does_not_read_logs_and_timeout_stays_a_failure(self):
+        process = Mock(); process.poll.return_value = None
+        log = Mock()
+        installer.wait_window(process, lambda: True, label='Linux/X11', log=log)
+        log.read.assert_not_called()
+        with patch.object(installer.time, 'monotonic', side_effect=[0, 26]):
+            with self.assertRaises(installer.package.PackagingError) as failure:
+                installer.wait_window(process, lambda: False, label='Linux/X11')
+        self.assertIn('Prozess läuft', str(failure.exception))
 
 
 class InstallerTests(unittest.TestCase):
