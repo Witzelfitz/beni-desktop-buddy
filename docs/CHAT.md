@@ -1,10 +1,10 @@
 # Mit Beni reden
 
-Verfügbar ab [0.1.4/Build 5](https://github.com/Witzelfitz/beni-desktop-buddy/releases/tag/v0.1.4) für macOS und Linux. Auf dem Mac über das Menüleistensymbol aktualisieren, unter Linux das neue AppImage manuell ersetzen. Windows-Veröffentlichung wartet ausdrücklich auf die Microsoft-Firmenprüfung und Herausgebersignatur. Chatfenster und lokaler Ollama-Adapter sind auf macOS geprüft; echte Windows-/Linux-Chatgespräche bleiben separat offen. Version 0.1.3 enthält diesen Chat noch nicht. Claude und OpenAI sowie ein allgemeiner Ersteinrichtungsdialog folgen separat.
+Aktuell [0.1.5/Build 6](https://github.com/Witzelfitz/beni-desktop-buddy/releases/tag/v0.1.5) für macOS und Linux. Auf dem Mac über das Menüleistensymbol aktualisieren, unter Linux das neue AppImage manuell ersetzen. Windows-Veröffentlichung wartet ausdrücklich auf die Microsoft-Firmenprüfung und Herausgebersignatur. Gesprächsblase und lokaler Ollama-Adapter sind auf macOS geprüft; echte Windows-/Linux-Chatgespräche bleiben separat offen. Version 0.1.3 enthält diesen Chat noch nicht. Claude und OpenAI sowie ein allgemeiner Ersteinrichtungsdialog folgen separat.
 
-## Nächste Version: Gespräch direkt bei Beni
+## Gespräch direkt bei Beni
 
-Im aktuellen Entwicklungs-PR hängt die Gesprächsblase an der Figur, im selben transparenten Buddy-Fenster. Das separate Chatfenster entfällt. Beni behält möglichst seine Grösse und Position: Die Blase erscheint darüber, bei wenig Platz oben seitlich. Bildschirmwechsel lösen eine erneute Grössenprüfung aus; auf Wayland bestimmt weiterhin der Compositor die absolute Fensterposition. Bei sehr kleinen Bildschirmen kann die Figur während des Gesprächs kleiner dargestellt werden.
+Seit 0.1.5 hängt die Gesprächsblase an der Figur, im selben transparenten Buddy-Fenster. Das separate Chatfenster entfällt. Beni behält möglichst seine Grösse und Position: Die Blase erscheint darüber, bei wenig Platz oben seitlich. Bildschirmwechsel lösen eine erneute Grössenprüfung aus; auf Wayland bestimmt weiterhin der Compositor die absolute Fensterposition. Bei sehr kleinen Bildschirmen kann die Figur während des Gesprächs kleiner dargestellt werden.
 
 Beni antwortet ausdrücklich in sauberem Hochdeutsch mit Schweizer Rechtschreibung, niemals in Dialekt. Eszett wird vor der Anzeige in «ss» umgewandelt; bekannte Dialektgrüsse/-wörter führen zu einer sicheren Fehlermeldung. Diese Wortprüfung ergänzt die Modellvorgabe und ist keine vollständige Spracherkennung oder Grammatikprüfung.
 
@@ -27,11 +27,11 @@ Unbekannte Emotionen, zusätzliche Felder/Animationsnamen, falsche Version, leer
 
 «Verbindung & Kontext» enthält Modellwahl und genaue Vorschau. Nach Modellwahl oder Senden klappt die Einrichtung zu. Im Textfeld beendet Escape zuerst die Eingabe; ein weiteres Escape schliesst die Blase und bricht gegebenenfalls die Anfrage ab. Die normale Fensterposition wird separat von der vorübergehenden Gesprächsfläche gespeichert. Statusmeldungen werden bei offenem Gespräch weiter angenommen und im Verlauf geführt; ihre Blasen warten auf das Schliessen und bleiben an TTL gebunden.
 
-Diese Änderung ist noch nicht in einem neuen öffentlichen Installer enthalten. Die folgenden Angaben beschreiben die bereits veröffentlichte 0.1.4.
+0.1.4 verwendete noch ein eigenes Chatfenster. Mit 0.1.5 wird es durch die Gesprächsblase ersetzt; bestehende Modell-/Verbindungsauswahl bleibt erhalten.
 
 ## Öffnen und verbinden
 
-1. Beni anklicken: Die Bedienleiste klappt auf. «Reden» öffnet ein eigenes, verschiebbares und skalierbares Fenster. Unter «Mit Beni reden» ist dieselbe Aktion im Menüleistensymbol erreichbar, auch bei ausgeblendetem Buddy.
+1. Beni anklicken: Die Bedienleiste klappt auf. «Reden» öffnet die Gesprächsblase an der Figur. Unter «Mit Beni reden» ist dieselbe Aktion im Menüleistensymbol erreichbar, auch bei ausgeblendetem Buddy.
 2. «Lokales Ollama verbinden» wählen. Die Verbindung ist standardmässig aus; ohne diese Auswahl erfolgt keine Ollama-Abfrage.
 3. Ein vorhandenes lokales Textmodell wählen. Die Liste nennt Modellname und lokale Dateigrösse. Bild-, Embedding- und als remote/Cloud markierte Modelle werden ausgefiltert. Bei älteren Diensten ohne Fähigkeitsangaben wird kein ungeprüftes Modell freigeschaltet.
 4. Nachricht eingeben und «Senden» drücken. Cmd+Enter auf macOS beziehungsweise Ctrl+Enter auf Windows/Linux sendet ebenfalls; Enter fügt eine neue Zeile ein.
@@ -40,13 +40,13 @@ Der erste Adapter verwendet ausschliesslich `http://127.0.0.1:11434`, ohne Syste
 
 ## Gespräch und Bedienung
 
-Antworten erscheinen Stück für Stück im Chatfenster. Während Beni wartet, verwendet er die vorhandene «Denken»-Animation; bei sichtbarer Ausgabe «Reden». Animationspause und reduzierte Bewegung bleiben wirksam. Laufende Chats halten die normale Statusanzeige zurück; Statusmeldungen werden weiterhin getrennt angenommen und unterliegen ihren bestehenden TTL-Grenzen.
+Nach vollständiger JSON-Prüfung erscheinen kurze Antwortabschnitte in der Blase. Während Beni wartet, verwendet er die vorhandene «Denken»-Animation; danach die passende Geste je Abschnitt. Animationspause und reduzierte Bewegung bleiben wirksam. Laufende Chats halten die normale Statusanzeige zurück; Statusmeldungen werden weiterhin getrennt angenommen und unterliegen ihren bestehenden TTL-Grenzen.
 
-«Abbrechen» beendet eine laufende Anfrage. Auch das Schliessen des Chatfensters bricht eine laufende Antwort ab, beendet aber Beni nicht. «Chat leeren» entfernt die Gesprächspaare dieser Sitzung. Modellwechsel, Aktualisieren der Modellliste und «Ollama trennen» beginnen einen neuen Kontext. Eine neue Anfrage wartet, bis der bisherige Worker seine Verbindung freigegeben hat.
+«Abbrechen» beendet eine laufende Anfrage. Auch das Schliessen der Blase bricht eine laufende Antwort ab, beendet aber Beni nicht. «Gespräch leeren» entfernt die Gesprächspaare dieser Sitzung. Modellwechsel, Aktualisieren der Modellliste und «Ollama trennen» beginnen einen neuen Kontext. Eine neue Anfrage wartet, bis der bisherige Worker seine Verbindung freigegeben hat.
 
 «Kontext für diese Anfrage» zeigt vor dem Senden genau die begrenzten Nachrichten inklusive Benis Rolle, abgeschlossenen Gesprächspaaren und aktueller Frage. Unvollständige oder abgebrochene Antworten werden nicht in den nächsten Kontext übernommen. Hook-/Statusverlauf, Dateien, Zwischenablage, Bildschirm und Mikrofon sind nicht Bestandteil der Anfrage; Antworten führen keine Systemaktionen aus.
 
-Verbindungsauswahl und Modellname werden gespeichert. Chattexte bleiben ausschliesslich in der aktuellen App-Sitzung; ein App-Neustart beginnt einen leeren Chat. Ein Update-Neustart wird während einer aktiven Anfrage wie bei Timern zur Bestätigung angeboten. Vor dem Neustart werden die Auswahl gespeichert und der Worker abgebrochen.
+Verbindungsauswahl und Modellname werden gespeichert. Chattexte bleiben ausschliesslich in der aktuellen App-Sitzung; ein App-Neustart beginnt einen leeren Chat. Ein Update-Neustart wird während einer aktiven Anfrage oder laufenden Abschnittsfolge wie bei Timern zur Bestätigung angeboten. Vor dem Neustart werden die Auswahl gespeichert und der Worker abgebrochen.
 
 ## Grenzen und Fehler
 
@@ -67,7 +67,7 @@ cargo test --manifest-path apps/desktop/Cargo.toml --locked \
   real_local_ollama_answers_without_downloading_a_model -- --ignored
 ```
 
-Dieser gezielte Test verwendet ein bereits vorhandenes lokales Chatmodell und einen festen, kurzen Testsatz. Er lädt keine Modelle herunter und verwendet keine Cloud-Keys. Native macOS-Abnahme: Klickzugang, eigenes Fenster, lokale Modellwahl, echte Antwort, Mindestgrösse, Modell-Popup schliessen, Abbruch und gespeicherte Modellwahl nach Neustart. Finale 0.1.4-Installer bestehen Installation, CLI, eigenes Fenster und Entfernung auf beiden Mac-Zielen sowie Linux/X11/Wayland. Echte Windows-/Linux-Chatgespräche und tatsächlicher Nutzer-Chat nach dem Update bleiben separat offen; siehe [Testmatrix](TEST_MATRIX.md).
+Dieser gezielte Test verwendet ein bereits vorhandenes lokales Chatmodell und einen festen, kurzen Testsatz. Er lädt keine Modelle herunter und verwendet keine Cloud-Keys. Native macOS-Abnahme: Klickzugang, eine native Fläche mit oberer/seitlicher Blase und erhaltenem Avataranker, lokale Modellwahl, echte Antwort, Mindestgrösse, Modell-Popup schliessen, Abbruch und gespeicherte Modellwahl nach Neustart. Finale 0.1.5-Installer bestehen Installation, CLI, sichtbares Buddy-Fenster und Entfernung auf beiden Mac-Zielen sowie Linux/X11/Wayland. Echte Windows-/Linux-Chatgespräche und tatsächlicher Nutzer-Chat nach dem Update bleiben separat offen; siehe [Testmatrix](TEST_MATRIX.md).
 
 Referenzen: [Ollama Chat](https://docs.ollama.com/api/chat), [Streaming](https://docs.ollama.com/api/streaming), [Modellliste](https://docs.ollama.com/api/tags), [offizieller API-Vertrag für Fähigkeits-/Remote-Angaben](https://github.com/ollama/ollama/blob/main/api/types.go), [reqwest 0.13.5](https://docs.rs/reqwest/0.13.5/reqwest/struct.ClientBuilder.html).
 

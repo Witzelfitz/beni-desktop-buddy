@@ -301,3 +301,26 @@ Root-/Desktop-fmt, Tests und Clippy bestehen lokal: 47 Roottests und 107 Desktop
 ## Vorbereitung 0.1.5/Build 6
 
 PASS: Gesprächsblase und JSON-Emotionen aus PR #54 gemergt; drei Plattformprüfungen für PR und main grün. Neue Produktversion/Buildnummer auf eigenem Versionsbranch. Keine veröffentlichten Dateien ersetzt. Neue native Mac-/Linux-Installer, lokale Apple-Signierung und finale Paketabnahme folgen; Windows-Veröffentlichung bleibt auf Nutzerwunsch zurückgestellt.
+
+## Veröffentlichung 0.1.5/Build 6, 14. Oktober 2026
+
+| Prüfung | Ergebnis |
+| --- | --- |
+| Feature PR #54, Version PR #55, Testkorrektur PR #56 und main auf drei Plattformen | PASS, gemergt; 47 Root- und 107 Desktoptests, fmt und Clippy; gezielter lokaler Ollama-Test zur Feature-Abnahme zusätzlich |
+| Native Entwicklungsinstaller für Apple Silicon und Intel | PASS, Lauf 38619138645, Quellcommit 98523f91881f21e7615b0efd27bd8dc23ba9ca85 |
+| Erste Linux-Startabnahmen und Diagnoseläufe | FAIL, sechs Startversuche vor der Korrektur; X11 bestanden, Wayland-Verbindung abgebrochen. Die letzte genaue Diagnose zeigt Weston mit Exitcode -11 und anschliessend Winit Broken pipe/ExitFailure; genaue interne Pixman-Absturzursache nicht belegt |
+| Begrenzte öffentliche Startdiagnose ohne rohe Anwendungsausgabe | PASS, 16 portable Packaging-Tests mit positiven/negativen Fenster-, Timeout-, Logende-, Fehlercode- und Redaktionsfällen |
+| Testumgebung mit Software-Mesa und headless GL statt Pixman | PASS, gezielter Linux-Lauf 38622799059; Compositor muss beim Fensternachweis noch laufen; keine übersprungene Abnahme oder Produktänderung |
+| Finale native Linux-Paketabnahme aus main | PASS, Lauf 38623458953, Ubuntu 22.04: AppImage-CLI, X11, Wayland und Menüinstallation/-entfernung |
+| Mac-Produkteingaben vor/nach Testkorrektur | PASS, Fingerabdrücke identisch; vorhandene native Mac-Builds übernommen, kein neuer Mac-Rust-Build |
+| Lokale Apps/DMGs: bestehende Developer ID, Apple-Notarisierung, Tickets/Gatekeeper, Ed25519 | PASS, beide Architekturen; gleiche Bundle-ID und gleicher Update-Vertrauensanker |
+| Release-Entwurf: genau 13 öffentliche Dateien, Remote-Digests und zurückgeladene Bytes | PASS, bytegleich und authentifiziert; lokale candidate.json-Belege nicht veröffentlicht |
+| Finale Intel- und Apple-Silicon-Installation, CLI, sichtbares eigenes Fenster und Entfernung | PASS, Lauf 38624849843, macOS 15.7.9; beide Belege stimmen mit finalen Paket-SHA, Version, Build und Quellcommit überein |
+| Öffentlicher Release 0.1.5, Tag und Latest | PASS, Release-ID 413106108, Tag auf 2879a23e9d5ca607bba00ac0218658eb7fda15f8; alle 13 anonymen Dateien bytegleich und authentifiziert |
+| Live-Katalog und beide Stable-Feeds | PASS, exakt 0.1.5/Build 6; XML bytegleich zum signierten Export; genau beide Macs und Linux x86_64, Beta bleibt 503 |
+| Download-Hilfe im eigenständigen Website-Repo | PASS, 57 Node-Tests auf Node 24.14.0 und Build; Website-PR #11 gemergt (d43b5b5), öffentliches HTML bytegleich zum geprüften Stand |
+| Windows-Veröffentlichung | BLOCKED, Firmenprüfung weiterhin offen; ausdrücklicher Nutzerwunsch zum Warten, kein neues Windows-Paket veröffentlicht |
+| Tatsächliches Nutzerupdate 0.1.4 → 0.1.5, Einstellungen/Hooks danach, Gespräch nach Update | NOT_RUN; Programme-App und Hook-Definitionen beim Rollout nicht verändert |
+| Native Windows-/Linux-Gespräche, physische Monitorwechsel und Sichtabnahme jeder Emotion | NOT_RUN; generische Zustandsprüfungen und native macOS-Feature-Abnahme dokumentiert |
+
+Die Paketquellen der beiden Macs liegen auf 98523f9, die Testkorrektur und neue native Linux-Abnahme auf 2879a23; die geprüften Produkteingaben sind identisch. 0.1.5 ist der neue gemeinsame Release, frühere Releases bleiben unverändert. Keine Modelle heruntergeladen, keine Cloud-Keys verwendet und keine Sprachausgabe ergänzt. Die öffentliche Updatekette ist geprüft; die Installation auf dem Nutzergerät wird ausdrücklich separat bestätigt.
