@@ -30,8 +30,13 @@ def startup_summary(process, log, label):
     status = process.poll()
     details = ['Prozess läuft' if status is None else f'Prozess-Exitcode {status}']
     if log is not None:
-        log.seek(0)
+        # Wayland protocol output can be long; the final error is at the end.
+        log.seek(0, os.SEEK_END)
+        log.seek(max(0, log.tell() - 16 * 1024))
         output = log.read(16 * 1024).decode(errors='replace').lower()
+        panic = re.search(r'panicked at (?:[^\s:]+/)*([a-z0-9_.-]{1,80}\.rs):([0-9]{1,6})(?::([0-9]{1,5}))?', output)
+        if panic:
+            details.append('Panikstelle ' + ':'.join(part for part in panic.groups() if part is not None))
         for marker, category in (
             ('panicked at', 'Rust-Panik'), ('error while loading shared libraries', 'Fehlende Laufzeitbibliothek'),
             ('glibc_', 'GLIBC-Konflikt'), ('winit', 'Winit'), ('glutin', 'Glutin'),

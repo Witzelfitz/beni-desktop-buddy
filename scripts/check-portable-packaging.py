@@ -25,13 +25,20 @@ installer = load('portable_installer', ROOT / 'scripts/check-portable-installer.
 class StartupDiagnosticsTests(unittest.TestCase):
     def test_failure_identifies_backend_and_exit_without_echoing_output(self):
         process = Mock(); process.poll.return_value = 1
-        log = io.BytesIO(b'Error: Glutin: EGL Display failed. secret-token user-text\n')
+        log = io.BytesIO(b'protocol-output\n' * 2000 + b'Error: Glutin: EGL Display failed. secret-token user-text\n')
         with self.assertRaises(installer.package.PackagingError) as failure:
             installer.wait_window(process, lambda: False, label='Linux/Wayland', log=log)
         message = str(failure.exception)
         self.assertIn('Linux/Wayland', message); self.assertIn('Prozess-Exitcode 1', message)
         self.assertIn('Glutin', message); self.assertIn('EGL', message)
         self.assertNotIn('secret-token', message); self.assertNotIn('user-text', message)
+
+    def test_panic_location_excludes_paths_and_raw_message(self):
+        process = Mock(); process.poll.return_value = 101
+        log = io.BytesIO(b"thread 'main' panicked at /private/user/path/app.rs:10:7:\nsecret-message\n")
+        message = installer.startup_summary(process, log, 'Linux/Wayland')
+        self.assertIn('Panikstelle app.rs:10:7', message)
+        self.assertNotIn('/private', message); self.assertNotIn('secret-message', message)
 
     def test_live_window_success_does_not_read_logs_and_timeout_stays_a_failure(self):
         process = Mock(); process.poll.return_value = None
