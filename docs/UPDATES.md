@@ -18,7 +18,7 @@ Das SDK wird beim Packaging anhand von `release/sparkle-sdk.json` geladen oder �
 
 `local-release.py export` prüft nochmals die tatsächlich kopierten Bytes und legt einen neuen Upload-Ordner an, ohne die privaten Kandidatenbelege. Es lädt nichts hoch. Auf der Website kommen `/updates/macos/aarch64/stable.xml` und `/updates/macos/x86_64/stable.xml` hinzu. Sie verwenden denselben vollständig authentifizierten Stable-Release wie `/api/downloads` und liefern die signierten XML-Bytes unverändert. Fehlt ein beworbener Feed oder stimmt er nicht, sind weder Update- noch Downloadlinks verfügbar. Ein alter v1-Release bietet weiterhin Downloads, aber noch keinen Update-Feed. Beta bleibt ohne eigenen Kanalverweis nicht verfügbar.
 
-Die Website-Unterstützung muss vor dem ersten v2-Release deployed sein. Danach folgt die neue updaterfähige Version; `release/update-policy.json` bleibt in diesem Vorbereitungsschritt ausgeschaltet. Der konkrete Ablauf steht im [Release-Ablauf](UPDATE_RELEASE_RUNBOOK.md).
+Die Website-Unterstützung muss vor dem ersten v2-Release deployed sein. Danach folgt die neue updaterfähige Version; Der Versions-PR für 0.1.2/Build 3 schaltet `release/update-policy.json` ausschliesslich für das neue Bundle ein. Veröffentlichung erst nach finaler Installer-Abnahme. Der konkrete Ablauf steht im [Release-Ablauf](UPDATE_RELEASE_RUNBOOK.md).
 
 ## Separate Appcast-Probe aus einem lokalen Kandidaten
 
@@ -71,7 +71,7 @@ Sie baut ein temporäres Testbundle, prüft Laden/Signaturen, gespeicherte autom
 
 Für eine getrennte GUI-Abnahme kann `BENI_BUDDY_DATA_DIR` einen absoluten Datenordner angeben. Relative Pfade werden abgelehnt. Der produktive Start verwendet weiterhin den bisherigen Standardpfad. Sparkle-Präferenzen müssen in Testkopien zusätzlich über einen eigenen `SUDefaultsDomain` isoliert werden; dieser muss sich vom Bundle-Identifier der Test-App unterscheiden.
 
-Nächste Schritte: vorbereitete Website-/Pipeline-PRs mergen und die Website deployen, neue Bootstrap-Version und echtes Update A → B. Downloadabbruch, nicht schreibbarer Installationsort und finaler Erhalt der Einstellungen nach Installation sind noch offen; siehe [ADR 0004](adr/0004-sparkle-update-chain.md).
+Website-/Pipeline-PRs sind gemergt, beide Feed-Routen sind live und warten mit 503 auf den neuen Release. Nächste Schritte: Bootstrap-Version 0.1.2 final abnehmen/veröffentlichen und echtes Update A → B. Downloadabbruch, nicht schreibbarer Installationsort und finaler Erhalt der Einstellungen nach Installation sind noch offen; siehe [ADR 0004](adr/0004-sparkle-update-chain.md).
 
 Die synchronen Persistenzprüfungen verwenden den tatsächlichen vendorten FileStorage-Quelltext:
 
