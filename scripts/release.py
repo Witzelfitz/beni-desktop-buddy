@@ -15,6 +15,10 @@ REPOSITORY = "https://github.com/Witzelfitz/beni-desktop-buddy"
 FORMATS = {"macos": "dmg", "windows": "exe", "linux": "appimage"}
 
 
+def feed_filename(architecture, channel):
+    return f"appcast-macos-{architecture}-{channel}.xml"
+
+
 def toml_file(path):
     return tomllib.loads(path.read_text(encoding="utf-8"))
 
@@ -72,7 +76,10 @@ def validate_manifest(manifest, expected_version=None, expected_build=None, chan
     # Import only for manifest checks; version stamping needs Python's standard library alone.
     from jsonschema import Draft202012Validator
 
-    schema = json.loads((ROOT / "release/schema-v1.json").read_text(encoding="utf-8"))
+    schema_version = manifest.get("schema_version") if isinstance(manifest, dict) else None
+    if type(schema_version) is not int or schema_version not in (1, 2):
+        raise ValueError("Unbekannte Release-Schema-Version.")
+    schema = json.loads((ROOT / f"release/schema-v{schema_version}.json").read_text(encoding="utf-8"))
     Draft202012Validator.check_schema(schema)
     errors = list(Draft202012Validator(schema).iter_errors(manifest))
     if errors:
@@ -107,6 +114,16 @@ def validate_manifest(manifest, expected_version=None, expected_build=None, chan
         for text in artifact["requirements"].values():
             if not text.strip() or any(ord(c) < 32 or 127 <= ord(c) <= 159 for c in text):
                 raise ValueError("Systemanforderungen dürfen weder leer sein noch Steuerzeichen enthalten.")
+    if "macos_update_feeds" in manifest:
+        macs = {a["architecture"]: a for a in manifest["artifacts"] if a["platform"] == "macos"}
+        feeds = manifest["macos_update_feeds"]
+        if len(feeds) != len(macs) or {f["architecture"] for f in feeds} != set(macs):
+            raise ValueError("Appcasts müssen genau die vorhandenen Mac-Ziele abdecken.")
+        for feed in feeds:
+            name = feed_filename(feed["architecture"], actual_channel)
+            if (feed["url"] != f"{REPOSITORY}/releases/download/v{version}/{name}"
+                    or feed["key_id"] != macs[feed["architecture"]]["signature"]["key_id"]):
+                raise ValueError("Appcast muss zur gleichen Version, Architektur, zum Kanal und Schlüssel gehören.")
     return manifest
 
 

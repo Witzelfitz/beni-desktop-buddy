@@ -49,6 +49,7 @@ Abnahme: Zeit und Ereignisse sind testbar; Nachrichten sind begrenzt; externe St
 - Gemergt in PR #27: [lokale Release-Pipeline](LOCAL_RELEASE.md) nach [ADR 0003](adr/0003-local-release-signing.md). Native CI ohne Apple-Schlüssel, lokale Signierung/Notarisierung und Ed25519 für Pakete/Manifest. Echter gemeinsamer Kandidat 0.1.0/Build 1 für Intel und Apple Silicon erstellt und geprüft, Release-Entwurf mit acht zurückgeladenen/authentifizierten Assets vorhanden. Öffentliches Release 0.1.0 inzwischen freigegeben und alle anonymen Downloads geprüft. Actions-Signing-Secrets nicht erforderlich.
 - Erledigt: Beni-App-Icon (PNG/ICNS/ICO), Windows-Exe-Ressource und Linux-Desktop-Vorlage in den plattformspezifischen Paketen.
 - Erledigt: macOS-Entwicklungsbundle ad hoc signieren und streng prüfen; Apple-Silicon-Release mit Developer ID signieren und notarisieren. Windows-Signierung bleibt offen.
+- R3a/R3b gemergt: Sparkle im Bundle, Tray-Updateaktion, automatische Prüfwahl und kontrollierter Neustart. R3c vorbereitet: v2-Manifest, integrierte signierte Feeds und eigener Website-Adapter. [Release-Ablauf](UPDATE_RELEASE_RUNBOOK.md); Bootstrap-Veröffentlichung und tatsächliches Update A → B folgen.
 - Reproduzierbare Releases aus freigegebenen Tags.
 - Optionaler, bewusst aktivierter Autostart.
 - Geplant: Installer, Downloadseite, signierte Updates über das Menüleistensymbol und KI-Ersteinrichtung gemäss [Masterplan](MASTERPLAN.md).

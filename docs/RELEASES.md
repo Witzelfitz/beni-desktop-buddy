@@ -14,13 +14,13 @@ Das macOS-Packaging übernimmt die numerische Produktversion in `CFBundleShortVe
 
 Eine Versionsänderung umfasst Root-, Desktop- und IPC-Manifeste sowie beide mit Cargo aktualisierten Lockfiles. Den Versionscheck zuerst ausführen; im Tag-Workflow zusätzlich `--tag "$GITHUB_REF_NAME"` verwenden. In R2 wird die Freigabe-/Tag-Pipeline ergänzt; die bestehende CI produziert weiter Entwicklungsarchive.
 
-## Manifest v1
+## Manifest v1 und v2
 
-Das [Schema](../release/schema-v1.json) beschreibt die Struktur. `scripts/release.py validate` prüft zusätzlich Beziehungen zwischen Version, Kanal, URLs und Zielplattformen. Das Schema allein ersetzt diese semantische Prüfung nicht. Unbekannte Felder werden abgelehnt; inkompatible Erweiterungen erhalten eine neue `schema_version`.
+Die Schemas [v1](../release/schema-v1.json) und [v2](../release/schema-v2.json) beschreiben die Struktur. `scripts/release.py validate` prüft zusätzlich Beziehungen zwischen Version, Kanal, URLs und Zielplattformen. Das Schema allein ersetzt diese semantische Prüfung nicht. Unbekannte Felder werden abgelehnt; inkompatible Erweiterungen erhalten eine neue `schema_version`.
 
 | Feld | Bedeutung |
 | --- | --- |
-| `schema_version` | Genau 1; unbekannte Versionen ablehnen. |
+| `schema_version` | 1 für bestehende Releases, 2 für Releases mit Mac-Appcasts; unbekannte Versionen ablehnen. |
 | `product` | Genau `io.witzelfitz.beni-buddy`. |
 | `version`, `build_number` | Produktversion und global steigende Buildnummer. |
 | `channel` | `stable` oder `beta`, passend zur Version. Stable darf Beta nicht anzeigen. |
@@ -37,15 +37,23 @@ Dateinamen: `beni-buddy-{version}-{platform}-{architecture}.{extension}`. Endung
 
 Der Manifest-Reader begrenzt Eingaben auf 256 KiB und lehnt doppelte JSON-Felder ab. Beschreibungen enthalten keine Steuerzeichen. Fehlerausgaben geben keine gelieferten URL-Werte oder Tokens aus. Website und Updater müssen entsprechende Eingabegrenzen beibehalten.
 
+### Authentifizierte Mac-Feeds in v2
+
+V2 verlangt zusätzlich `macos_update_feeds`: pro vorhandenem Mac-Ziel genau ein Eintrag mit `architecture`, `url`, `size_bytes` (höchstens 256 KiB), `sha256` und `key_id`. Die Adresse endet exakt auf `appcast-macos-{architecture}-{channel}.xml` im gleichen versionierten GitHub-Release. Schlüsselkennung und Ziel müssen zum Mac-Paket gehören. Fehlende, doppelte oder fremde Ziele werden abgelehnt. V1 akzeptiert diese neuen Felder ausdrücklich nicht. Neue Prüfer lesen beide Versionen; bestehende öffentliche v1-Dateien werden nicht umgeschrieben.
+
+Die Release-Pipeline signiert Appcasts mit dem bereits geladenen Paketschlüssel, bevor sie das Manifest signiert. Der strenge öffentliche Dateisatz besteht aus `release.json`, `release.json.sig`, jeweils Paket/`.sig`/`.sha256` und genau den im v2-Manifest genannten XML-Dateien. Jede XML-Datei trägt Sparkles eingebetteten Signaturblock; es gibt keine weitere XML-Sidecar-Datei. `candidate.json` und dessen Signatur bleiben lokal. `local-release.py export` erzeugt den passenden Upload-Ordner ohne Schlüsselzugriff.
+
+Website und finale Mac-Abnahme verifizieren Feed-Bytes und Signaturen sowie die Übereinstimmung mit Version, Build, Mindestanforderung, Paketadresse, Grösse und Paketsignatur. Python und Node verwenden dieselben öffentlichen [Testvektoren](../release/examples/sparkle-contract.json). Die Website-Erweiterung muss vor dem ersten v2-Release deployed sein; [Release-Ablauf](UPDATE_RELEASE_RUNBOOK.md).
+
 ## Veröffentlichung und Signaturen
 
 Der [lokale Release-Helfer](LOCAL_RELEASE.md) übernimmt gezielt gebaute und nativ geprüfte CI-Installer und erzeugt nach Developer-ID-Signierung/Notarisierung Prüfsummen, Ed25519-Signaturen und `release.json`. Er erzeugt noch keinen öffentlichen Tag oder Release. Erst wenn alle vorgesehenen Zielpakete geprüft und vollständig hochgeladen sind, dürfen Stable-/Beta-Verweise und native Appcasts darauf zeigen. Ein Manifest muss nicht alle sechs Ziele enthalten; die geplante Zielmenge wird ausdrücklich festgelegt, damit ein fehlgeschlagener Build nicht stillschweigend ein Paket aus dem Angebot entfernt.
 
 Der vorgesehene erste Produktionsfeed liegt bei `https://github.com/Witzelfitz/beni-desktop-buddy/releases/latest/download/release.json` für Stable. Er entsteht erst in der Release-Pipeline. Beta braucht einen expliziten, getrennten Kanalverweis; GitHubs Latest-Verweis wird dafür nicht verwendet. Website und Updater benutzen die Metadaten aus derselben Veröffentlichung. [GitHub beschreibt Latest-/Release-Links hier](https://docs.github.com/en/repositories/releasing-projects-on-github/linking-to-releases).
 
-Die `.sig`-Datei enthält die Ed25519-Signatur über die exakten Paketbytes als Base64. Zusätzlich signiert `release.json.sig` die exakten UTF-8-Bytes des Manifests; der lokale Prüfer authentifiziert diese vor dem Interpretieren. Der öffentliche Schlüssel liegt unter `release/keys/`; der private Teil in 1Password. Schlüsselkennungen sind Zuordnungen zu bereits vertrauenswürdigen öffentlichen Schlüsseln; das Manifest darf keine neuen Vertrauensanker einschleusen. R3a bestätigt die Kompatibilität mit Sparkle 2.10.0: dieselbe Paketsignatur wird als `sparkle:edSignature` übernommen, der XML-Feed erhält zusätzlich einen nativen eingebetteten Signaturblock. [Lokale Ableitung und Prüfung](UPDATES.md) ändern weder Kandidaten noch veröffentlichte Releases. Feste Einbindung des Schlüssels in die App, Feed-Veröffentlichung und WinSparkle bleiben R3/R4.
+Die `.sig`-Datei enthält die Ed25519-Signatur über die exakten Paketbytes als Base64. Zusätzlich signiert `release.json.sig` die exakten UTF-8-Bytes des Manifests; der lokale Prüfer authentifiziert diese vor dem Interpretieren. Der öffentliche Schlüssel liegt unter `release/keys/`; der private Teil in 1Password. Schlüsselkennungen sind Zuordnungen zu bereits vertrauenswürdigen öffentlichen Schlüsseln; das Manifest darf keine neuen Vertrauensanker einschleusen. R3a bestätigt die Kompatibilität mit Sparkle 2.10.0: dieselbe Paketsignatur wird als `sparkle:edSignature` übernommen, der XML-Feed erhält zusätzlich einen nativen eingebetteten Signaturblock. [Lokale Ableitung und Prüfung](UPDATES.md) ändern weder Kandidaten noch veröffentlichte Releases. R3b bindet den öffentlichen Schlüssel fest in das Mac-Bundle ein. R3c bereitet die Feed-Veröffentlichung vor; WinSparkle bleibt R4.
 
-**R1 prüft Signaturangaben; die lokale Release-Pipeline ergänzt echte kryptografische Paket-/Manifestprüfung.** Sie ermittelt Grösse/SHA-256 erst aus den finalen notarisierten Dateien und prüft global steigende Buildnummern gegen authentifizierte vorhandene Releases. Rust-Updateadapter müssen diese Prüfung noch mit fest eingebundenen Schlüsseln implementieren, Versions-/Buildrückschritte verweigern und vor dem Installieren die Paketintegrität prüfen. R3a leitet lokale Sparkle-Feeds aus dem vollständig geprüften Kandidaten ab; deren Veröffentlichung und Desktop-Verwendung folgen separat. SHA-256 und HTTPS allein begründen kein Vertrauen in einen neuen Signierschlüssel. Apple-/Windows-Codesignierung sind zusätzliche Plattformprüfungen.
+**R1 prüft Signaturangaben; die lokale Release-Pipeline ergänzt echte kryptografische Paket-/Manifestprüfung.** Sie ermittelt Grösse/SHA-256 erst aus den finalen notarisierten Dateien und prüft global steigende Buildnummern gegen authentifizierte vorhandene Releases. Rust-Updateadapter müssen diese Prüfung noch mit fest eingebundenen Schlüsseln implementieren, Versions-/Buildrückschritte verweigern und vor dem Installieren die Paketintegrität prüfen. R3a prüft die Sparkle-Signaturkompatibilität, R3b ergänzt den Desktop-Adapter und R3c die gemeinsame Veröffentlichungsvorbereitung. Produktionsfreigabe und echtes Update A → B bleiben offen. SHA-256 und HTTPS allein begründen kein Vertrauen in einen neuen Signierschlüssel. Apple-/Windows-Codesignierung sind zusätzliche Plattformprüfungen.
 
 ## Lokale Prüfung
 

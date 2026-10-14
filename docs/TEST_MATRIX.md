@@ -133,3 +133,21 @@ Native Probe: `scripts/check-sparkle.py --sparkle-archive …`, SDK-Grösse und 
 | Echtes Update A → B, Einstellungen nach Installation, Downloadabbruch, nicht schreibbarer Installationsort | NOT_RUN |
 
 Das normale Packaging enthält das gepinnte SDK und verwendet macOS 15.0 als Bundle-Mindestversion. Der öffentliche Feed bleibt durch `release/update-policy.json` gesperrt, bis Desktop-Pipeline und Website dieselben zusätzlichen Feeddateien unterstützen. Die Brückenprobe benötigt keinen Rust-Build und läuft bewusst lokal; keine zusätzliche automatische Installer-Matrix eingeführt. Die veröffentlichten Dateien von 0.1.1 bleiben unverändert.
+
+## Update-Veröffentlichung R3c, 14. Oktober 2026
+
+| Prüfung | Ergebnis |
+| --- | --- |
+| Manifest v1 unverändert weiter lesbar; v2 verlangt genau die vorhandenen Mac-Architekturen, passenden Kanal/Version/Schlüssel und begrenzte Feed-Metadaten | PASS, 20 Schema-/Versionsprüfungen |
+| Kandidat mit integrierten Appcasts; Export enthält nur öffentliche Dateien, schützt Quellen/belegte Ausgabe und prüft kopierte Bytes | PASS, positive/negative Offline-Prüfungen |
+| Finale GitHub-Abnahme lädt und authentifiziert ausgewählten Feed ohne privaten Schlüssel oder neuen Build | PASS, 27 Release-Regressionsprüfungen mit API-Fixtures |
+| Fehlender/manipulierter/verlinkter Feed, fremde Signatur, korrekt neu signierter falscher Build und konsistente falsche GitHub-Digests | PASS, negative Prüfungen in Release-/Appcast-Tests |
+| Identische öffentliche Python-/Node-Testvektoren für Stable ARM/Intel und Beta ARM, Unicode und XML-Escaping | PASS, beide Repositories; keine privaten Testschlüssel gespeichert |
+| Sparkle 2.10.0 akzeptiert Python-Signaturen und erzeugt identische Feed-Bytes | PASS, native Probe mit kurzlebigem Testschlüssel; insgesamt 21 Appcast-Prüfungen inklusive dieser Probe |
+| Echter bestehender lokaler 0.1.1-Kandidat mit unveränderten Paketbytes authentifiziert | PASS, nur gelesen, kein Signierzugriff |
+| Root/GUI fmt, Tests und Clippy | PASS auf Entwickler-Mac: 29 Root- und 88 Desktop-Tests |
+| Website-Code mit realem öffentlichen 0.1.1-Katalog: Downloads verfügbar, noch kein Update-Feed | PASS, anonymer Abruf |
+| Website-Deployment / erste öffentliche v2-Feeds / neue Bootstrap-Version | NOT_RUN, eigene PRs und Release-Abnahme folgen |
+| Tatsächliche Installation A → B und Installationsfehlerfälle | NOT_RUN; konkreter Ablauf in UPDATE_RELEASE_RUNBOOK.md |
+
+Keine neuen Installer für diese Vorbereitung gebaut; keine Produktionsschlüssel gelesen, keine installierte App oder Hooks geändert. Öffentliche Version bleibt 0.1.1, Feed-Freigabe im Bundle bleibt aus.

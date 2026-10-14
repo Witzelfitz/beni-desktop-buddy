@@ -17,7 +17,8 @@ import sys
 import tempfile
 import zipfile
 
-from release import ROOT, REPOSITORY, check_versions, read_manifest, unique_object, validate_manifest
+from release import ROOT, REPOSITORY, check_versions, read_manifest, unique_object, validate_manifest, feed_filename
+from sparkle_feed import MAX_FEED_BYTES, ReleaseError, feed_content, sign_feed, verify_feed
 
 spec = importlib.util.spec_from_file_location("beni_local_package", ROOT / "scripts/package-macos.py")
 package = importlib.util.module_from_spec(spec)
@@ -28,10 +29,6 @@ BUILD_INPUTS = ("Cargo.toml", "Cargo.lock", "rust-toolchain.toml", "apps", "crat
                 "integrations", "packaging", "scripts/package-macos.py", "scripts/package-portable.py",
                 "LICENSE.md", "LICENSE-MIT", "docs/INTEGRATIONS.md", "scripts/sparkle_sdk.py",
                 "release/sparkle-sdk.json", "release/update-policy.json", "release/keys/beni-update-v1.json")
-
-
-class ReleaseError(Exception):
-    pass
 
 
 def command(args, *, payload=None, timeout=120):
@@ -396,9 +393,59 @@ def verify_candidate(directory, trusted_path):
         if (directory / (filename + ".sha256")).read_text() != f"{artifact['sha256']}  {filename}\n":
             raise ReleaseError("Release-Prüfsummendatei stimmt nicht überein.")
         expected.update((filename, filename + ".sig", filename + ".sha256"))
+    for feed in manifest.get("macos_update_feeds", []):
+        verify_release_feed(directory, manifest, feed, key)
+        expected.add(feed["url"].rsplit("/", 1)[1])
     if {p.name for p in directory.iterdir()} != expected or any(p.is_symlink() or not p.is_file() for p in directory.iterdir()):
         raise ReleaseError("Kandidat enthält fehlende, zusätzliche oder verlinkte Dateien.")
     return manifest
+
+
+def verify_release_feed(directory, manifest, feed, trusted):
+    path = directory / feed["url"].rsplit("/", 1)[1]
+    if path.is_symlink() or not path.is_file() or path.stat().st_size > MAX_FEED_BYTES:
+        raise ReleaseError("Signierter Appcast fehlt oder ist keine begrenzte reguläre Datei.")
+    data = path.read_bytes()
+    if len(data) != feed["size_bytes"] or hashlib.sha256(data).hexdigest() != feed["sha256"]:
+        raise ReleaseError("Appcast-Bytes stimmen nicht mit dem authentifizierten Manifest überein.")
+    artifact = next(a for a in manifest["artifacts"] if a["platform"] == "macos" and a["architecture"] == feed["architecture"])
+    signature = (directory / (artifact["url"].rsplit("/", 1)[1] + ".sig")).read_bytes().strip()
+    raw = base64.b64decode(signature, validate=True)
+    if len(raw) != 64 or base64.b64encode(raw) != signature:
+        raise ReleaseError("Paket-Signatur hat kein kanonisches Ed25519-Format.")
+    from cryptography.exceptions import InvalidSignature
+    try:
+        content = verify_feed(data, trusted)
+    except InvalidSignature as error:
+        raise ReleaseError("Appcast-Signatur ist ungültig.") from error
+    if content != feed_content(manifest, artifact, signature.decode("ascii")):
+        raise ReleaseError("Appcast kündigt nicht das authentifizierte Mac-Paket an.")
+
+
+def write_candidate_feeds(directory, manifest, key):
+    """Sign final feeds with the already loaded key, before signing the manifest."""
+    validate_manifest(manifest)
+    if "macos_update_feeds" in manifest:
+        raise ReleaseError("Appcasts wurden bereits vorbereitet.")
+    feeds = []
+    for artifact in manifest["artifacts"]:
+        if artifact["platform"] != "macos":
+            continue
+        path = directory / artifact["url"].rsplit("/", 1)[1]
+        verify_file(path, key.public_key())
+        signature = Path(str(path) + ".sig").read_bytes().strip().decode("ascii")
+        data = sign_feed(feed_content(manifest, artifact, signature), key)
+        filename = feed_filename(artifact["architecture"], manifest["channel"])
+        with (directory / filename).open("xb") as output:
+            output.write(data)
+        feeds.append({"architecture": artifact["architecture"],
+                      "url": f"{REPOSITORY}/releases/download/v{manifest['version']}/{filename}",
+                      "size_bytes": len(data), "sha256": hashlib.sha256(data).hexdigest(),
+                      "key_id": artifact["signature"]["key_id"]})
+    if feeds:
+        manifest["schema_version"] = 2
+        manifest["macos_update_feeds"] = feeds
+    validate_manifest(manifest)
 
 
 def install_candidate(staging, output):
@@ -415,6 +462,24 @@ def install_candidate(staging, output):
             path.unlink()
         output.rmdir()
         raise
+
+
+def export_release(candidate, output, trusted_path):
+    """Create a new upload directory containing only authenticated public assets."""
+    candidate = candidate.resolve()
+    if output.exists() or output.is_symlink() or output.resolve().is_relative_to(candidate):
+        raise ReleaseError("Upload-Ziel existiert bereits oder liegt im unveränderten Kandidaten.")
+    verify_candidate(candidate, trusted_path)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="beni-public-release-", dir=output.parent) as folder:
+        staging = Path(folder)
+        for path in candidate.iterdir():
+            shutil.copy2(path, staging / path.name)
+        # Check the copied bytes, not only the source that could have changed.
+        verify_candidate(staging, trusted_path)
+        (staging / "candidate.json").unlink()
+        (staging / "candidate.json.sig").unlink()
+        install_candidate(staging, output)
 
 
 def download_release(tag, architecture, output, trusted_path):
@@ -460,6 +525,8 @@ def download_release(tag, architecture, output, trusted_path):
         for artifact in manifest["artifacts"]:
             name = artifact["url"].rsplit("/", 1)[1]
             expected.update((name, name + ".sig", name + ".sha256"))
+        for feed in manifest.get("macos_update_feeds", []):
+            expected.add(feed["url"].rsplit("/", 1)[1])
         if set(names) != expected:
             raise ReleaseError("Release-Dateien entsprechen nicht dem authentifizierten Manifest.")
         selected = [a for a in manifest["artifacts"] if a["platform"] == "macos" and a["architecture"] == architecture]
@@ -474,6 +541,12 @@ def download_release(tag, architecture, output, trusted_path):
         if (image.stat().st_size != artifact["size_bytes"] or hashlib.sha256(image.read_bytes()).hexdigest() != artifact["sha256"]
                 or checksum.read_text() != f"{artifact['sha256']}  {name}\n"):
             raise ReleaseError("Finales Paket entspricht nicht dem authentifizierten Manifest.")
+        for feed in manifest.get("macos_update_feeds", []):
+            if feed["architecture"] == architecture:
+                if feed["key_id"] != key_id:
+                    raise ReleaseError("Appcast verwendet keinen vertrauten Schlüssel.")
+                fetch(feed["url"].rsplit("/", 1)[1], directory, MAX_FEED_BYTES)
+                verify_release_feed(directory, manifest, feed, trusted)
         # Adapter for the existing native checker. Its signature/ticket checks confirm these claims;
         # this derived receipt is neither published nor treated as a native test attestation.
         (directory / (name + ".build.json")).write_text(json.dumps({"type": "macos-build-receipt", "version": version,
@@ -566,6 +639,7 @@ def prepare(args):
         manifest = {"schema_version": 1, "product": "io.witzelfitz.beni-buddy", "version": version,
                     "build_number": build, "channel": "beta" if "-beta." in version else "stable",
                     "release_notes_url": f"{REPOSITORY}/releases/tag/v{version}", "artifacts": artifacts}
+        write_candidate_feeds(final, manifest, key)
         validate_manifest(manifest, version, build)
         metadata = final / "release.json"
         metadata.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -597,6 +671,10 @@ def main(argv=None):
     verify = commands.add_parser("verify")
     verify.add_argument("directory", type=Path)
     verify.add_argument("--public-key", type=Path, default=ROOT / "release/keys/beni-update-v1.json")
+    export = commands.add_parser("export", help="Nur öffentliche Dateien in einen neuen Upload-Ordner kopieren; kein Upload.")
+    export.add_argument("--candidate", type=Path, required=True)
+    export.add_argument("--output", type=Path, required=True)
+    export.add_argument("--public-key", type=Path, default=ROOT / "release/keys/beni-update-v1.json")
     download = commands.add_parser("download-release")
     download.add_argument("--tag", required=True)
     download.add_argument("--architecture", required=True, choices=tuple(package.ARCHITECTURES))
@@ -611,6 +689,9 @@ def main(argv=None):
         elif args.command == "download-release":
             download_release(args.tag, args.architecture, args.output.resolve(), args.public_key)
             print("PASS: finales Release-Paket authentifiziert; keine Signierung oder Veröffentlichung.")
+        elif args.command == "export":
+            export_release(args.candidate, args.output.absolute(), args.public_key)
+            print("PASS: ausschliesslich authentifizierte öffentliche Dateien vorbereitet; nichts hochgeladen.")
         else:
             verify_candidate(args.directory, args.public_key)
             print("PASS: Manifest und sämtliche Paketbytes kryptografisch geprüft.")

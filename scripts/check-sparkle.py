@@ -18,7 +18,7 @@ from unittest.mock import patch
 import xml.etree.ElementTree as ET
 
 from cryptography.exceptions import InvalidSignature
-from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey, Ed25519PublicKey
 
 sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[1]
@@ -37,6 +37,90 @@ NATIVE_TOOL = None
 
 
 class AppcastTests(unittest.TestCase):
+    def test_shared_python_node_contract_vectors(self):
+        fixture = json.loads((ROOT / "release/examples/sparkle-contract.json").read_bytes())
+        trusted = Ed25519PublicKey.from_public_bytes(base64.b64decode(fixture["keys"]["public_key_base64"]))
+        for vector in fixture["vectors"]:
+            data = base64.b64decode(vector["manifest_base64"])
+            trusted.verify(base64.b64decode(vector["manifest_signature"]), data)
+            manifest = sparkle.release.validate_manifest(json.loads(data))
+            trusted.verify(base64.b64decode(vector["package_signature"]), base64.b64decode(vector["package_base64"]))
+            feed = base64.b64decode(vector["feed_base64"])
+            self.assertEqual(sparkle.verify_feed(feed, trusted), sparkle.feed_content(manifest, manifest["artifacts"][0], vector["package_signature"]))
+            self.assertEqual(hashlib.sha256(feed).hexdigest(), manifest["macos_update_feeds"][0]["sha256"])
+
+    def add_release_feeds(self):
+        path = self.candidate / "release.json"
+        manifest = json.loads(path.read_bytes())
+        sparkle.release.write_candidate_feeds(self.candidate, manifest, self.key)
+        path.write_text(json.dumps(manifest))
+        sparkle.release.sign_file(path, self.key)
+        return manifest
+
+    def test_integrated_release_feeds_verify_and_export_without_private_provenance(self):
+        before = {p.name: p.read_bytes() for p in self.candidate.iterdir()}
+        manifest = self.add_release_feeds()
+        self.assertEqual(len(manifest["macos_update_feeds"]), 1)
+        self.assertEqual(sparkle.release.verify_candidate(self.candidate, self.trusted), manifest)
+        output = self.root / "public"
+        with patch.object(sparkle.release, "signing_key") as secret:
+            sparkle.release.export_release(self.candidate, output, self.trusted)
+            secret.assert_not_called()
+        self.assertFalse((output / "candidate.json").exists())
+        self.assertFalse((output / "candidate.json.sig").exists())
+        self.assertEqual({p.name for p in output.iterdir()}, {p.name for p in self.candidate.iterdir()} - {"candidate.json", "candidate.json.sig"})
+        for name, data in before.items():
+            if name not in ("release.json", "release.json.sig", "candidate.json", "candidate.json.sig"):
+                self.assertEqual((output / name).read_bytes(), data)
+        with self.assertRaises(sparkle.release.ReleaseError):
+            sparkle.release.export_release(self.candidate, output, self.trusted)
+
+    def test_missing_tampered_and_symlink_integrated_feeds_are_rejected(self):
+        manifest = self.add_release_feeds()
+        path = self.candidate / manifest["macos_update_feeds"][0]["url"].rsplit("/", 1)[1]
+        original = path.read_bytes()
+        path.unlink()
+        with self.assertRaises(sparkle.release.ReleaseError):
+            sparkle.release.verify_candidate(self.candidate, self.trusted)
+        target = self.root / "external.xml"; target.write_bytes(original)
+        path.symlink_to(target)
+        with self.assertRaises(sparkle.release.ReleaseError):
+            sparkle.release.verify_candidate(self.candidate, self.trusted)
+        path.unlink(); path.write_bytes(original + b"tampered")
+        with self.assertRaises(sparkle.release.ReleaseError):
+            sparkle.release.export_release(self.candidate, self.root / "rejected", self.trusted)
+        self.assertFalse((self.root / "rejected").exists())
+
+    def test_resigned_foreign_feed_cannot_announce_another_build(self):
+        manifest = self.add_release_feeds()
+        feed = manifest["macos_update_feeds"][0]
+        path = self.candidate / feed["url"].rsplit("/", 1)[1]
+        original = path.read_bytes()
+        content = sparkle.verify_feed(original, self.key.public_key())
+        for data in (content, sparkle.sign_feed(content.replace(b"<sparkle:version>1", b"<sparkle:version>99"), self.key),
+                     sparkle.sign_feed(content, Ed25519PrivateKey.generate())):
+            path.write_bytes(data)
+            feed.update(size_bytes=len(data), sha256=hashlib.sha256(data).hexdigest())
+            metadata = self.candidate / "release.json"
+            metadata.write_text(json.dumps(manifest)); sparkle.release.sign_file(metadata, self.key)
+            with self.assertRaises(sparkle.release.ReleaseError):
+                sparkle.release.verify_candidate(self.candidate, self.trusted)
+
+    def test_export_verifies_copied_bytes_and_rejects_nested_destination(self):
+        self.add_release_feeds()
+        with self.assertRaises(sparkle.release.ReleaseError):
+            sparkle.release.export_release(self.candidate, self.candidate / "nested", self.trusted)
+        copy = sparkle.release.shutil.copy2
+        def corrupt_copy(source, destination):
+            result = copy(source, destination)
+            if source.suffix == ".xml":
+                destination.write_bytes(destination.read_bytes() + b"tampered copy")
+            return result
+        with patch.object(sparkle.release.shutil, "copy2", side_effect=corrupt_copy), self.assertRaises(sparkle.release.ReleaseError):
+            sparkle.release.export_release(self.candidate, self.root / "rejected", self.trusted)
+        self.assertFalse((self.root / "rejected").exists())
+        sparkle.release.verify_candidate(self.candidate, self.trusted)
+
     def setUp(self):
         folder = tempfile.TemporaryDirectory()
         self.addCleanup(folder.cleanup)

@@ -73,3 +73,15 @@ gh workflow run macos-release-acceptance.yml --ref main -f tag=v0.1.0
 ```
 
 Danach prüft der bestehende native Installer-Helfer die tatsächlichen Developer-ID-Signaturen, Runtime, Zeitstempel, Tickets, Gatekeeper, temporäre Installation, native CLI und ein eigenes sichtbares Fenster. Nur nach Erfolg und Entfernen der Testinstanz entsteht der `.native.json`-Abnahmebeleg mit finalem Paket-Hash und getesteter OS-Version. Beide Belege werden 30 Tage aufbewahrt. Kein Rust-Build, keine Signierung und keine Apple-Secrets; nur zwei gezielt gestartete Abnahmejobs. PRs, Pushes und Tags lösen diesen Workflow nicht aus. Die lokale Beni-Installation bleibt unabhängig davon.
+
+## Mac-Appcasts und Upload-Export
+
+Neue Mac-Kandidaten verwenden Manifest v2 und enthalten signierte Architektur-/Kanal-Appcasts. `prepare` erzeugt diese nach den finalen Paketsignaturen mit dem bereits geladenen Schlüssel. `verify` prüft zusätzlich die Feed-Signaturen und die bytegenaue Ableitung aus dem Paketvertrag. Historische v1-Kandidaten wie 0.1.1 bleiben unverändert prüfbar.
+
+```sh
+python scripts/local-release.py export \
+  --candidate dist/release-candidate-NEUE-VERSION \
+  --output dist/release-upload-NEUE-VERSION
+```
+
+Mit der eingerichteten Release-Python-Umgebung ausführen. Der neue Ausgabeordner enthält genau die öffentlichen Metadaten, Pakete, Sidecars und Appcasts. `candidate.json` und dessen Signatur bleiben lokal. Es werden die kopierten Bytes geprüft; keine privaten Schlüssel gelesen, keine vorhandenen Dateien überschrieben und nichts hochgeladen. Den konkreten Ablauf für Website, Entwurf, native finale Abnahme, Bootstrap und Update A → B beschreibt [UPDATE_RELEASE_RUNBOOK.md](UPDATE_RELEASE_RUNBOOK.md).
