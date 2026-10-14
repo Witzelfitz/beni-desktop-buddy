@@ -26,6 +26,28 @@ def fixture(name="stable"):
 
 
 class ManifestTests(unittest.TestCase):
+    def test_v2_feeds_require_exact_mac_coverage_version_channel_key_and_bounds(self):
+        manifest = fixture()
+        feed = {"architecture": "aarch64", "url": release.REPOSITORY + "/releases/download/v0.1.0/appcast-macos-aarch64-stable.xml",
+                "size_bytes": 1024, "sha256": "a" * 64, "key_id": "beni-update-v1"}
+        manifest["macos_update_feeds"] = [feed]
+        with self.assertRaises(ValueError): release.validate_manifest(manifest)
+        manifest["schema_version"] = 2
+        release.validate_manifest(manifest)
+        missing = copy.deepcopy(manifest); del missing["macos_update_feeds"]
+        with self.assertRaises(ValueError): release.validate_manifest(missing)
+        for field, value in (("architecture", "x86_64"), ("url", feed["url"].replace("stable", "beta")),
+                             ("url", feed["url"].replace("0.1.0", "0.2.0")), ("key_id", "beni-update-v2"),
+                             ("sha256", "0"), ("size_bytes", 262145), ("size_bytes", True), ("extra", True)):
+            invalid = copy.deepcopy(manifest); invalid["macos_update_feeds"][0][field] = value
+            with self.subTest(field=field, value=value), self.assertRaises(ValueError):
+                release.validate_manifest(invalid)
+        for feeds in ([], [feed, feed]):
+            invalid = copy.deepcopy(manifest); invalid["macos_update_feeds"] = feeds
+            with self.assertRaises(ValueError): release.validate_manifest(invalid)
+        invalid = copy.deepcopy(manifest); invalid["artifacts"] = [a for a in invalid["artifacts"] if a["platform"] != "macos"]
+        with self.assertRaises(ValueError): release.validate_manifest(invalid)
+
     def test_examples_and_single_platform_releases(self):
         for name in ("stable", "beta"):
             manifest = fixture(name)

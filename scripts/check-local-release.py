@@ -157,15 +157,57 @@ class LocalReleaseTests(unittest.TestCase):
                     with self.assertRaises(release.ReleaseError): release.download_portable('123','linux',Path('fixture'),'b'*40)
                     extract.assert_not_called()
 
-    def final_release_fixture(self, root):
+    def final_release_fixture(self, root, with_feeds=False):
         source = root / "source"
         source.mkdir()
         trusted, key, image = candidate(source)
+        if with_feeds:
+            metadata = source / "release.json"
+            manifest = json.loads(metadata.read_bytes())
+            release.write_candidate_feeds(source, manifest, key)
+            metadata.write_text(json.dumps(manifest)); release.sign_file(metadata, key)
         names = sorted(p for p in source.iterdir() if not p.name.startswith("candidate.json"))
         payloads = {str(i): p.read_bytes() for i, p in enumerate(names, 1)}
         assets = [{"id": i, "name": p.name, "state": "uploaded", "size": p.stat().st_size,
                    "digest": "sha256:" + hashlib.sha256(p.read_bytes()).hexdigest()} for i, p in enumerate(names, 1)]
         return trusted, key, image, [{"tag_name": "v0.1.0", "draft": True, "assets": assets}], payloads
+
+    def test_final_release_download_accepts_authenticated_feed_without_signing_or_rebuilding(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            trusted, _, _, catalog, payloads = self.final_release_fixture(root, with_feeds=True)
+            with patch.object(release, "api", return_value=catalog), patch.object(release, "command", side_effect=lambda args, **kwargs: payloads[args[2].rsplit("/", 1)[1]]), patch.object(release, "signing_key") as secret:
+                image = release.download_release("v0.1.0", "aarch64", root / "accepted", trusted)
+                self.assertTrue(image.is_file())
+                self.assertTrue((image.parent / "appcast-macos-aarch64-stable.xml").is_file())
+                secret.assert_not_called()
+
+    def test_final_release_download_rejects_missing_or_corrupt_feed_with_consistent_github_digest(self):
+        for invalid in ("missing", "digest", "unsigned", "signature", "other-build"):
+            with self.subTest(invalid=invalid), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                trusted, key, _, catalog, payloads = self.final_release_fixture(root, with_feeds=True)
+                assets = catalog[0]["assets"]
+                feed = next(a for a in assets if a["name"].endswith(".xml"))
+                if invalid == "missing": assets.remove(feed)
+                elif invalid == "digest": feed["digest"] = "sha256:" + "0" * 64
+                else:
+                    content = release.verify_feed(payloads[str(feed["id"])], key.public_key())
+                    data = (content if invalid == "unsigned" else release.sign_feed(content, Ed25519PrivateKey.generate()) if invalid == "signature"
+                            else release.sign_feed(content.replace(b"<sparkle:version>1", b"<sparkle:version>99"), key))
+                    digest = hashlib.sha256(data).hexdigest()
+                    payloads[str(feed["id"])]=data; feed.update(size=len(data), digest="sha256:"+digest)
+                    metadata = next(a for a in assets if a["name"] == "release.json")
+                    manifest = json.loads(payloads[str(metadata["id"])])
+                    manifest["macos_update_feeds"][0].update(size_bytes=len(data), sha256=digest)
+                    data = json.dumps(manifest).encode(); payloads[str(metadata["id"])]=data
+                    metadata.update(size=len(data), digest="sha256:"+hashlib.sha256(data).hexdigest())
+                    signature = next(a for a in assets if a["name"] == "release.json.sig")
+                    data = base64.b64encode(key.sign(data))+b"\n"; payloads[str(signature["id"])]=data
+                    signature.update(size=len(data), digest="sha256:"+hashlib.sha256(data).hexdigest())
+                with patch.object(release, "api", return_value=catalog), patch.object(release, "command", side_effect=lambda args, **kwargs: payloads[args[2].rsplit("/", 1)[1]]), self.assertRaises(release.ReleaseError):
+                    release.download_release("v0.1.0", "aarch64", root / "rejected", trusted)
+                self.assertFalse((root / "rejected").exists())
 
     def test_final_release_download_uses_real_signatures_without_private_keys_or_builds(self):
         with tempfile.TemporaryDirectory() as temporary:

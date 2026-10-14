@@ -1,6 +1,6 @@
 # Updatekette · macOS zuerst
 
-Stand 14. Oktober 2026: [R3a/PR #40](https://github.com/Witzelfitz/beni-desktop-buddy/pull/40) ist gemergt. R3b ergänzt Sparkle im Mac-Bundle, die Tray-Aktion und die Neustart-Abfrage. Die öffentlich veröffentlichte Version 0.1.1 hat weiterhin keinen eingebauten Updater; die neuen Quellen sind noch nicht als neue Version veröffentlicht. Die Microsoft-Firmenprüfung blockiert diese macOS-Arbeit nicht.
+Stand 14. Oktober 2026: [R3a/PR #40](https://github.com/Witzelfitz/beni-desktop-buddy/pull/40) und [R3b/PR #41](https://github.com/Witzelfitz/beni-desktop-buddy/pull/41) sind gemergt. R3b ergänzt Sparkle im Mac-Bundle, die Tray-Aktion und die Neustart-Abfrage. Die öffentlich veröffentlichte Version 0.1.1 hat weiterhin keinen eingebauten Updater; die neuen Quellen sind noch nicht als neue Version veröffentlicht. Die Microsoft-Firmenprüfung blockiert diese macOS-Arbeit nicht.
 
 ## Anbindung im Buddy
 
@@ -12,7 +12,15 @@ Vor einem angeforderten Update-Neustart speichert Beni die Einstellungen synchro
 
 Das SDK wird beim Packaging anhand von `release/sparkle-sdk.json` geladen oder über `BENI_SPARKLE_ARCHIVE` als bereits vorhandenes Archiv übernommen. Grösse und Hash müssen vor dem Entpacken stimmen. Framework-Symlinks, Hilfsprogramme und Lizenz bleiben erhalten. Geschachtelte Codesign-Objekte werden von innen nach aussen mit derselben Identität signiert, ihre vorhandenen Entitlements bewahrt. Der signierte Bundle-Inhalt trägt den öffentlichen Verifikationsschlüssel und getrennte HTTPS-Verweise für Architektur/Kanal. Bundle-Mindestversion ist 15.0; das Rust-/Bridge-Buildziel bleibt 11.0.
 
-## Appcasts aus einem lokalen Kandidaten
+## Integrierte Vorbereitung für neue Releases
+
+`local-release.py prepare` erzeugt nach den finalen Paketsignaturen beide benötigten Appcasts im selben unveröffentlichten Kandidaten. Dafür verwendet es den bereits geladenen Release-Schlüssel. Das neue Manifest v2 enthält `macos_update_feeds` mit Architektur, versionsgebundener Adresse, Grösse, SHA-256 und bestehender Schlüsselkennung. Kandidatenprüfer und finale Release-Abnahme verifizieren die eingebetteten Feed-Signaturen und vergleichen den XML-Inhalt bytegenau mit dem angekündigten Mac-Paket. Die bisherigen Manifest-v1-Releases bleiben lesbar und unverändert.
+
+`local-release.py export` prüft nochmals die tatsächlich kopierten Bytes und legt einen neuen Upload-Ordner an, ohne die privaten Kandidatenbelege. Es lädt nichts hoch. Auf der Website kommen `/updates/macos/aarch64/stable.xml` und `/updates/macos/x86_64/stable.xml` hinzu. Sie verwenden denselben vollständig authentifizierten Stable-Release wie `/api/downloads` und liefern die signierten XML-Bytes unverändert. Fehlt ein beworbener Feed oder stimmt er nicht, sind weder Update- noch Downloadlinks verfügbar. Ein alter v1-Release bietet weiterhin Downloads, aber noch keinen Update-Feed. Beta bleibt ohne eigenen Kanalverweis nicht verfügbar.
+
+Die Website-Unterstützung muss vor dem ersten v2-Release deployed sein. Danach folgt die neue updaterfähige Version; `release/update-policy.json` bleibt in diesem Vorbereitungsschritt ausgeschaltet. Der konkrete Ablauf steht im [Release-Ablauf](UPDATE_RELEASE_RUNBOOK.md).
+
+## Separate Appcast-Probe aus einem lokalen Kandidaten
 
 Mit der Python-Umgebung aus `scripts/requirements-release.txt`:
 
@@ -34,7 +42,7 @@ Für einen Stable-Kandidaten mit beiden Mac-Paketen entstehen:
 
 Beta-Dateien enden auf `-beta.xml` und enthalten den Sparkle-Kanal `beta`. Es entstehen nur tatsächlich vorhandene Mac-Ziele. Die Feeds enthalten dieselben versionsgebundenen DMG-Adressen und Paketsignaturen wie der authentifizierte Downloadkatalog. Die Sparkle-Buildnummer entspricht `build_number`, die angezeigte Version der Release-Version.
 
-Die Appcasts sind lokale, unveröffentlichte Zusatzdateien. Sie dürfen noch nicht als zusätzliche Assets zu vorhandenen Releases hochgeladen werden: Die aktuelle Website und Release-Abnahme erwarten exakt die bisherigen Paket-/Metadatendateien. Die koordinierte Feed-Veröffentlichung folgt nach Bundle-/Tray-Anbindung. Keine alten Versionen nachträglich ändern.
+Diese separate Probe bleibt für R3a-Abnahmen verfügbar. Für neue Veröffentlichungen die integrierten Dateien aus `local-release.py prepare` und `export` verwenden. Niemals Appcasts nachträglich zu 0.1.1 oder anderen veröffentlichten Releases hochladen.
 
 ## Prüfungen
 
@@ -63,7 +71,7 @@ Sie baut ein temporäres Testbundle, prüft Laden/Signaturen, gespeicherte autom
 
 Für eine getrennte GUI-Abnahme kann `BENI_BUDDY_DATA_DIR` einen absoluten Datenordner angeben. Relative Pfade werden abgelehnt. Der produktive Start verwendet weiterhin den bisherigen Standardpfad. Sparkle-Präferenzen müssen in Testkopien zusätzlich über einen eigenen `SUDefaultsDomain` isoliert werden; dieser muss sich vom Bundle-Identifier der Test-App unterscheiden.
 
-Nächste Schritte: koordinierte Feed-Veröffentlichung in beiden Repositories, neue Bootstrap-Version und echtes Update A → B. Downloadabbruch, nicht schreibbarer Installationsort und finaler Erhalt der Einstellungen nach Installation sind noch offen; siehe [ADR 0004](adr/0004-sparkle-update-chain.md).
+Nächste Schritte: vorbereitete Website-/Pipeline-PRs mergen und die Website deployen, neue Bootstrap-Version und echtes Update A → B. Downloadabbruch, nicht schreibbarer Installationsort und finaler Erhalt der Einstellungen nach Installation sind noch offen; siehe [ADR 0004](adr/0004-sparkle-update-chain.md).
 
 Die synchronen Persistenzprüfungen verwenden den tatsächlichen vendorten FileStorage-Quelltext:
 
