@@ -12,7 +12,7 @@ Vom Nutzer am 14. Oktober 2026 angenommen. Umsetzung nacheinander, je ein eigene
 
 Stand: alle fünf PRs wurden am 14. Oktober 2026 in main gemergt, H4 vor H5. Die lokale Kopie ist synchronisiert. Der gemeinsame Prüfeinstieg mit `--desktop` besteht auf dem integrierten Stand: 47 Roottests, 110 Desktoptests, fmt, Clippy und GUI-Build sowie Packaging-, Release-, Vendor-, Tooling- und Speicherprüfungen. CI-Policytests und actionlint bestehen zusätzlich. Die isolierte native macOS-Gesprächsprüfung aus H3 besteht; ein echter Ollama-Lauf und neue Installer-Abnahmen wurden für diese Härtungen nicht wiederholt.
 
-Die Branches liessen sich zuvor in einer isolierten lokalen Integration ohne Konflikte zusammenführen. Die abschliessende main-CI und deren native Linux-Proben werden in [TEST_MATRIX.md](TEST_MATRIX.md) dokumentiert. Diese Härtungen sind Quellcodeänderungen nach dem öffentlichen Release 0.1.5; eine neue installierbare Version wurde damit noch nicht veröffentlicht.
+Die Branches liessen sich zuvor in einer isolierten lokalen Integration ohne Konflikte zusammenführen. Die abschliessende main-CI auf macOS, Windows und Linux sowie die separaten nativen Linux-Proben bestehen; [Prüfbericht](TEST_MATRIX.md). Diese Härtungen sind Quellcodeänderungen nach dem öffentlichen Release 0.1.5; eine neue installierbare Version wurde damit noch nicht veröffentlicht.
 
 Eine kurze animierte Vorschau kann aus bestehenden SDK-Animationen entstehen; keine neuen Posen oder Bewegungsdaten. Die vorhandenen Screenshots bleiben für den Einstieg nutzbar. Eine echte Gesprächsdemo und weitere Geräteabnahmen werden getrennt dokumentiert.
 

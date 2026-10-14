@@ -340,7 +340,7 @@ PR #58–#62 sind in main gemergt; Quellstand `240589b22edf25981af1be37d521c98a7
 | Gemeinsamer Interpreter, frühe Fehler und GUI-Trennung | PASS, 5 Toolingtests und echter integrierter Prüflauf mit festgelegten Release-Abhängigkeiten |
 | CI-Scope, Artefaktbindung und Infrastruktur-Retry | PASS, 4 CI-Policytests und actionlint; PR #59 inklusive nativer Linux-Proben grün |
 | Isolierte native macOS-Gesprächsabnahme aus PR #60 | PASS, am eigenen Debug-Prozess: Gespräch öffnen, alle Bedienelemente im einzigen Fenster, Escape und Beenden; keine Änderung der Nutzerinstallation |
-| Abschliessende main-CI auf macOS, Windows und Linux samt separaten nativen Linux-Proben | NOT_RUN, Abschluss von Lauf 38634069881 steht noch aus |
+| Abschliessende main-CI auf macOS, Windows und Linux samt separaten nativen Linux-Proben | PASS, [Lauf 38634069881](https://github.com/Witzelfitz/beni-desktop-buddy/actions/runs/38634069881): alle drei Rust-Jobs und separate X11-/Wayland-Proben erfolgreich |
 | Echter Modelllauf, neue Installer-/Sparkle-Paketabnahmen und manuelle Windows-/Linux-Gespräche für diese Härtungen | NOT_RUN; bestehende frühere Abnahmen bleiben getrennt dokumentiert |
 
 Die Statuswarteschlangen, TTL, Opt-in-Grenzen, vorhandenen SDK-Gesten und der netzwerkfreie Animationskern bleiben erhalten. Ältere main-Läufe aus den einzelnen Merges werden durch den gemeinsamen Lauf ersetzt und automatisch abgebrochen.
