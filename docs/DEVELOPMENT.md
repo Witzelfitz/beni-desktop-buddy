@@ -49,5 +49,5 @@ Die nächsten Härtungen trennen schnelle und native Prüfungen und grenzen Infr
 - [Architektur](ARCHITECTURE.md) und [native Rust-Entscheidung](adr/0001-native-rust.md)
 - [eframe-Patch: Accessibility und synchrones Speichern](../vendor/eframe/BENI_PATCH.md)
 - [Release-Vertrag](RELEASES.md), [Mac-Installer](MACOS_INSTALLER.md) und [lokale Signierung](LOCAL_RELEASE.md)
-- [Update-Runbook](UPDATE_RELEASE_RUNBOOK.md), [Windows-Signierung](WINDOWS_SIGNING.md) und [Linux-Installer](LINUX_INSTALLER.md)
+- [Update-Runbook](UPDATE_RELEASE_RUNBOOK.md), [Windows-Signierung](WINDOWS_SIGNING.md) und [Linux-Installer](PORTABLE_INSTALLERS.md)
 - [Masterplan](MASTERPLAN.md) und [Rechte/Provenienz](../LICENSE.md)

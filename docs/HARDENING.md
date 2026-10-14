@@ -4,7 +4,7 @@ Vom Nutzer am 14. Oktober 2026 angenommen. Umsetzung nacheinander, je ein eigene
 
 | Schritt | Ergebnis und Abnahme | Stand |
 | --- | --- | --- |
-| H1 Einstieg | Kurze README, vorhandene Vorschau, Bedienung und Entwicklung in verlinkten Anleitungen; lokale Links und sachliche Angaben prüfen | In Arbeit |
+| H1 Einstieg | Kurze README, vorhandene Vorschau, Bedienung und Entwicklung in verlinkten Anleitungen; lokale Links und sachliche Angaben prüfen | In diesem PR umgesetzt |
 | H2 CI | Schnelle Prüfungen von nativen Smoke-Prüfungen trennen, passende Pfadfilter und begrenzte Infrastruktur-Retries; App-/Protokollfehler bleiben Fehler, Release bleibt abnahmegebunden | Offen |
 | H3 Sprechblasen | Zentrale deterministische Entscheidung für Anzeigevorrang; eigene Warteschlangen/TTL erhalten, Sequenztests für Chat/Timer/Escape/Status ergänzen | Offen |
 | H4 eframe | Upstream-Basis und tatsächlichen Patch automatisch abgrenzen; Accessibility und synchrones Speichern absichern, Ablösekriterien festhalten | Offen |
