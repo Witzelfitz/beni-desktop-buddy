@@ -182,3 +182,22 @@ NOT_RUN: vom Nutzer bestätigtes Ergebnis «aktuelle Version» über die Tray-Ak
 PASS: Nutzer öffnet «Nach Updates suchen …» in der installierten 0.1.2 und bestätigt «up to date». Native App, HTTPS-Feed und Oberfläche funktionieren in seiner tatsächlichen Installation zusammen.
 
 NOT_RUN: Installation A → B; dafür wird 0.1.3/Build 4 vorbereitet. Neue kleine UI-Ergänzung: installierte Version im Updatebereich sichtbar machen.
+
+## Veröffentlichung B und Fehlerproben, 14. Oktober 2026
+
+| Prüfung | Ergebnis |
+| --- | --- |
+| 0.1.3/Build 4, PR #47, Versionsanzeige im Updatebereich; Root-/GUI fmt, 29/88 Tests, Clippy und drei Plattformprüfungen | PASS |
+| Native Mac-Entwicklungsinstaller beide Chips und Linux CLI/X11/Wayland | PASS, Runs 38579115673/38579119594 |
+| Lokale Developer-ID-Signierung, Notarisierung/Tickets/Gatekeeper | PASS, beide Mac-Ziele |
+| Finale native Mac-Installer Installation/CLI/GUI/Entfernung | PASS, Run 38580839616, beide Chips macOS 15.7.9 |
+| Genau 13 öffentliche Dateien, Upload-Digests, alle anonymen Bytes/SHA/Signaturen | PASS, Release-ID 412815822; Tag-Quellcommit 5fe85e8efe17a56238eb544f2c2aef20fd6d4f76 |
+| Live-Katalog und beide Stable-Feeds bytegleich zum Kandidaten, 0.1.3/Build 4 | PASS |
+| Native SDK-Probe: Build 4 angeboten und ohne Download abgebrochen | PASS, eigene Domain, kurzlebiger Testschlüssel und kontrollierter Loopback-Server |
+| Downloadabbruch nach 65536 real empfangenen Bytes | PASS, keine Installationsfreigabe, Test-Executable unverändert |
+| Beschädigtes DMG mit korrekter angekündigter Länge | PASS, SDK verweigert vor dem Entpacken: Fehler 4005 mit zugrunde liegendem EdDSA-Validierungsfehler 3002; keine Installation |
+| App auf schreibgeschütztem DMG | PASS, SDK-Fehler 1003 vor Download; kein Nachweis für andere Administrator-/ACL-Fälle |
+| Einstellungen vor Nutzerupdate geschützt lokal gesichert | PASS, eigener ignorierter Backup-Ordner 0700, Dateien 0600 |
+| Tatsächliche Nutzerinstallation 0.1.2 → 0.1.3 samt Neustart, Einstellungen/IPC und Timerabfrage | NOT_RUN, nächster begleiteter Schritt |
+
+Die negativen SDK-Proben laufen ausschliesslich in eigenen temporären Testbundles, ohne private Produktionsschlüssel. Das Paket war eine kontrolliert beschädigte 0.1.2-Fixture, als Testziel Build 4 angekündigt; kein fehlerhafter Stable-Feed veröffentlicht. Produktionsapp behält HTTPS und unveränderte Vertrauensanker.

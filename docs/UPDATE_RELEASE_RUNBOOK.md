@@ -1,6 +1,6 @@
 # Freigabe der Mac-Updatekette
 
-Stand: 14. Oktober 2026. Website-/Pipeline-PRs und Versions-PR #43 sind gemergt. Version A ([0.1.2/Build 3](https://github.com/Witzelfitz/beni-desktop-buddy/releases/tag/v0.1.2)) ist für beide Mac-Ziele und Linux öffentlich, beide Mac-Feeds sind live. Schritte 1 und 2 sind durchgeführt; die Anleitung bleibt für B wiederverwendbar. Nutzerinstallation A und manuelle Updateprüfung («up to date») sind bestätigt; tatsächliches Update A → B bleibt offen. 0.1.1 bleibt unverändert. Microsofts Firmenprüfung läuft unabhängig weiter.
+Stand: 14. Oktober 2026. Website-/Pipeline-PRs und Versions-PR #43 sind gemergt. Version A ([0.1.2/Build 3](https://github.com/Witzelfitz/beni-desktop-buddy/releases/tag/v0.1.2)) ist für beide Mac-Ziele und Linux öffentlich, beide Mac-Feeds sind live. Schritte 1 und 2 sind durchgeführt; die Anleitung bleibt für B wiederverwendbar. Nutzerinstallation A und manuelle Updateprüfung («up to date») sind bestätigt; Version B (0.1.3/Build 4) ist ebenfalls veröffentlicht; tatsächliches Update A → B bleibt offen. 0.1.1 bleibt unverändert. Microsofts Firmenprüfung läuft unabhängig weiter.
 
 ## 1 · Beide Repositories vorbereiten
 
@@ -52,7 +52,7 @@ Beide finalen Architekturprüfungen müssen bestehen. Erst dann den Entwurf ver�
 
 0.1.1 hat noch keinen eingebauten Updater. A einmal über den neuen Installer installieren. Anschliessend «Nach Updates suchen …» im Menüleistensymbol prüfen: natives Fenster, aktuelle Version, automatische Prüfwahl anfangs aus und nach Nutzerwahl über einen Neustart erhalten.
 
-Für B ist 0.1.3/Build 4 vorgesehen, wiederum erst nach Katalogprüfung. B muss dieselbe Bundle-ID, einen vertrauenswürdigen Release-Schlüssel, eine passende Developer ID und eine grössere Buildnummer behalten. Dieselbe Kandidaten-/Entwurfs-/Abnahmekette durchführen; keinen Testfehlerfeed als Stable veröffentlichen.
+B ist als 0.1.3/Build 4 nach Katalogprüfung und finaler nativer Abnahme veröffentlicht. Die folgende Regel gilt ebenso für weitere Zielversionen: B muss dieselbe Bundle-ID, einen vertrauenswürdigen Release-Schlüssel, eine passende Developer ID und eine grössere Buildnummer behalten. Dieselbe Kandidaten-/Entwurfs-/Abnahmekette durchführen; keinen Testfehlerfeed als Stable veröffentlichen.
 
 Die tatsächliche Updateabnahme benötigt zwei installierbare Bundles und eine kontrollierte Testinstallation. Testdaten und native Präferenzdomain isolieren; nach dem Sparkle-Neustart ausdrücklich prüfen, dass weiterhin der Testdatenordner verwendet wird. Vor Änderungen an einer produktiven Installation deren Einstellungen sichern und laufende Timer/Erinnerungen berücksichtigen. Bestehende Hooks nicht überschreiben.
 
