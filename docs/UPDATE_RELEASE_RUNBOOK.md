@@ -1,6 +1,6 @@
 # Freigabe der Mac-Updatekette
 
-Stand: 14. Oktober 2026. Website-/Pipeline-PRs und Versions-PR #43 sind gemergt. Version A ([0.1.2/Build 3](https://github.com/Witzelfitz/beni-desktop-buddy/releases/tag/v0.1.2)) ist für beide Mac-Ziele und Linux öffentlich, beide Mac-Feeds sind live. Schritte 1 und 2 sind durchgeführt; die Anleitung bleibt für B wiederverwendbar. Nutzerinstallation A und manuelle Updateprüfung («up to date») sind bestätigt; Version B (0.1.3/Build 4) ist ebenfalls veröffentlicht; tatsächliches Update A → B bleibt offen. 0.1.1 bleibt unverändert. Microsofts Firmenprüfung läuft unabhängig weiter.
+Stand: 14. Oktober 2026. Website-/Pipeline-PRs und Versions-PR #43 sind gemergt. Version A ([0.1.2/Build 3](https://github.com/Witzelfitz/beni-desktop-buddy/releases/tag/v0.1.2)) ist für beide Mac-Ziele und Linux öffentlich, beide Mac-Feeds sind live. Schritte 1 und 2 sind durchgeführt; die Anleitung bleibt für B wiederverwendbar. Nutzerinstallation A und manuelle Updateprüfung («up to date») sind bestätigt; Version B (0.1.3/Build 4) ist ebenfalls veröffentlicht; der Nutzer hat das tatsächliche Update A → B bestätigt. Version 0.1.4/Build 5 mit lokalem Ollama-Chat wird im nächsten Versions-PR vorbereitet. 0.1.1 bleibt unverändert. Microsofts Firmenprüfung läuft unabhängig weiter.
 
 ## 1 · Beide Repositories vorbereiten
 
