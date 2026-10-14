@@ -1,6 +1,6 @@
 # Roadmap
 
-Der verbindliche nächste Arbeitsabschnitt steht im [Masterplan für Distribution, Updates und KI](MASTERPLAN.md). R0/R1 sind abgeschlossen; [0.1.1/Build 2](https://github.com/Witzelfitz/beni-desktop-buddy/releases/tag/v0.1.1) ist für macOS und Linux veröffentlicht, Downloadseite live abgenommen. Windows-Installer geprüft, Microsoft-Firmenvalidierung noch in Bearbeitung. [R3a/PR #40](https://github.com/Witzelfitz/beni-desktop-buddy/pull/40) ist gemergt. R3b implementiert die Sparkle-/Bundle-/Tray-Anbindung und ist lokal nativ geprüft. Die koordinierte Feed-Veröffentlichung und echtes Update A → B folgen; veröffentlichte Pakete und bestehende Installation bleiben unverändert. Exaktes macOS 15.0 und frische Nutzergeräte separat offen.
+Der verbindliche nächste Arbeitsabschnitt steht im [Masterplan für Distribution, Updates und KI](MASTERPLAN.md). macOS-/Linux-Version 0.1.3/Build 4 und Downloadseite sind veröffentlicht. Der Nutzer bestätigt das echte Mac-Update 0.1.2 → 0.1.3; installierte Version, geprüfte Einstellungen und IPC sind belegt. Der nächste Schritt ist die gemeinsame Chat-Grundlage und danach freiwilliger lokaler Ollama-Chat. Windows-Signierung wartet auf die Firmenprüfung. Exaktes macOS 15.0, frische Nutzergeräte und zusätzliche manuelle Updatefälle bleiben separat offen.
 
 ## 1 · Desktop-Abnahme und erster Build
 
@@ -44,14 +44,23 @@ Abnahme: Zeit und Ereignisse sind testbar; Nachrichten sind begrenzt; externe St
 
 ## 4 · Installation und Updates
 
-- Erledigt in PR #23: gemeinsamer [Release-Vertrag](RELEASES.md) mit Schema, Stable-/Beta-Beispielen, Offline-Prüfung und verbindlicher Cargo-Version/Buildnummer. Öffentliche Installer sind inzwischen unter R2/R5 veröffentlicht; die tatsächliche Installation A → B bleibt Teil der Updateabnahme.
+- Erledigt in PR #23: gemeinsamer [Release-Vertrag](RELEASES.md) mit Schema, Stable-/Beta-Beispielen, Offline-Prüfung und verbindlicher Cargo-Version/Buildnummer. Öffentliche Installer sind inzwischen unter R2/R5 veröffentlicht; die tatsächliche Nutzerinstallation A → B ist inzwischen bestätigt.
 - Gemergt in PR #25: [macOS-DMG und Release-Buildweg](MACOS_INSTALLER.md), erstes Apple-Silicon-DMG tatsächlich notarisiert, Tickets/Gatekeeper und Nutzerinstallation bestanden. PR #28 korrigiert die Intel-Signierreihenfolge; beide nativen Entwicklungsinstaller auf macOS 15.7.9 geprüft.
 - Gemergt in PR #27: [lokale Release-Pipeline](LOCAL_RELEASE.md) nach [ADR 0003](adr/0003-local-release-signing.md). Native CI ohne Apple-Schlüssel, lokale Signierung/Notarisierung und Ed25519 für Pakete/Manifest. Echter gemeinsamer Kandidat 0.1.0/Build 1 für Intel und Apple Silicon erstellt und geprüft, Release-Entwurf mit acht zurückgeladenen/authentifizierten Assets vorhanden. Öffentliches Release 0.1.0 inzwischen freigegeben und alle anonymen Downloads geprüft. Actions-Signing-Secrets nicht erforderlich.
 - Erledigt: Beni-App-Icon (PNG/ICNS/ICO), Windows-Exe-Ressource und Linux-Desktop-Vorlage in den plattformspezifischen Paketen.
 - Erledigt: macOS-Entwicklungsbundle ad hoc signieren und streng prüfen; Apple-Silicon-Release mit Developer ID signieren und notarisieren. Windows-Signierung bleibt offen.
-- R3a/R3b gemergt: Sparkle im Bundle, Tray-Updateaktion, automatische Prüfwahl und kontrollierter Neustart. R3c und Bootstrap 0.1.2 veröffentlicht: v2-Manifest, integrierte signierte Feeds und eigener Website-Adapter sind live. [Release-Ablauf](UPDATE_RELEASE_RUNBOOK.md); Nutzerinstallation A und tatsächliches Update A → B folgen.
+- R3a/R3b gemergt: Sparkle im Bundle, Tray-Updateaktion, automatische Prüfwahl und kontrollierter Neustart. R3c und Bootstrap 0.1.2 veröffentlicht: v2-Manifest, integrierte signierte Feeds und eigener Website-Adapter sind live. [Release-Ablauf](UPDATE_RELEASE_RUNBOOK.md); Nutzerinstallation A und tatsächliches Update A → B sind bestätigt. Der konkrete verschobene Neustart bleibt als zusätzliche manuelle Abnahme offen.
 - Reproduzierbare Releases aus freigegebenen Tags.
 - Optionaler, bewusst aktivierter Autostart.
-- Mac-/Linux-Installer und Downloadseite veröffentlicht; Mac-Updateprüfung ab 0.1.2 verfügbar. Windows-Signierung, echtes Update A → B, Linux-Updateadapter und KI-Ersteinrichtung bleiben offen gemäss [Masterplan](MASTERPLAN.md).
+- Mac-/Linux-Installer und Downloadseite veröffentlicht; Mac-Updateprüfung ab 0.1.2 verfügbar. Windows-Signierung, Linux-Updateadapter und KI-Ersteinrichtung bleiben offen gemäss [Masterplan](MASTERPLAN.md).
 
 Abnahme: Pakete werden auf sauberen Geräten installiert und sauber deinstalliert; Signaturen und Updateverhalten sind geprüft.
+
+## 5 · Gespräche mit Beni
+
+- Gemeinsamer Chatvertrag und begrenzte Sitzung in `buddy-chat` als R7a, siehe [ADR 0005](adr/0005-chat-provider-contract.md). Noch keine Anbieter oder Chatoberfläche freigeschaltet.
+- Danach lesbares Chatfenster, freiwillige Einrichtung und lokales Ollama mit vorhandenem geeignetem Chatmodell.
+- Sichere Zugangsdatenverwaltung vor Claude-/OpenAI-Verbindungen; jeder Anbieter mit eigenem PR.
+- Bestehende Gesten «Denken» und «Reden», keine neuen Animationen und keine Systemwerkzeuge.
+
+Abnahme: Hintergrundanfragen bleiben abbrechbar, Gesprächskontext ist sichtbar und begrenzt, Keys liegen ausserhalb des gewöhnlichen App-Speichers.
