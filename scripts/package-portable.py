@@ -178,6 +178,12 @@ def linux_installer(image, directory):
     bin_dir = appdir / 'usr/bin'; bin_dir.mkdir(parents=True)
     resources = appdir / 'usr/share/beni-buddy'; resources.mkdir(parents=True)
     payload(resources, 'linux')
+    shutil.copy2(ROOT / 'packaging/linux/AppImage-runtime-LICENSE.txt', resources / 'AppImage-runtime-LICENSE.txt')
+    runtime_info = json.loads((ROOT / 'packaging/tools.json').read_text())['appimage-runtime']
+    (resources / 'AppImage-runtime-source.txt').write_text(
+        'AppImage type2-runtime '+runtime_info['version']+'\nBinary SHA-256: '+runtime_info['sha256']+
+        '\nSource: https://github.com/AppImage/type2-runtime/tree/'+runtime_info['version']+
+        '\nBuild instructions: https://github.com/AppImage/type2-runtime/blob/'+runtime_info['version']+'/BUILD.md\n', encoding='utf-8')
     for name in ('beni-desktop-buddy', 'beni-buddy-cli'):
         shutil.move(resources / name, bin_dir / name)
     shutil.copy2(ROOT / 'packaging/linux/AppRun', appdir / 'AppRun'); (appdir / 'AppRun').chmod(0o755)
