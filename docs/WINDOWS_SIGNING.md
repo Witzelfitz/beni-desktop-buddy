@@ -1,12 +1,12 @@
 # Windows-Herausgebersignatur einrichten
 
-Stand: 14. Oktober 2026. Noch kein Azure-Abonnement vorhanden. Es wurde keine kostenpflichtige Ressource angelegt. Die Installer-Pipeline baut derzeit ohne Authenticode-Herausgebersignatur. Unsere Ed25519-Downloadsignatur ersetzt diese nicht.
+Stand: 14. Oktober 2026. Die Kosten für Artifact Signing Basic sind ausdrücklich freigegeben. Anmeldung im Azure-Portal ist bestätigt; Einrichtung des regulären Abonnements läuft gemeinsam mit dem Nutzer. Es wurde noch keine Signierressource angelegt. Die Installer-Pipeline baut derzeit ohne Authenticode-Herausgebersignatur. Unsere Ed25519-Downloadsignatur ersetzt diese nicht.
 
 ## 1. Azure-Abonnement
 
 Für **Witzelfitz Consulting GmbH, St. Gallen, Schweiz** ist die öffentliche Organisationssignierung grundsätzlich verfügbar. Zuerst mit dem gewünschten Firmenkonto im [Azure-Portal](https://portal.azure.com/) anmelden und ein reguläres Azure-Abonnement einrichten. Rechtsname und Rechnungsdaten anhand des Handelsregisters prüfen. Keine Zahlungsdaten oder Passwörter in GitHub oder Chat kopieren.
 
-**Kostenfreigabe erforderlich:** Artifact Signing Basic kostet laut [Microsoft](https://azure.microsoft.com/en-us/products/artifact-signing) USD 9.99 pro Monat für bis zu 5'000 Signaturen; zusätzliche Signaturen kosten USD 0.005. Steuern und Währungsumrechnung können hinzukommen. Vor der Ressourcenerstellung den im Portal angezeigten Preis bestätigen.
+**Kostenfreigabe vorhanden:** Artifact Signing Basic kostet laut [Microsoft](https://azure.microsoft.com/en-us/products/artifact-signing) USD 9.99 pro Monat für bis zu 5'000 Signaturen; zusätzliche Signaturen kosten USD 0.005. Steuern und Währungsumrechnung können hinzukommen. Die Freigabe gilt für Basic. [Kostenlose, Probe- und gesponserte Abonnements sind ungeeignet](https://learn.microsoft.com/en-us/azure/artifact-signing/faq#can-i-use-artifact-signing-with-a-free-trial-or-sponsored-azure-subscription).
 
 ## 2. Signierkonto
 
