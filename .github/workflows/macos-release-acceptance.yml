@@ -1,0 +1,54 @@
+name: macOS release acceptance
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Bereits vorbereiteter Release oder Entwurf, z. B. v0.1.0'
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: macos-release-acceptance-${{ inputs.tag }}
+  cancel-in-progress: false
+jobs:
+  acceptance:
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - architecture: aarch64
+            runner: macos-15
+          - architecture: x86_64
+            runner: macos-15-intel
+    runs-on: ${{ matrix.runner }}
+    env:
+      BENI_RELEASE_TAG: ${{ inputs.tag }}
+      BENI_ARCHITECTURE: ${{ matrix.architecture }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Require reviewed main
+        run: test "$GITHUB_REF" = refs/heads/main
+      - name: Install verification dependencies
+        run: |
+          python3 -m venv "$RUNNER_TEMP/beni-release-venv"
+          "$RUNNER_TEMP/beni-release-venv/bin/python" -m pip install -r scripts/requirements-release.txt
+      - name: Download and authenticate final installer
+        run: |
+          "$RUNNER_TEMP/beni-release-venv/bin/python" scripts/local-release.py download-release \
+            --tag "$BENI_RELEASE_TAG" --architecture "$BENI_ARCHITECTURE" --output "$RUNNER_TEMP/beni-final-release"
+      - name: Native final installation, CLI and window
+        run: |
+          version="$(python3 scripts/release.py version)"
+          image="$RUNNER_TEMP/beni-final-release/beni-buddy-$version-macos-$BENI_ARCHITECTURE.dmg"
+          python3 scripts/check-macos-installer.py "$image" --architecture "$BENI_ARCHITECTURE" \
+            --mode release --launch --attestation "$RUNNER_TEMP/beni-final-$BENI_ARCHITECTURE.native.json"
+      - name: Store final native acceptance receipt
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: final-macos-${{ matrix.architecture }}
+          path: ${{ runner.temp }}/beni-final-${{ matrix.architecture }}.native.json
+          retention-days: 30
+          if-no-files-found: error

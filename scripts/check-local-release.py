@@ -89,6 +89,80 @@ def candidate(directory):
 
 
 class LocalReleaseTests(unittest.TestCase):
+    def final_release_fixture(self, root):
+        source = root / "source"
+        source.mkdir()
+        trusted, key, image = candidate(source)
+        names = sorted(p for p in source.iterdir() if not p.name.startswith("candidate.json"))
+        payloads = {str(i): p.read_bytes() for i, p in enumerate(names, 1)}
+        assets = [{"id": i, "name": p.name, "state": "uploaded", "size": p.stat().st_size,
+                   "digest": "sha256:" + hashlib.sha256(p.read_bytes()).hexdigest()} for i, p in enumerate(names, 1)]
+        return trusted, key, image, [{"tag_name": "v0.1.0", "draft": True, "assets": assets}], payloads
+
+    def test_final_release_download_uses_real_signatures_without_private_keys_or_builds(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            trusted, _, _, catalog, payloads = self.final_release_fixture(root)
+            output = root / "accepted"
+            with patch.object(release, "api", return_value=catalog), patch.object(release, "command", side_effect=lambda args, **kwargs: payloads[args[2].rsplit("/", 1)[1]]), \
+                    patch.object(release, "signing_key") as signer, patch.object(release.package, "make_bundle") as builder:
+                image = release.download_release("v0.1.0", "aarch64", output, trusted)
+            signer.assert_not_called()
+            builder.assert_not_called()
+            self.assertEqual(image.read_bytes(), b"fixture final notarized image")
+            receipt = json.loads(Path(str(image) + ".build.json").read_text())
+            self.assertEqual(receipt["signing"], "developer_id")
+            self.assertTrue(receipt["notarized"])
+            self.assertFalse(any(p.name.endswith(".native.json") for p in output.iterdir()))
+            release.verify_file(image, release.public_key(trusted)[1])
+
+    def test_final_release_rejects_untrusted_manifest_before_parsing(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            trusted, _, _, catalog, payloads = self.final_release_fixture(root)
+            metadata = next(a for a in catalog[0]["assets"] if a["name"] == "release.json")
+            data = b"untrusted invalid JSON"
+            payloads[str(metadata["id"])] = data
+            metadata.update(size=len(data), digest="sha256:" + hashlib.sha256(data).hexdigest())
+            with patch.object(release, "api", return_value=catalog), patch.object(release, "command", side_effect=lambda args, **kwargs: payloads[args[2].rsplit("/", 1)[1]]), \
+                    patch.object(release, "read_manifest") as reader, self.assertRaises(release.ReleaseError):
+                release.download_release("v0.1.0", "aarch64", root / "rejected", trusted)
+            reader.assert_not_called()
+            self.assertFalse((root / "rejected").exists())
+
+    def test_final_release_rejects_asset_digest_state_size_duplicates_and_missing_files(self):
+        for invalid in ("digest", "state", "size", "id", "duplicate", "missing", "extra", "tamper", "checksum"):
+            with self.subTest(invalid=invalid), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                trusted, _, _, catalog, payloads = self.final_release_fixture(root)
+                assets = catalog[0]["assets"]
+                image = next(a for a in assets if a["name"].endswith(".dmg"))
+                if invalid == "digest": image["digest"] = "sha256:" + "0" * 64
+                elif invalid == "state": image["state"] = "new"
+                elif invalid == "size": image["size"] = release.MAX_PACKAGE_BYTES + 1
+                elif invalid == "id": image["id"] = "../escape"
+                elif invalid == "duplicate": assets.append(dict(image))
+                elif invalid == "missing": assets.remove(image)
+                elif invalid == "extra": assets.append(dict(image, name="../escape"))
+                else:
+                    target = image if invalid == "tamper" else next(a for a in assets if a["name"].endswith(".sha256"))
+                    data = b"modified release data"
+                    payloads[str(target["id"])] = data
+                    target.update(size=len(data), digest="sha256:" + hashlib.sha256(data).hexdigest())
+                with patch.object(release, "api", return_value=catalog), patch.object(release, "command", side_effect=lambda args, **kwargs: payloads[args[2].rsplit("/", 1)[1]]), self.assertRaises(release.ReleaseError):
+                    release.download_release("v0.1.0", "aarch64", root / "rejected", trusted)
+                self.assertFalse((root / "rejected").exists())
+
+    def test_final_release_rejects_wrong_version_missing_architecture_and_existing_destination(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            trusted, _, _, catalog, payloads = self.final_release_fixture(root)
+            existing = root / "existing"
+            existing.mkdir()
+            for tag, architecture, output in (("v9.0.0", "aarch64", root / "bad"), ("v0.1.0", "x86_64", root / "bad"), ("v0.1.0", "aarch64", existing)):
+                with patch.object(release, "api", return_value=catalog), patch.object(release, "command", side_effect=lambda args, **kwargs: payloads[args[2].rsplit("/", 1)[1]]), self.assertRaises(release.ReleaseError):
+                    release.download_release(tag, architecture, output, trusted)
+
     def test_only_successful_own_main_native_runs_are_accepted(self):
         run, jobs = fixture_run()
         with patch.object(release, "command"), patch.object(release, "build_fingerprint", return_value="same"):
