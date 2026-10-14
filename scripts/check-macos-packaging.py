@@ -46,6 +46,35 @@ def fake_dmg(app, directory, image, identity):
 
 
 class PackagingTests(unittest.TestCase):
+    def test_ticket_validation_success_requires_zero_exit(self):
+        with patch.object(installer.subprocess, "run", return_value=subprocess.CompletedProcess([], 0, "validated")) as runner:
+            installer.validate_ticket(Path("fixture.dmg"))
+            self.assertIn("validate", runner.call_args.args[0])
+        for code in (65, 68, 77):
+            with patch.object(installer.subprocess, "run", return_value=subprocess.CompletedProcess([], code, "unknown")):
+                with self.assertRaises(installer.package.PackagingError):
+                    installer.validate_ticket(Path("fixture.dmg"))
+
+    def test_ticket_failure_identifies_target_and_redacts_raw_output(self):
+        output = "account-secret\nStatus Code: 503\nError Domain=NSURLErrorDomain Code=-1001 \nCloudKit query failed\nraw-ticket-secret"
+        with patch.object(installer.subprocess, "run", return_value=subprocess.CompletedProcess([], 68, output)):
+            for path, kind in ((Path("fixture.dmg"), "DMG"), (Path("Fixture.app"), "App")):
+                with self.assertRaises(installer.package.PackagingError) as failure:
+                    installer.validate_ticket(path)
+                message = str(failure.exception)
+                self.assertIn(f"({kind})", message)
+                self.assertIn("Apple-HTTP 503", message)
+                self.assertIn("URL-Fehler -1001", message)
+                self.assertNotIn("secret", message)
+                self.assertNotIn("fixture", message.lower())
+
+    def test_ticket_validation_timeout_never_accepts_or_leaks_output(self):
+        with patch.object(installer.subprocess, "run", side_effect=subprocess.TimeoutExpired([], 90, output="account-secret")):
+            with self.assertRaises(installer.package.PackagingError) as failure:
+                installer.validate_ticket(Path("Fixture.app"))
+            self.assertIn("Zeitlimit", str(failure.exception))
+            self.assertNotIn("secret", str(failure.exception))
+
     def test_sparkle_symlinks_licenses_and_inside_out_signing(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
