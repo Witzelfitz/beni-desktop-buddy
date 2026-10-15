@@ -36,4 +36,4 @@ Für neue Produktfunktionen gilt die vom Nutzer bestätigte Reihenfolge:
 3. **Website freischalten:** vorbereiteten Web-Stand nach tatsächlicher Verfügbarkeit deployen. Version und Downloads stammen aus demselben Release; Beispiele und Hilfe passen zur freigegebenen Bedienung.
 4. **Gemeinsam abnehmen:** Download → Installation → erster Fokus/Erinnerung → Zustandsanzeige → Update. Bestehende Einbettungen und ältere unterstützte App-Versionen bleiben gesondert berücksichtigt.
 
-Website-Deployments starten keine Rust-Builds. Ein gemergter Desktop-PR ist noch kein veröffentlichter Installer. Das Menü-Rad gehört zur Entwicklung nach 0.1.5/Build 6; die Downloadseite darf es vor der nächsten Veröffentlichung nicht als bereits installierbare Funktion versprechen.
+Website-Deployments starten keine Rust-Builds. Ein gemergter Desktop-PR ist noch kein veröffentlichter Installer. Das Menü-Rad ist seit 0.1.6/Build 7 veröffentlicht. Website-PR #13 ergänzt die passende Hilfe und eine ausdrücklich schematische Vorschau; automatische Zwischenmeldungen aus Schritt 2 sind weiterhin offen.

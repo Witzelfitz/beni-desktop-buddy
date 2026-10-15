@@ -4,15 +4,15 @@ Dein kleiner Begleiter auf dem Desktop: eine native Rust-App mit vertrauten Beni
 
 <img src="docs/images/macos-buddy.png" alt="Beni auf dem macOS-Desktop mit eingeklappter Bedienung" width="340">
 
-**[Herunterladen](https://mini.witzelfitz.io/download)** · [Release 0.1.5](https://github.com/Witzelfitz/beni-desktop-buddy/releases/tag/v0.1.5) · [Bedienung](docs/USER_GUIDE.md)
+**[Herunterladen](https://mini.witzelfitz.io/download)** · [Release 0.1.6](https://github.com/Witzelfitz/beni-desktop-buddy/releases/tag/v0.1.6) · [Bedienung](docs/USER_GUIDE.md)
 
 ## Was Beni mitbringt
 
-- Gesprächsblase mit freiwilliger lokaler Ollama-Verbindung, Hochdeutsch mit Schweizer Rechtschreibung und passenden Gesten.
+- Menü-Rad mit Fokus-/Pausen-Timer, eigenen Erinnerungen, Verlauf und Ruhe; direkt per Klick auf Beni erreichbar.
 - Statusmeldungen von eigenen Werkzeugen und Codex-/Claude-Code-Hooks, mit Meldungsverlauf.
-- Fokus-/Pausen-Timer und eigene Erinnerungen; in der Entwicklung nach 0.1.5 direkt über ein Menü-Rad erreichbar.
-- Einklappbare Bedienung, separate Einstellungen, Grössenwahl und «Nicht stören».
+- Separate Einstellungen, Grössenwahl und «Nicht stören».
 - Bestehende Animationen, reduzierte Bewegung und durchklickbare transparente Flächen.
+- Freiwilliger lokaler Ollama-Chat direkt an der Figur, in Hochdeutsch mit Schweizer Rechtschreibung und passenden Gesten.
 
 ## Installieren und loslegen
 

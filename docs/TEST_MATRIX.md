@@ -368,3 +368,22 @@ Automatische gelegentliche Zwischenmeldungen sind als nächster Schritt geplant;
 ## Vorbereitung 0.1.6/Build 7
 
 Menü-Rad aus PR #64 und Web-Vorbereitung aus Beni-Allrounder PR #12 sind gemergt. Version und Buildnummer werden gemeinsam erhöht; beide Lockfiles enthalten dieselben Beni-Versionen. Native Installer, finale Signaturen, öffentlicher Release und Website-Freischaltung werden erst nach ihren tatsächlichen Prüfungen als bestanden dokumentiert. Windows wartet weiterhin auf Microsofts Firmenprüfung.
+
+## Veröffentlichung 0.1.6/Build 7, 15. Oktober 2026
+
+| Prüfung | Ergebnis |
+| --- | --- |
+| Root, Desktop, Packaging/Release, Assets und Integration | PASS, vollständiger lokaler Prüfeinstieg; 47 Root-/115 Desktoptests, fmt, Clippy, separater GUI-Build. Echter Ollama-Test für diese Bedienungsänderung NOT_RUN |
+| Feature-/Versions-CI und integriertes main | PASS, 38691662530 / 38692541475 / 38692989683 auf Linux/macOS/Windows einschliesslich nativer Linux-Proben |
+| Native Entwicklungsinstaller beider Macs | PASS, 38692994335; Installation, CLI, eigenes sichtbares Fenster und Entfernung |
+| Linux-AppImage Ubuntu 22.04 | PASS, 38692998035; Installation/Entfernung, CLI sowie X11/Wayland |
+| Lokale Developer-ID-Signierung, Notarisierung, Stapling, Gatekeeper und Ed25519 | PASS, beide Macs. Ein lokaler Signierlauf wurde gestoppt; separate Intel-Signierprüfung und vollständiger erneuter Freigabelauf bestehen. Keine ungeprüften Teilpakete veröffentlicht |
+| Finale Mac-Abnahme mit veröffentlichten Paket-Hashes | PASS, 38695126708, beide Architekturen auf macOS 15.7.9; Belege stimmen exakt mit den finalen DMGs überein |
+| Entwurf und öffentlicher Release | PASS, Release-ID 413498678; Tag v0.1.6 auf f1cc7765d93d08bf2fd7e5506e7a2cec0716fa92. Alle 13 Dateien zurückgeladen, bytegleich und authentifiziert; keine lokalen Kandidatenbelege veröffentlicht |
+| Web: Node 24.14.0, Build und Browser | PASS, 57 Node-Tests; Desktop-/Mobil-Downloadauswahl, sechs Radbeschriftungen und begrenzte Vorschau, vollständige Geschichte mit vorhandenen Gesten, Pause/Neustart und reduzierte Bewegung; keine Browserfehler |
+| Live-Katalog und beide Stable-Feeds | PASS, exakt 0.1.6/Build 7 und bytegleiche signierte XML-Dateien; Beta bleibt 503 |
+| Website-Deployment und echte Downloadauswahl | PASS, Web-PR #13 gemergt, Server auf 3c46e9b2e68e0da50fbc61e165416703c051c015; Live-HTML bytegleich. Echte Browserdownloads für Mac Apple Silicon und Linux stimmen nach Grösse/SHA-256 mit dem authentifizierten Manifest überein; Windows bleibt ohne Download. Mobilansicht/reduzierte Bewegung sowie Studio/Embed ohne Browserfehler |
+| Windows-Veröffentlichung | NOT_RUN, wartet nach Nutzerentscheidung auf Microsoft-Firmenprüfung und Herausgebersignierung |
+| Tatsächliches Nutzerupdate, Alltagserprobung und Hooks nach Update | NOT_RUN; installierte Programme-App und Hook-Definitionen beim Rollout nicht verändert |
+
+Quelle aller drei nativen Pakete ist derselbe oben genannte Commit. Automatische Zwischenmeldungen sind nicht Teil dieses Releases. Physische Windows-/Linux-Geräte, weitere Distributionen und die verbleibenden Update-/Screenreader-Fälle behalten ihre bisherigen offenen Abnahmen.
