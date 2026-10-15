@@ -10,7 +10,7 @@ Dein kleiner Begleiter auf dem Desktop: eine native Rust-App mit vertrauten Beni
 
 - Gesprächsblase mit freiwilliger lokaler Ollama-Verbindung, Hochdeutsch mit Schweizer Rechtschreibung und passenden Gesten.
 - Statusmeldungen von eigenen Werkzeugen und Codex-/Claude-Code-Hooks, mit Meldungsverlauf.
-- Fokus-/Pausen-Timer und eigene Erinnerungen.
+- Fokus-/Pausen-Timer und eigene Erinnerungen; in der Entwicklung nach 0.1.5 direkt über ein Menü-Rad erreichbar.
 - Einklappbare Bedienung, separate Einstellungen, Grössenwahl und «Nicht stören».
 - Bestehende Animationen, reduzierte Bewegung und durchklickbare transparente Flächen.
 

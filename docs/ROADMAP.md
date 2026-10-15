@@ -2,7 +2,7 @@
 
 Der verbindliche nächste Arbeitsabschnitt steht im [Masterplan für Distribution, Updates und KI](MASTERPLAN.md). Version 0.1.5/Build 6 ist für beide Macs und Linux veröffentlicht; Downloadseite und beide signierten Mac-Feeds sind live. Die Gesprächsblase hängt an Beni und verwendet Hochdeutsch mit Schweizer Rechtschreibung sowie geprüfte JSON-Emotionen mit vorhandenen Gesten. Audio bleibt zurückgestellt. Der Nutzer kann über das Menüleistensymbol aktualisieren; die tatsächliche Installation/Gesprächsabnahme folgt. Windows wartet weiterhin auf Firmenprüfung und Herausgebersignatur; zusätzliche Zielgeräte-/Updatefälle bleiben offen.
 
-Die [Härtungen H1–H5](HARDENING.md) aus dem Review sind in PR #58–#62 gemergt: Dokumentation, getrennte native CI-Proben, zentrale Sprechblasenregeln, begrenzter eframe-Patch und gemeinsamer Prüfeinstieg. Als nächster Entwicklungsschritt folgt die sichere Zugangsdatenverwaltung. Diese Änderungen sind noch kein neuer öffentlicher Installer.
+Die [Härtungen H1–H5](HARDENING.md) aus dem Review sind in PR #58–#62 gemergt: Dokumentation, getrennte native CI-Proben, zentrale Sprechblasenregeln, begrenzter eframe-Patch und gemeinsamer Prüfeinstieg. Als nächster Entwicklungsschritt folgt das Menü-Rad für den Alltag, danach verständliche Zustände und gelegentliche Zwischenstände. Eigene Cloud-Keys sind zurückgestellt; [gemeinsamer Produkt- und Veröffentlichungsplan](EVERYDAY_BUDDY.md). Diese Änderungen sind noch kein neuer öffentlicher Installer.
 
 ## 1 · Desktop-Abnahme und erster Build
 

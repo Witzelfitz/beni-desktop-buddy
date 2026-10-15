@@ -128,4 +128,4 @@ Diese lokale Einrichtung gilt nicht automatisch für cloud-orchestrierte Work-/C
 
 Für Tests und eigene CLI-Umgebungen gibt es `--endpoint` oder `BENI_IPC_ENDPOINT`; die GUI verwendet weiterhin ihren festen Endpunkt. `run` reicht den Exitcode des gestarteten Programms weiter, bei nicht startbarem Programm 127. `BENI_CLI` wählt nur die CLI für die Wrapper und den Hook.
 
-Transport und Grenzen: [ADR 0002](adr/0002-local-status.md). Die Meldungen werden nicht in einen Verlauf oder eine Datei geschrieben. Integrationen führen nur das ausdrücklich übergebene Programm aus; Meldungen können selbst keine Systemaktionen auslösen.
+Transport und Grenzen: [ADR 0002](adr/0002-local-status.md). Angenommene Meldungen bleiben im begrenzten Sitzungsverlauf nachlesbar; sie werden nicht auf die Festplatte geschrieben. Integrationen führen nur das ausdrücklich übergebene Programm aus; Meldungen können selbst keine Systemaktionen auslösen.

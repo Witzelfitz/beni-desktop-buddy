@@ -1,3 +1,5 @@
+> Entwicklungsstand nach 0.1.5: Das Menü-Rad und die direkten Ansichten werden mit der nächsten passenden Veröffentlichung ausgeliefert. Der öffentliche Installer 0.1.5 verwendet noch die bisherige Bedienleiste.
+
 # Beni bedienen
 
 Die Installation und Updates findest du auf [der Downloadseite](https://mini.witzelfitz.io/download). [Mit Beni reden](CHAT.md) erklärt die Gesprächsblase und Ollama; [Integrationen](INTEGRATIONS.md) erklärt lokale Statusquellen.
@@ -5,38 +7,38 @@ Die Installation und Updates findest du auf [der Downloadseite](https://mini.wit
 | Aktion | Bedienung |
 | --- | --- |
 | Beni verschieben | Beni mit der linken Maustaste ziehen |
-| Bedienleiste auf-/zuklappen | Beni anklicken; beim Start ist die Leiste eingeklappt |
+| Menü-Rad öffnen/schliessen | Beni anklicken; beim Start ist das Rad geschlossen |
 | Bedienung ohne Maus | Bei fokussiertem Buddy-Fenster mit Tab zu Beni oder einem Bedienelement wechseln; Eingabe oder Leertaste aktiviert es |
 | Beni anzeigen / ausblenden | «Beni» in der Menüleiste → «Beni anzeigen» / «Beni ausblenden» |
 | Verlorenen Beni zurückholen | «Beni» in der Menüleiste → «Beni zurückholen» (Hauptbildschirm) |
-| Einstellungen öffnen | «Beni» in der Menüleiste → «Einstellungen»; alternativ Beni anklicken → «Menü» |
-| Begrüssen | Bedienleiste aufklappen → «Hallo!» |
-| Pause/Fortsetzen | «Pause» / «Weiter» |
-| Animation auswählen | «Menü» → Animation |
-| Energie, Tempo, Spiegelung | «Menü» |
-| Beni-Grösse | «Menü» → «Klein», «Mittel» oder «Gross»; die Auswahl bleibt nach Neustart erhalten |
-| Globale Tastenkürzel | «Menü» → «Tastenkürzel» → Kombinationen wählen und «Globale Hotkeys aktivieren» |
-| Weniger Bewegung | «Menü» → «Weniger Bewegung» |
-| Hintergrund durchklickbar | Standardmässig aktiv; im Menü abschaltbar. Beni, sichtbare Bedienleiste und Sprechblasen bleiben anklickbar |
-| Fokus-/Pausen-Timer | «Einstellungen» → «Fokus & Pause»: Minuten wählen, starten, unterbrechen, fortsetzen oder abbrechen |
-| Lokale Erinnerungen | «Einstellungen» → «Erinnerungen»: Text und Wartezeit eingeben, planen oder entfernen |
+| Einstellungen öffnen | «Beni» in der Menüleiste → «Einstellungen»; alternativ Beni anklicken → «Einstellungen» |
+| Begrüssungsanimation | «Einstellungen» → Animation «Winken» |
+| Animation pausieren/fortsetzen | Menüleistensymbol → «Animation pausieren» |
+| Animation auswählen | «Einstellungen» → Animation |
+| Energie, Tempo, Spiegelung | «Einstellungen» |
+| Beni-Grösse | «Einstellungen» → «Klein», «Mittel» oder «Gross»; die Auswahl bleibt nach Neustart erhalten |
+| Globale Tastenkürzel | «Einstellungen» → «Tastenkürzel» → Kombinationen wählen und «Globale Hotkeys aktivieren» |
+| Weniger Bewegung | «Einstellungen» → «Weniger Bewegung» |
+| Hintergrund durchklickbar | Standardmässig aktiv; im Menü abschaltbar. Beni, sichtbare Menü-Rad und Sprechblasen bleiben anklickbar |
+| Fokus-/Pausen-Timer | Menü-Rad → «Fokus» oder «Einstellungen» → «Fokus & Pause»: Minuten wählen, starten, unterbrechen, fortsetzen oder abbrechen |
+| Lokale Erinnerungen | Menü-Rad → «Erinnerung» oder «Einstellungen» → «Erinnerungen»: Text und Wartezeit eingeben, planen oder entfernen |
 | Eigene Sprechblase | Nachricht im Menü eingeben; lange Texte scrollen; Blase anklicken oder mit × schliessen |
-| Status von lokalen Programmen | «Menü» → «Statusmeldungen empfangen», danach CLI `notify` oder `run` |
-| Statusanzeigen pausieren | «Menü» oder Tray → «Nicht stören» |
-| Verpasste Statusmeldungen lesen | «Menü» → «Verlauf öffnen» oder Tray → «Meldungsverlauf» |
-| Vordergrunddarstellung | «Menü» → «Immer im Vordergrund» |
-| Bedienleiste schliessen | Escape bei Beni oder Beni erneut anklicken |
+| Status von lokalen Programmen | «Einstellungen» → «Statusmeldungen empfangen», danach CLI `notify` oder `run` |
+| Statusanzeigen pausieren | Menü-Rad → «Ruhe» oder Tray/Einstellungen → «Nicht stören» |
+| Verpasste Statusmeldungen lesen | Menü-Rad → «Verlauf» oder Tray → «Meldungsverlauf» |
+| Vordergrunddarstellung | «Einstellungen» → «Immer im Vordergrund» |
+| Menü-Rad schliessen | Escape bei Beni oder Beni erneut anklicken |
 | Einstellungen schliessen | «Schliessen», Titelleiste oder Escape im Einstellungsfenster |
-| Beenden | «Beenden» im Fenster oder Tray; Alt/Option + Q bei fokussiertem Buddy- oder Einstellungsfenster |
+| Beenden | «Beenden» im Tray; Alt/Option + Q bei fokussiertem Buddy- oder Einstellungsfenster |
 
-Die Bedienleiste erscheint erst nach einem Klick auf Beni. Ein weiterer Klick oder Escape klappt sie wieder zu; das separate Einstellungsfenster bleibt offen. Benis Grösse und Position bleiben beim Auf-/Zuklappen gleich; aktive Statusmeldungen behalten Text, Quelle, Geste und Anzeigedauer. Ziehen klappt die Leiste nicht auf. Das Tray-Menü ist auch bei eingeklappter Bedienung verfügbar.
+Das Menü-Rad erscheint nach einem Klick auf Beni mit Fokus, Erinnerung, Verlauf, Ruhe, Reden und Einstellungen. Ein weiterer Klick oder Escape schliesst es. Jede Aktion ist per Tab und Eingabe/Leertaste erreichbar. Fokus und Erinnerung öffnen direkte, reduzierte Ansichten im vorhandenen separaten Bedienfenster. Unter der Figur zeigt das offene Rad den Timerzustand, die Anzahl Erinnerungen oder «Bereit». Das Tray-Menü bleibt erreichbar. Grösse, Position und aktive Statusmeldungen bleiben beim Öffnen erhalten; Ziehen öffnet das Rad nicht. [Produktkonzept und Veröffentlichungsablauf](EVERYDAY_BUDDY.md).
 
 Die native Accessibility-Anbindung über [eframes AccessKit-Feature](https://docs.rs/eframe/0.36.2/eframe/#feature-flags) ist aktiviert. Beni wird als beschrifteter Button mit Auf-/Zuklappzustand dargestellt; die Sprechblase hat einen benannten Schliessen-Knopf, und das Nachrichtenfeld einen festen Namen. Tab, Eingabe und Leertaste bedienen auch die eingeklappte Leiste. Eine vollständige Abnahme mit VoiceOver, NVDA und Orca bleibt separat zu prüfen.
 
 
 «Klein» verwendet eine Zeichenfläche von 300 × 360 Punkten, «Mittel» die bisherige Grösse von 340 × 440 und «Gross» 420 × 560. Schrift und Bedienelemente behalten ihre Grösse. Die Einstellungen haben ein unabhängiges Fenster; seine Grösse hängt nicht von Beni ab. Aktive Meldungen behalten beim Wechsel Text, Quelle, Geste und Anzeigedauer. Fehlende oder beschädigte Grösseneinstellungen fallen auf «Mittel» zurück. Nach einer Vergrösserung wird die Fensterposition erneut geprüft; unter Wayland bestimmt weiterhin der Compositor die Platzierung.
 
-«Einstellungen» im Menüleistensymbol und «Menü» bei Beni öffnen dasselbe verschiebbare, skalierbare Fenster mit normaler Titelleiste. Es startet mit 520 × 680 Punkten, hat eine scrollbar dargestellte Bedienung und einen stets erreichbaren «Schliessen»-Knopf. Es ist vollständig anklickbar, auch wenn transparente Bereiche des Buddys durchklickbar sind. Schliessen beendet nur dieses Fenster. Beni bleibt sichtbar; Statusmeldungen werden während der Einstellungen weiter angezeigt. Escape beendet zuerst eine aktive Eingabe und schliesst danach das Fenster. Alt/Option + Q beendet die ganze App. Zuklappen der Buddy-Leiste schliesst das separate Fenster nicht.
+«Einstellungen» im Menüleistensymbol und «Einstellungen» bei Beni öffnen dasselbe verschiebbare, skalierbare Fenster mit normaler Titelleiste. Es startet mit 520 × 680 Punkten, hat eine scrollbar dargestellte Bedienung und einen stets erreichbaren «Schliessen»-Knopf. Es ist vollständig anklickbar, auch wenn transparente Bereiche des Buddys durchklickbar sind. Schliessen beendet nur dieses Fenster. Beni bleibt sichtbar; Statusmeldungen werden während der Einstellungen weiter angezeigt. Escape beendet zuerst eine aktive Eingabe und schliesst danach das Fenster. Alt/Option + Q beendet die ganze App. Zuklappen der Buddy-Leiste schliesst das separate Fenster nicht.
 
 Unter «Fokus & Pause» startet ein lokaler Timer mit frei wählbaren 1–180 Minuten (Vorgabe: 25 Minuten Fokus, 5 Minuten Pause). Es läuft immer eine Phase; die nächste startest du selbst. «Timer unterbrechen» hält die Restzeit, «Timer fortsetzen» zählt weiter, «Timer abbrechen» verwirft den Lauf. Benis Animationspause, Tempo und reduzierte Bewegung beeinflussen den Timer nicht. Die Restzeit ist im Einstellungsfenster auch bei zugeklapptem Abschnitt sichtbar.
 
@@ -62,7 +64,7 @@ Der Meldungsverlauf zeigt die letzten 100 angenommenen Statusmeldungen sowie Tim
 
 «Leeren» entfernt den Verlauf, einschliesslich noch gepufferter Empfangseinträge. Die bestehende Anzeige-Warteschlange bleibt unabhängig davon. Ausschalten des Empfangs behält den bisherigen Verlauf; nach Beenden von Beni ist er weg. Meldungsinhalte und die Leseansicht werden nicht auf der Festplatte gespeichert. Ungültige oder wegen Limits abgelehnte Meldungen kommen nicht in den Verlauf.
 
-Transparente Flächen leiten Mausklicks an das darunterliegende Fenster weiter. Die Eingabegeometrie folgt der gezeichneten Beni-Silhouette, Sprechblase und Bedienleiste; das eigenständige Einstellungsfenster hat eine normale volle Eingabefläche. Auf macOS stellen passive Mausbewegungsereignisse das Buddy-Fenster vor dem nächsten Klick passend um; Tastaturereignisse werden dafür nicht überwacht. Windows verwendet Fensterregionen, Linux X11 Input Shapes und Wayland Oberflächen-Eingaberegionen. Ohne verfügbares Tray oder bei nativen Fehlern bleibt die normale Fensterbedienung erhalten. Autostart bleibt offen.
+Transparente Flächen leiten Mausklicks an das darunterliegende Fenster weiter. Die Eingabegeometrie folgt der gezeichneten Beni-Silhouette, Sprechblase und Menü-Rad; das eigenständige Einstellungsfenster hat eine normale volle Eingabefläche. Auf macOS stellen passive Mausbewegungsereignisse das Buddy-Fenster vor dem nächsten Klick passend um; Tastaturereignisse werden dafür nicht überwacht. Windows verwendet Fensterregionen, Linux X11 Input Shapes und Wayland Oberflächen-Eingaberegionen. Ohne verfügbares Tray oder bei nativen Fehlern bleibt die normale Fensterbedienung erhalten. Autostart bleibt offen.
 
 Globale Hotkeys sind bei neuen Installationen ausgeschaltet. Die Vorschläge sind `Ctrl+Alt+B` zum Anzeigen und Zurückholen auf den Hauptbildschirm sowie `Ctrl+Alt+P` zum Pausieren/Fortsetzen der Animation. Du kannst die Texte ändern und mit «Hotkeys übernehmen» anwenden; ohne Aktivierung werden nur die Kombinationen gespeichert. Kombinationen verwenden beispielsweise `Ctrl`, `Alt`/`Option`, `Shift`, `Cmd`/`Super` und eine Taste. `Super` bezeichnet die Windows-/Cmd-Taste; Buchstaben verwenden US-Tastenpositionen (Y/Z bei QWERTZ vertauscht). Einzelne Funktionstasten wie `F8` sind ebenfalls möglich. Normale Tasten brauchen Ctrl, Alt/Option oder Cmd/Super; doppelte Kombinationen und Medientasten werden abgelehnt.
 
