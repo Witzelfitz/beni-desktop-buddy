@@ -1,4 +1,4 @@
-> Ab Version 0.1.6: Menü-Rad und direkte Ansichten für Fokus und Erinnerungen. Die Veröffentlichung und Plattformabnahme sind im [Masterplan](MASTERPLAN.md) dokumentiert.
+> Entwicklung nach 0.1.6: kompakte Eingabekarten und ein überarbeitetes Menü-Rad. Der öffentliche Installer 0.1.6 verwendet noch die vorherigen Alltagsansichten. [Bedienhilfe zur veröffentlichten Version](https://github.com/Witzelfitz/beni-desktop-buddy/blob/v0.1.6/docs/USER_GUIDE.md) · [Echte Vorschau des neuen Stands](COMPACT_UI.md).
 
 # Beni bedienen
 
@@ -31,7 +31,7 @@ Die Installation und Updates findest du auf [der Downloadseite](https://mini.wit
 | Einstellungen schliessen | «Schliessen», Titelleiste oder Escape im Einstellungsfenster |
 | Beenden | «Beenden» im Tray; Alt/Option + Q bei fokussiertem Buddy- oder Einstellungsfenster |
 
-Das Menü-Rad erscheint nach einem Klick auf Beni mit Fokus, Erinnerung, Verlauf, Ruhe, Reden und Einstellungen. Ein weiterer Klick oder Escape schliesst es. Jede Aktion ist per Tab und Eingabe/Leertaste erreichbar. Fokus und Erinnerung öffnen direkte, reduzierte Ansichten im vorhandenen separaten Bedienfenster. Unter der Figur zeigt das offene Rad den Timerzustand, die Anzahl Erinnerungen oder «Bereit». Das Tray-Menü bleibt erreichbar. Grösse, Position und aktive Statusmeldungen bleiben beim Öffnen erhalten; Ziehen öffnet das Rad nicht. [Produktkonzept und Veröffentlichungsablauf](EVERYDAY_BUDDY.md).
+Das Menü-Rad erscheint nach einem Klick auf Beni mit Fokus, Erinnerung, Verlauf, Ruhe, Reden und Einstellungen. Ein weiterer Klick oder Escape schliesst es. Jede Aktion ist per Tab und Eingabe/Leertaste erreichbar. Fokus und Erinnerung öffnen kompakte Eingabekarten neben Beni. Das erste Feld erhält sofort den Fokus; Enter bestätigt gültige Eingaben, Escape oder × schliesst die Karte und erhält den Entwurf in dieser App-Sitzung. Das Rad zeigt danach den neuen Zustand. Die vollständigen Einstellungen bleiben separat erreichbar. Unter der Figur zeigt das offene Rad den Timerzustand, die Anzahl Erinnerungen oder «Bereit». Das Tray-Menü bleibt erreichbar. Fenstergrösse, Fensterposition und aktive Statusmeldungen bleiben beim Öffnen erhalten; die Figur wird im offenen Rad für mehr Abstand kleiner dargestellt und kehrt danach zur ursprünglichen Darstellung zurück; Ziehen öffnet das Rad nicht. [Produktkonzept und Veröffentlichungsablauf](EVERYDAY_BUDDY.md).
 
 Die native Accessibility-Anbindung über [eframes AccessKit-Feature](https://docs.rs/eframe/0.36.2/eframe/#feature-flags) ist aktiviert. Beni wird als beschrifteter Button mit Auf-/Zuklappzustand dargestellt; die Sprechblase hat einen benannten Schliessen-Knopf, und das Nachrichtenfeld einen festen Namen. Tab, Eingabe und Leertaste bedienen Beni und die sichtbaren Aktionen im Menü-Rad. Eine vollständige Abnahme mit VoiceOver, NVDA und Orca bleibt separat zu prüfen.
 
