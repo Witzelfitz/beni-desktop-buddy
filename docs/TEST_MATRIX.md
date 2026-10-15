@@ -360,7 +360,11 @@ Entwicklungsstand nach 0.1.5/Build 6; kein neuer öffentlicher Installer.
 | Stark begrenzte Fensterfläche | PASS, scrollbar dargestellte Aktionsliste; sichtbare Fokusaktion weiterhin per Accessibility bedienbar |
 | Native macOS-Abnahme am eigenen isolierten Debug-Prozess | PASS, sechs Ziele innerhalb 340 × 440 Punkten; Fokus starten/unterbrechen, Erinnerungsansicht, Ruhe ein/aus, Verlauf, angehängter Chat; ursprüngliche Geometrie nach Schliessen wiederhergestellt |
 | Eigene Rendererfläche: Klein, Mittel und Gross | PASS, 600 × 720, 680 × 880 und 840 × 1120 Pixel bei Retina; vorhandene Beni-Grafiken, lesbare Aktionen und Zustandsanzeiger geprüft |
-| Windows/Linux CI und native Linux-Proben für diesen PR | NOT_RUN, folgen in der regulären PR-CI; manuelle Hardwareabnahme separat offen |
+| Linux/macOS/Windows CI und native Linux-Proben | PASS, [Lauf 38691662530](https://github.com/Witzelfitz/beni-desktop-buddy/actions/runs/38691662530); manuelle Windows-/Linux-Hardwareabnahme separat offen |
 | Veröffentlichung, Nutzerinstallation und Website-Deployment | NOT_RUN; Web-PR #12 bereitet Texte/Ablauf vor. Öffentliche Downloadseite bleibt für Installer 0.1.5 korrekt |
 
 Automatische gelegentliche Zwischenmeldungen sind als nächster Schritt geplant; dieses Paket zeigt den Zustand im geöffneten Rad. Keine neuen Animationen, Provider, Schlüssel, Ports oder Zugriffsberechtigungen. Der bestehende App-Sitzungsumfang von Timern/Erinnerungen bleibt erhalten.
+
+## Vorbereitung 0.1.6/Build 7
+
+Menü-Rad aus PR #64 und Web-Vorbereitung aus Beni-Allrounder PR #12 sind gemergt. Version und Buildnummer werden gemeinsam erhöht; beide Lockfiles enthalten dieselben Beni-Versionen. Native Installer, finale Signaturen, öffentlicher Release und Website-Freischaltung werden erst nach ihren tatsächlichen Prüfungen als bestanden dokumentiert. Windows wartet weiterhin auf Microsofts Firmenprüfung.

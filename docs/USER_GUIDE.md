@@ -1,4 +1,4 @@
-> Entwicklungsstand nach 0.1.5: Das Menü-Rad und die direkten Ansichten werden mit der nächsten passenden Veröffentlichung ausgeliefert. Der öffentliche Installer 0.1.5 verwendet noch die bisherige Bedienleiste.
+> Ab Version 0.1.6: Menü-Rad und direkte Ansichten für Fokus und Erinnerungen. Die Veröffentlichung und Plattformabnahme sind im [Masterplan](MASTERPLAN.md) dokumentiert.
 
 # Beni bedienen
 
