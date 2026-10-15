@@ -141,6 +141,20 @@ pub fn card_position(
     ))
 }
 
+pub fn primary(ui: &mut egui::Ui, label: &str, enabled: bool) -> egui::Response {
+    ui.add_enabled_ui(enabled, |ui| {
+        ui.add_sized(
+            egui::vec2(ui.available_width(), 40.0),
+            egui::Button::new(
+                egui::RichText::new(label).color(egui::Color32::from_rgb(247, 250, 248)),
+            )
+            .fill(egui::Color32::from_rgb(49, 83, 74))
+            .corner_radius(10),
+        )
+    })
+    .inner
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -166,18 +180,4 @@ mod tests {
         assert!(card_position(screens[0], &[], size).is_none());
         assert!(card_position(screens[0], &screens, egui::vec2(f32::NAN, 20.0)).is_none());
     }
-}
-
-pub fn primary(ui: &mut egui::Ui, label: &str, enabled: bool) -> egui::Response {
-    ui.add_enabled_ui(enabled, |ui| {
-        ui.add_sized(
-            egui::vec2(ui.available_width(), 40.0),
-            egui::Button::new(
-                egui::RichText::new(label).color(egui::Color32::from_rgb(247, 250, 248)),
-            )
-            .fill(egui::Color32::from_rgb(49, 83, 74))
-            .corner_radius(10),
-        )
-    })
-    .inner
 }
