@@ -399,5 +399,9 @@ Quelle aller drei nativen Pakete ist derselbe oben genannte Commit. Automatische
 | Kartenposition und Grenzen | PASS, negative Bildschirmkoordinaten, Randlagen und ungültige Geometrie; vollständige Einstellungen behalten ihren normalen Rahmen und 520 × 680 Punkte |
 | Eigener nativer macOS-Prozess | PASS, Fokus 348 × 332, Erinnerung 348 × 320 Punkte; Eingabefokus, Typen, Escape/Entwurf, Enter, Timerunterbrechung, vollständige Einstellungen und drei Grössen; Buddy-Geometrie bei Kartennutzung unverändert |
 | Eigene Rendererbilder | PASS, sechs echte Bilder mit SHA-256-Provenienz unter docs/images/compact-ui. Aufnahmehilfen vor normalem Build entfernt; kein zusätzlicher eframe-Patch |
-| Windows/Linux | PR-CI ausstehend; manuelle Hardwareabnahme NOT_RUN |
+| Windows/Linux | PASS, PR-CI 38709175678 auf Linux/macOS/Windows einschliesslich separater nativer Linux-Proben; manuelle Hardwareabnahme NOT_RUN |
 | Veröffentlichung und Website-Freischaltung | NOT_RUN; öffentliche Version bleibt 0.1.6. Web-Vorschau wird für den passenden Release vorbereitet |
+
+## Vorbereitung 0.1.7/Build 8
+
+PR #67 ist als 327a413cf4babf7d3b26cb3e789dae616e3fbda2 gemergt. Die Version wird für den nächsten signierten Mac-/Linux-Release gemeinsam in allen Produktmanifesten und beiden Lockfiles erhöht; externe Abhängigkeiten bleiben identisch. Der lokale Prüfstand der Oberfläche (121 Desktoptests und 47 Roottests) und die grüne Feature-CI sind oben dokumentiert. Der vollständige gemeinsame Prüfeinstieg mit Desktop besteht lokal erneut (fmt, Tests, Clippy, Packaging-/Release-/Assetprüfungen und separater GUI-Build). Die reguläre Versions-CI wird vor dem Merge grün abgewartet. Finale Installer, notarisiertes Mac-Paket, öffentliche Feeds und Website-Freischaltung folgen erst nach der nativen Release-Abnahme. Windows bleibt bis zur bestätigten Firmenprüfung unveröffentlicht.
