@@ -400,8 +400,23 @@ Quelle aller drei nativen Pakete ist derselbe oben genannte Commit. Automatische
 | Eigener nativer macOS-Prozess | PASS, Fokus 348 × 332, Erinnerung 348 × 320 Punkte; Eingabefokus, Typen, Escape/Entwurf, Enter, Timerunterbrechung, vollständige Einstellungen und drei Grössen; Buddy-Geometrie bei Kartennutzung unverändert |
 | Eigene Rendererbilder | PASS, sechs echte Bilder mit SHA-256-Provenienz unter docs/images/compact-ui. Aufnahmehilfen vor normalem Build entfernt; kein zusätzlicher eframe-Patch |
 | Windows/Linux | PASS, PR-CI 38709175678 auf Linux/macOS/Windows einschliesslich separater nativer Linux-Proben; manuelle Hardwareabnahme NOT_RUN |
-| Veröffentlichung und Website-Freischaltung | NOT_RUN; öffentliche Version bleibt 0.1.6. Web-Vorschau wird für den passenden Release vorbereitet |
+| Veröffentlichung und Website-Freischaltung | PASS, 0.1.7/Build 8 für beide Macs und Linux; Web-PR #14 live. Einzelbelege unten |
 
 ## Vorbereitung 0.1.7/Build 8
 
 PR #67 ist als 327a413cf4babf7d3b26cb3e789dae616e3fbda2 gemergt. Die Version wird für den nächsten signierten Mac-/Linux-Release gemeinsam in allen Produktmanifesten und beiden Lockfiles erhöht; externe Abhängigkeiten bleiben identisch. Der lokale Prüfstand der Oberfläche (121 Desktoptests und 47 Roottests) und die grüne Feature-CI sind oben dokumentiert. Der vollständige gemeinsame Prüfeinstieg mit Desktop besteht lokal erneut (fmt, Tests, Clippy, Packaging-/Release-/Assetprüfungen und separater GUI-Build). Die reguläre Versions-CI wird vor dem Merge grün abgewartet. Finale Installer, notarisiertes Mac-Paket, öffentliche Feeds und Website-Freischaltung folgen erst nach der nativen Release-Abnahme. Windows bleibt bis zur bestätigten Firmenprüfung unveröffentlicht.
+
+## Veröffentlichung 0.1.7/Build 8, 15. Oktober 2026
+
+| Prüfung | Ergebnis |
+| --- | --- |
+| Feature-, Versions- und main-CI | PASS, 38709175678, 38711576292 und 38712003309 auf Linux/macOS/Windows, jeweils mit separaten nativen Linux-Proben |
+| Lokaler gemeinsamer Prüfeinstieg | PASS, Root-/Desktop-fmt, 47 Root- und 121 Desktoptests, Clippy, Packaging-/Release-/Assetprüfungen und separater GUI-Build; echter Modelltest für diese UI-Änderung NOT_RUN |
+| Native Entwicklungsinstaller | PASS, Mac 38712019533 und Linux 38712031383. Intel-Paketierung zunächst mit allgemeinem Datei-/Versionsfehler fehlgeschlagen; nur Intel unverändert wiederholt, Ursache nicht belegt |
+| Lokale Signierung | PASS, bestehende Developer ID und beni-update-v1; beide Apps/DMGs von Apple akzeptiert, Tickets und Gatekeeper geprüft; bestehende Pakete und Schlüssel unverändert |
+| Finale native Mac-Abnahme | PASS, 38713865820, beide Architekturen auf macOS 15.7.9: tatsächliche Installation, CLI, eigenes Fenster und Entfernung. Belege passen exakt zu finalen Paket-Hashes. Intel zunächst stapler-Code 68 mit URL-Fehler -1005 / unerwarteter CloudKit-Antwort; nur fehlgeschlagene Abnahme mit denselben Bytes wiederholt, keine Prüfung abgeschaltet |
+| Entwurf und öffentlicher Release | PASS, Release-ID 413632886, Tag v0.1.7 auf 27b8072aac0c43eb615d29d381e8c66d47e9fc3d; alle 13 Dateien zurückgeladen, bytegleich und authentifiziert. Private Kandidatenbelege bleiben lokal |
+| Website und Updatefeeds | PASS, Web-PR #14 deployed; Live-HTML und echte App-Bilder bytegleich zum geprüften Web-Stand. Katalog und beide signierten Stable-XML-Dateien exakt 0.1.7/Build 8; Beta bleibt 503 |
+| Echter Browserdownload | PASS, Mac Apple Silicon und Linux: tatsächliche Downloadbytes, Grösse und SHA-256 entsprechen dem authentifizierten Manifest; mobile Ansicht ohne Überlauf, reduzierte Bewegung, Windows ohne Installer, Studio/Embed ohne Browserfehler |
+| Nutzerinstallation und Hooks danach | NOT_RUN, Programme-App und bestehende Hooks beim Rollout nicht verändert; Update über Menüleistensymbol bereit |
+| Windows-Veröffentlichung / physische Zielgeräte | BLOCKED bis bestätigte Firmenprüfung beziehungsweise NOT_RUN für echte Windows-/Linux-Hardware und weitere Updatefälle; keine unsignierte Windows-Ausgabe |

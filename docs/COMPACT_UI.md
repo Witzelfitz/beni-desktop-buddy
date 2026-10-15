@@ -1,6 +1,6 @@
 # Kompakte Bedienung: echte App-Vorschau
 
-Entwicklung nach 0.1.6/Build 7. Dieser Stand wird per PR abgenommen; der öffentliche Installer enthält noch die vorherige Bedienung. Bilder stammen aus der eigenen nativen Mac-App, ohne Desktopaufnahme oder nachgebaute Bedienelemente. SHA-256 und Quellstand: [Provenienz](images/compact-ui/provenance.json). Die Beni-Rechte bleiben erhalten.
+Veröffentlicht als 0.1.7/Build 8 für beide Mac-Architekturen und Linux. PR #67 und Versions-PR #68 sind gemergt. Bilder stammen aus der eigenen nativen Mac-App, ohne Desktopaufnahme oder nachgebaute Bedienelemente. SHA-256 und Quellstand: [Provenienz](images/compact-ui/provenance.json). Die Beni-Rechte bleiben erhalten.
 
 ## Menü-Rad
 
@@ -25,5 +25,5 @@ Die Karten messen 348 × 332 beziehungsweise 348 × 320 Punkte. Der Inhalt scrol
 - Lokale Root-Prüfungen und 121 Desktoptests bestehen; echter Modelltest für diese UI-Änderung bewusst nicht wiederholt.
 - Native macOS-Abnahme am eigenen isolierten Prozess: automatischer Eingabefokus, Typen, Escape/Entwurf, Enter/Bestätigung, Timer unterbrechen, Erinnerungen, vollständige Einstellungen und alle drei Buddy-Grössen bestanden. Karten verändern die Buddy-Geometrie nicht. Die installierte App und ihre Hooks wurden nicht verändert.
 - Bilder zeigen eigene Renderflächen; nur transparente Aussenränder wurden beschnitten. Temporäre Aufnahmehilfen sind vor dem normalen Build entfernt. Die vorhandenen Atlas-/Animationsdaten sind unverändert.
-- Native Windows-/Linux-Hardwareabnahme und neue Release-Installer bleiben separat offen. Die reguläre PR-CI prüft beide Plattformen.
-- Die Website erhält dieselben echten Bilder in einem vorbereiteten Web-PR. Freischaltung zusammen mit dem passenden veröffentlichten Desktop-Update; keine vorgezogenen Funktionsversprechen für 0.1.6.
+- Feature-, Versions- und main-CI auf Linux/macOS/Windows bestanden; native Linux-Abnahme unter X11/Wayland und finale notarisierte Mac-Installer auf macOS 15.7.9 bestanden. Physische Windows-/Linux-Hardwareabnahme und das tatsächliche Nutzerupdate bleiben separat offen.
+- Website-PR #14 ist gemergt und live: dieselben echten Bilder, passende Hilfe ab 0.1.7 und Downloads aus dem authentifizierten Release. Live-Bytes und echte Browserdownloads geprüft.
