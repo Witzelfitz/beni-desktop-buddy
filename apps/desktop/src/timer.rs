@@ -46,6 +46,8 @@ struct Session {
 
 pub struct Timer {
     minutes: [u16; 2],
+    card_minutes: Option<String>,
+    card_phase: Phase,
     session: Option<Session>,
     finished: Option<Phase>,
     pending: Option<(Phase, Instant)>,
@@ -54,6 +56,8 @@ impl Default for Timer {
     fn default() -> Self {
         Self {
             minutes: DEFAULT_MINUTES,
+            card_minutes: None,
+            card_phase: Phase::Focus,
             session: None,
             finished: None,
             pending: None,
@@ -127,10 +131,100 @@ impl Timer {
         (now.saturating_duration_since(at) < NOTICE_TTL).then_some(phase)
     }
     pub fn ui(&mut self, ui: &mut egui::Ui, now: Instant) {
-        self.show(ui, now, false);
+        let status = self.status(now);
+        egui::CollapsingHeader::new("Fokus & Pause")
+            .id_salt("focus-timer")
+            .show(ui, |ui| self.contents(ui, now, &status));
+        if self.session.is_some() || self.finished.is_some() {
+            ui.small(status);
+        }
     }
-    pub fn panel(&mut self, ui: &mut egui::Ui, now: Instant) {
-        self.show(ui, now, true);
+    pub fn card(&mut self, ui: &mut egui::Ui, now: Instant, focus: bool) -> bool {
+        if self.has_session() {
+            ui.add_space(8.0);
+            ui.label(egui::RichText::new(self.status(now)).size(23.0));
+            ui.add_space(8.0);
+            self.session_controls(ui, now);
+        } else {
+            let old = self.card_phase;
+            ui.horizontal(|ui| {
+                ui.selectable_value(&mut self.card_phase, Phase::Focus, "Fokus");
+                ui.selectable_value(&mut self.card_phase, Phase::Break, "Pause");
+            });
+            if old != self.card_phase {
+                self.card_minutes = None;
+            }
+            ui.label(if self.card_phase == Phase::Focus {
+                "Wie lange möchtest du dich konzentrieren?"
+            } else {
+                "Wie lange möchtest du Pause machen?"
+            });
+            let draft = self
+                .card_minutes
+                .get_or_insert_with(|| self.minutes[self.card_phase.index()].to_string());
+            let input = ui.add(
+                egui::TextEdit::singleline(draft)
+                    .char_limit(3)
+                    .desired_width(88.0)
+                    .font(egui::TextStyle::Heading)
+                    .hint_text("Minuten"),
+            );
+            ui.ctx()
+                .accesskit_node_builder(input.id, |node| node.set_label("Dauer in Minuten"));
+            if focus {
+                input.request_focus();
+            }
+            let enter = (input.has_focus() || input.lost_focus())
+                && ui.input(|i| i.key_pressed(egui::Key::Enter));
+            let minutes = draft
+                .trim()
+                .parse::<u16>()
+                .ok()
+                .filter(|m| (1..=MAX_MINUTES).contains(m));
+            ui.small("Minuten · 1–180");
+            ui.horizontal(|ui| {
+                for value in [5, 25, 45] {
+                    if ui.button(format!("{value} Min.")).clicked() {
+                        *draft = value.to_string();
+                    }
+                }
+            });
+            let submit = ui.add_enabled(
+                minutes.is_some(),
+                egui::Button::new(if self.card_phase == Phase::Focus {
+                    "Fokus starten"
+                } else {
+                    "Pause starten"
+                }),
+            );
+            if (submit.clicked() || enter)
+                && let Some(minutes) = minutes
+            {
+                self.minutes[self.card_phase.index()] = minutes;
+                self.start(self.card_phase, now);
+                return true;
+            }
+        }
+        ui.small("Läuft lokal. App-Beenden stoppt den Timer.");
+        false
+    }
+    fn session_controls(&mut self, ui: &mut egui::Ui, now: Instant) {
+        ui.horizontal(|ui| {
+            let paused = self.session.as_ref().is_some_and(|s| s.deadline.is_none());
+            if ui
+                .button(if paused {
+                    "Timer fortsetzen"
+                } else {
+                    "Timer unterbrechen"
+                })
+                .clicked()
+            {
+                self.toggle_pause(now);
+            }
+            if ui.button("Timer abbrechen").clicked() {
+                self.stop();
+            }
+        });
     }
     pub fn status(&self, now: Instant) -> String {
         if let Some(session) = &self.session {
@@ -153,20 +247,6 @@ impl Timer {
             format!("{} beendet", phase.label())
         } else {
             "Kein Timer läuft".into()
-        }
-    }
-    fn show(&mut self, ui: &mut egui::Ui, now: Instant, expanded: bool) {
-        let status = self.status(now);
-        if expanded {
-            ui.heading("Fokus & Pause");
-            self.contents(ui, now, &status);
-        } else {
-            egui::CollapsingHeader::new("Fokus & Pause")
-                .id_salt("focus-timer")
-                .show(ui, |ui| self.contents(ui, now, &status));
-            if self.session.is_some() || self.finished.is_some() {
-                ui.small(status);
-            }
         }
     }
     fn contents(&mut self, ui: &mut egui::Ui, now: Instant, status: &str) {
@@ -194,22 +274,7 @@ impl Timer {
                 self.stop();
             }
         } else {
-            ui.horizontal(|ui| {
-                let paused = self.session.as_ref().unwrap().deadline.is_none();
-                if ui
-                    .button(if paused {
-                        "Timer fortsetzen"
-                    } else {
-                        "Timer unterbrechen"
-                    })
-                    .clicked()
-                {
-                    self.toggle_pause(now);
-                }
-                if ui.button("Timer abbrechen").clicked() {
-                    self.stop();
-                }
-            });
+            self.session_controls(ui, now);
         }
         ui.small("Läuft lokal. Kein automatischer Wechsel; App-Beenden stoppt den Timer.");
     }

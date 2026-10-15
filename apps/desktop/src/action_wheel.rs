@@ -1,5 +1,5 @@
 //! Geometry and presentation of the everyday actions around Beni.
-use eframe::egui::{self, Color32, Pos2, Rect, Stroke, Vec2};
+use eframe::egui::{self, Color32, Rect, Stroke};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Action {
@@ -42,42 +42,43 @@ impl Action {
     }
 }
 
+pub const FILL: Color32 = Color32::from_rgb(43, 49, 61);
+pub const BORDER: Color32 = Color32::from_rgb(111, 164, 150);
+
 pub struct Layout {
     pub buttons: [Rect; 6],
+    pub avatar: Rect,
 }
 impl Layout {
     pub fn new(area: Rect, avatar: Rect) -> Option<Self> {
-        if !area.is_finite() || !avatar.is_finite() || area.width() < 264.0 || area.height() < 152.0
+        if !area.is_finite()
+            || !avatar.is_finite()
+            || !avatar.is_positive()
+            || area.width() < 264.0
+            || area.height() < 200.0
         {
             return None;
         }
-        let size = egui::vec2(90.0, ((area.height() - 16.0) / 3.0).clamp(44.0, 52.0));
-        let spread = ((area.height() - size.y - 2.0) * 0.5).min(104.0);
-        let center = egui::pos2(
-            area.center().x,
-            avatar.center().y.clamp(
-                area.top() + spread + size.y * 0.5,
-                area.bottom() - spread - size.y * 0.5,
-            ),
-        );
+        let size = egui::vec2((area.width() * 0.27).clamp(82.0, 96.0), 44.0);
+        let center = area.center() - egui::vec2(0.0, 18.0);
+        let spread = ((area.height() - 84.0) * 0.5).min(96.0);
         let radius = (area.width() - size.x) * 0.5;
         let offsets = [
-            [-radius + 6.0, -spread],
-            [radius - 6.0, -spread],
-            [radius, 0.0],
-            [radius - 6.0, spread],
-            [-radius + 6.0, spread],
+            [-radius + 4.0, -spread],
+            [radius - 4.0, -spread],
             [-radius, 0.0],
+            [radius, 0.0],
+            [-radius + 4.0, spread],
+            [radius - 4.0, spread],
         ];
+        let space = egui::vec2(area.width() - 2.0 * size.x - 28.0, area.height() - 48.0);
+        let scale = (space.x / avatar.width())
+            .min(space.y / avatar.height())
+            .min(1.0);
         Some(Self {
             buttons: offsets.map(|[x, y]| Rect::from_center_size(center + egui::vec2(x, y), size)),
+            avatar: Rect::from_center_size(center, avatar.size() * scale),
         })
-    }
-    pub fn paint_backdrop(&self, painter: &egui::Painter) {
-        painter.add(egui::Shape::closed_line(
-            self.buttons.map(|r| r.center()).to_vec(),
-            Stroke::new(1.5, Color32::from_rgba_unmultiplied(142, 202, 175, 65)),
-        ));
     }
 }
 
@@ -86,17 +87,17 @@ pub fn button(ui: &mut egui::Ui, rect: Rect, action: Action, quiet: bool) -> egu
     let response = ui.put(
         rect,
         egui::Button::new(
-            egui::RichText::new(format!("\n{}", action.label()))
-                .size(12.0)
-                .color(Color32::from_rgb(239, 247, 242)),
+            egui::RichText::new(action.label())
+                .size(11.5)
+                .color(Color32::from_rgb(244, 246, 248)),
         )
-        .corner_radius(14)
+        .corner_radius(12)
         .fill(if selected {
-            Color32::from_rgb(42, 88, 68)
+            Color32::from_rgb(49, 83, 74)
         } else {
-            Color32::from_rgb(24, 40, 44)
+            FILL
         })
-        .stroke(Stroke::new(1.0, Color32::from_rgb(87, 129, 111))),
+        .stroke(Stroke::new(1.0, BORDER)),
     );
     response.widget_info(|| {
         egui::WidgetInfo::labeled(
@@ -105,103 +106,54 @@ pub fn button(ui: &mut egui::Ui, rect: Rect, action: Action, quiet: bool) -> egu
             action.accessible_label(quiet),
         )
     });
-    let stroke = Stroke::new(
-        1.5,
-        if response.hovered() {
-            Color32::WHITE
-        } else {
-            Color32::from_rgb(164, 223, 182)
-        },
-    );
-    icon(
-        ui.painter(),
-        action,
-        rect.center_top() + egui::vec2(0.0, 13.0),
-        stroke,
-    );
     if selected {
         ui.painter()
-            .circle_filled(rect.right_top() + egui::vec2(-10.0, 9.0), 2.5, stroke.color);
+            .circle_filled(rect.right_top() + egui::vec2(-8.0, 8.0), 2.0, BORDER);
     }
     response.on_hover_text(action.accessible_label(quiet))
-}
-
-fn icon(painter: &egui::Painter, action: Action, center: Pos2, stroke: Stroke) {
-    let line = |a: Vec2, b: Vec2| painter.line_segment([center + a, center + b], stroke);
-    match action {
-        Action::Focus => {
-            painter.circle_stroke(center, 6.5, stroke);
-            line(egui::vec2(0.0, -4.0), Vec2::ZERO);
-            line(Vec2::ZERO, egui::vec2(3.5, 2.0));
-        }
-        Action::Reminder => {
-            painter.add(egui::Shape::line(
-                vec![
-                    center + egui::vec2(-6.0, 4.0),
-                    center + egui::vec2(-4.5, -3.0),
-                    center + egui::vec2(0.0, -6.0),
-                    center + egui::vec2(4.5, -3.0),
-                    center + egui::vec2(6.0, 4.0),
-                    center + egui::vec2(-6.0, 4.0),
-                ],
-                stroke,
-            ));
-            painter.circle_filled(center + egui::vec2(0.0, 7.0), 1.5, stroke.color);
-        }
-        Action::History => {
-            for y in [-5.0, 0.0, 5.0] {
-                line(egui::vec2(-6.0, y), egui::vec2(6.0, y));
-            }
-        }
-        Action::Quiet => {
-            painter.circle_stroke(center, 6.5, stroke);
-            line(egui::vec2(-4.0, 4.0), egui::vec2(4.0, -4.0));
-        }
-        Action::Chat => {
-            painter.rect_stroke(
-                Rect::from_center_size(center, egui::vec2(15.0, 10.0)),
-                3,
-                stroke,
-                egui::StrokeKind::Inside,
-            );
-            line(egui::vec2(-4.0, 5.0), egui::vec2(-4.0, 8.0));
-        }
-        Action::Settings => {
-            painter.circle_stroke(center, 4.0, stroke);
-            for n in 0..8 {
-                let angle = n as f32 * std::f32::consts::TAU / 8.0;
-                let direction = egui::vec2(angle.cos(), angle.sin());
-                line(direction * 5.0, direction * 7.5);
-            }
-        }
-    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     #[test]
-    fn orbits_fit_short_long_speech_and_every_buddy_size_without_overlapping_each_other() {
+    fn every_button_clears_the_complete_avatar_and_the_other_buttons() {
         for width in [284.0, 324.0, 404.0] {
-            for height in [152.0, 180.0, 250.0, 440.0] {
-                let area = Rect::from_min_size(egui::pos2(8.0, 123.0), egui::vec2(width, height));
-                let avatar = Rect::from_center_size(area.center(), egui::vec2(90.0, 140.0));
-                let layout = Layout::new(area, avatar).unwrap();
-                for (index, rect) in layout.buttons.iter().enumerate() {
-                    assert!(area.contains_rect(*rect));
-                    assert!(rect.width() >= 44.0 && rect.height() >= 44.0);
-                    for other in &layout.buttons[index + 1..] {
-                        assert!(!rect.intersects(*other));
+            for height in [200.0, 250.0, 440.0] {
+                for avatar_size in [
+                    egui::vec2(90.0, 140.0),
+                    egui::vec2(250.0, 230.0),
+                    egui::vec2(160.0, 300.0),
+                ] {
+                    let area =
+                        Rect::from_min_size(egui::pos2(8.0, 123.0), egui::vec2(width, height));
+                    let avatar = Rect::from_center_size(area.center(), avatar_size);
+                    let layout = Layout::new(area, avatar).unwrap();
+                    assert!(area.contains_rect(layout.avatar));
+                    for (index, rect) in layout.buttons.iter().enumerate() {
+                        assert!(area.contains_rect(*rect));
+                        assert!(rect.width() >= 44.0 && rect.height() >= 44.0);
+                        assert!(!rect.expand(8.0).intersects(layout.avatar));
+                        for other in &layout.buttons[index + 1..] {
+                            assert!(!rect.intersects(*other));
+                        }
                     }
+                    assert!(layout.buttons[2].center().x < layout.avatar.left());
+                    assert!(layout.buttons[3].center().x > layout.avatar.right());
                 }
             }
         }
-        assert!(
-            Layout::new(
-                Rect::from_min_size(Pos2::ZERO, egui::vec2(200.0, 100.0)),
-                Rect::NOTHING
-            )
-            .is_none()
-        );
+    }
+    #[test]
+    fn constrained_or_invalid_geometry_uses_the_accessible_list() {
+        for size in [
+            egui::vec2(200.0, 280.0),
+            egui::vec2(324.0, 152.0),
+            egui::vec2(f32::NAN, 440.0),
+        ] {
+            let area = Rect::from_min_size(egui::Pos2::ZERO, size);
+            assert!(Layout::new(area, area).is_none());
+        }
+        assert!(Layout::new(Rect::EVERYTHING, Rect::NOTHING).is_none());
     }
 }
