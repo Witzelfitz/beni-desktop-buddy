@@ -1,4 +1,4 @@
-> Entwicklung nach 0.1.6: kompakte Eingabekarten und ein überarbeitetes Menü-Rad. Der öffentliche Installer 0.1.6 verwendet noch die vorherigen Alltagsansichten. [Bedienhilfe zur veröffentlichten Version](https://github.com/Witzelfitz/beni-desktop-buddy/blob/v0.1.6/docs/USER_GUIDE.md) · [Echte Vorschau des neuen Stands](COMPACT_UI.md).
+> Seit 0.1.7: kompakte Eingabekarten und ein überarbeitetes Menü-Rad. [Aktueller Release](https://github.com/Witzelfitz/beni-desktop-buddy/releases/tag/v0.1.7) · [Echte App-Vorschau](COMPACT_UI.md).
 
 # Beni bedienen
 
