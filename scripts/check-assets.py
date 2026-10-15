@@ -38,3 +38,13 @@ for i in range(count):
     if struct.unpack(">II", payload[16:24]) != (edge, edge):
         raise SystemExit("ICO-Geometrie stimmt nicht mit dem PNG überein.")
 print(f"PASS: {len(manifest['files'])} Icon-Dateien mit Provenienz; PNG/ICNS/ICO gültig.")
+# Public UI previews show the real renderer; keep exports and provenance together.
+previews = root.parents[1] / "docs/images/compact-ui"
+manifest = json.loads((previews / "provenance.json").read_text())
+for name, expected in manifest["files"].items():
+    if Path(name).name != name or not name.endswith(".png"):
+        raise SystemExit("Ungültiger UI-Vorschauname.")
+    data = (previews / name).read_bytes()
+    if hashlib.sha256(data).hexdigest() != expected or data[:8] != b"\x89PNG\r\n\x1a\n":
+        raise SystemExit(f"UI-Vorschau verändert: {name}; Export und Provenienz aktualisieren.")
+print(f"PASS: {len(manifest['files'])} echte UI-Vorschauen mit SHA-256-Provenienz.")

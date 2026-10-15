@@ -56,6 +56,8 @@ pub struct BuddyApp {
     menu_open: bool,
     settings_focused: bool,
     settings_page: crate::settings_window::Page,
+    card_focus: bool,
+    card_position: Option<egui::Pos2>,
     speech_draft: String,
     error: Option<TransientError>,
     last_render_error: Option<String>,
@@ -139,6 +141,8 @@ impl BuddyApp {
             menu_open: false,
             settings_focused: false,
             settings_page: crate::settings_window::Page::default(),
+            card_focus: false,
+            card_position: None,
             speech_draft: "Schön, dass du da bist!".into(),
             error: None,
             last_render_error: None,
@@ -440,6 +444,9 @@ impl BuddyApp {
             ui.ctx().send_viewport_cmd(egui::ViewportCommand::StartDrag);
         }
         if response.clicked() {
+            if self.settings_page.is_card() {
+                self.menu_open = false;
+            }
             self.controls_open = !self.controls_open;
             if !self.controls_open {
                 self.close_history();
@@ -471,17 +478,22 @@ impl BuddyApp {
         } else {
             "Ziehen: verschieben · Klicken: Menü-Rad öffnen"
         });
-        let mesh = self.avatar_mesh(stage);
-        let avatar = mesh
+        let mut mesh = self.avatar_mesh(stage);
+        let original = mesh
             .as_ref()
             .map(|mesh| Rect::from_points(&mesh.vertices.iter().map(|v| v.pos).collect::<Vec<_>>()))
             .unwrap_or(stage.shrink(35.0));
-        let wheel = crate::action_wheel::Layout::new(wheel_area, avatar);
+        let mut avatar = original;
         if self.controls_open
             && self.history_player.is_none()
-            && let Some(wheel) = &wheel
+            && let Some(layout) = crate::action_wheel::Layout::new(wheel_area, original)
+            && let Ok(mesh) = &mut mesh
         {
-            wheel.paint_backdrop(ui.painter());
+            let scale = layout.avatar.width() / original.width();
+            for vertex in &mut mesh.vertices {
+                vertex.pos = layout.avatar.min + (vertex.pos - original.min) * scale;
+            }
+            avatar = layout.avatar;
         }
         match mesh {
             Ok(mesh) => {
@@ -536,13 +548,29 @@ impl BuddyApp {
                         egui::ScrollArea::vertical()
                             .max_height((area.height() - 8.0).max(1.0))
                             .show(ui, |ui| {
-                                for action in Wheel::ALL {
-                                    if ui
-                                        .button(action.accessible_label(self.do_not_disturb))
-                                        .clicked()
-                                    {
-                                        selected = Some(action);
-                                    }
+                                ui.spacing_mut().item_spacing = egui::vec2(4.0, 4.0);
+                                let columns = if ui.available_width() >= 176.0 { 2 } else { 1 };
+                                let width = (ui.available_width() - 4.0 * (columns - 1) as f32)
+                                    / columns as f32;
+                                for row in Wheel::ALL.chunks(columns) {
+                                    ui.horizontal(|ui| {
+                                        for &action in row {
+                                            let (rect, _) = ui.allocate_exact_size(
+                                                egui::vec2(width, 44.0),
+                                                Sense::hover(),
+                                            );
+                                            if crate::action_wheel::button(
+                                                ui,
+                                                rect,
+                                                action,
+                                                self.do_not_disturb,
+                                            )
+                                            .clicked()
+                                            {
+                                                selected = Some(action);
+                                            }
+                                        }
+                                    });
                                 }
                             });
                     });
@@ -566,19 +594,26 @@ impl BuddyApp {
         };
         let state_rect = Rect::from_center_size(
             egui::pos2(area.center().x, area.bottom() - 19.0),
-            egui::vec2(88.0, 36.0),
+            egui::vec2((area.width() - 184.0).clamp(88.0, 164.0), 32.0),
         );
         if radial {
             ui.painter()
-                .rect_filled(state_rect, 10, Color32::from_rgb(24, 40, 44));
-            ui.put(
-                state_rect,
-                egui::Label::new(
-                    egui::RichText::new(state)
-                        .size(11.5)
-                        .color(Color32::from_rgb(239, 247, 242)),
-                )
-                .wrap(),
+                .rect_filled(state_rect, 12, crate::action_wheel::FILL);
+            ui.scope_builder(
+                egui::UiBuilder::new()
+                    .max_rect(state_rect.shrink(2.0))
+                    .layout(egui::Layout::top_down(egui::Align::Center)),
+                |ui| {
+                    ui.spacing_mut().item_spacing.y = 0.0;
+                    ui.add(
+                        egui::Label::new(
+                            egui::RichText::new(state.replace(" · Unterbrochen", "\nPausiert"))
+                                .size(11.0)
+                                .color(Color32::from_rgb(239, 247, 242)),
+                        )
+                        .wrap(),
+                    );
+                },
             );
             self.hit_map.add_rect(state_rect, 6.0);
         }
@@ -650,6 +685,8 @@ impl BuddyApp {
     }
     fn open_page(&mut self, ctx: &egui::Context, page: crate::settings_window::Page) {
         self.settings_page = page;
+        self.card_focus = page.is_card();
+        self.card_position = None;
         self.updates_info = false;
         self.close_history();
         if !self.menu_open {
@@ -665,6 +702,10 @@ impl BuddyApp {
     }
     fn menu(&mut self, ctx: &egui::Context) {
         if !self.menu_open {
+            return;
+        }
+        if self.settings_page.is_card() {
+            self.quick_card(ctx);
             return;
         }
         if ctx.embed_viewports() {
@@ -730,19 +771,112 @@ impl BuddyApp {
             },
         );
     }
+    fn quick_card(&mut self, ctx: &egui::Context) {
+        if ctx.embed_viewports() {
+            let available = ctx.content_rect().size() - Vec2::splat(24.0);
+            let size = self.settings_page.card_size().min(available);
+            let response = egui::Window::new(self.settings_page.title())
+                .title_bar(false)
+                .fixed_pos([12.0, 12.0])
+                .fixed_size(size)
+                .frame(crate::settings_window::card_frame())
+                .show(ctx, |ui| {
+                    if ui.input(|i| i.key_pressed(egui::Key::Escape)) {
+                        self.menu_open = false;
+                    } else {
+                        self.quick_card_contents(ui, false);
+                    }
+                });
+            if let Some(response) = response {
+                self.hit_map.add_rect(response.response.rect, 20.0);
+            }
+            return;
+        }
+        ctx.show_viewport_immediate(
+            crate::settings_window::id(),
+            crate::settings_window::card_builder(self.settings_page, self.card_position),
+            |ui, _| {
+                let child = ui.ctx().clone();
+                if child
+                    .input(|i| i.viewport().close_requested() || i.key_pressed(egui::Key::Escape))
+                {
+                    self.menu_open = false;
+                    child.request_repaint_of(egui::ViewportId::ROOT);
+                    return;
+                }
+                if child.input(|i| i.modifiers.alt && i.key_pressed(egui::Key::Q)) {
+                    child
+                        .send_viewport_cmd_to(egui::ViewportId::ROOT, egui::ViewportCommand::Close);
+                }
+                crate::settings_window::card_frame()
+                    .outer_margin(10)
+                    .show(ui, |ui| {
+                        ui.set_min_size(ui.available_size());
+                        self.quick_card_contents(ui, true);
+                    });
+                if !self.menu_open {
+                    child.request_repaint_of(egui::ViewportId::ROOT);
+                }
+            },
+        );
+    }
+    fn quick_card_contents(&mut self, ui: &mut egui::Ui, native: bool) {
+        crate::settings_window::style(ui);
+        ui.horizontal(|ui| {
+            let heading = ui.label(
+                egui::RichText::new(
+                    if self.settings_page == crate::settings_window::Page::Focus {
+                        "Zeit für dich"
+                    } else {
+                        "Deine Erinnerung"
+                    },
+                )
+                .size(19.0)
+                .strong(),
+            );
+            if native && heading.interact(Sense::drag()).drag_started() {
+                ui.ctx().send_viewport_cmd(egui::ViewportCommand::StartDrag);
+            }
+            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                let close = ui.add(
+                    egui::Button::new("×")
+                        .frame(false)
+                        .min_size(egui::vec2(32.0, 32.0)),
+                );
+                close.widget_info(|| {
+                    egui::WidgetInfo::labeled(
+                        egui::WidgetType::Button,
+                        true,
+                        "Eingabekarte schliessen",
+                    )
+                });
+                if close.clicked() {
+                    self.menu_open = false;
+                }
+                close.on_hover_text("Schliessen · Escape");
+            });
+        });
+        ui.add_space(4.0);
+        let focus = std::mem::take(&mut self.card_focus);
+        let submitted = egui::ScrollArea::vertical()
+            .id_salt("quick-card-content")
+            .max_height((ui.available_height() - 4.0).max(80.0))
+            .auto_shrink([false, true])
+            .show(ui, |ui| match self.settings_page {
+                crate::settings_window::Page::Focus => self.timer.card(ui, Instant::now(), focus),
+                crate::settings_window::Page::Reminders => {
+                    self.reminders.card(ui, Instant::now(), focus)
+                }
+                crate::settings_window::Page::Settings => false,
+            })
+            .inner;
+        if submitted {
+            self.menu_open = false;
+            self.controls_open = true;
+        }
+    }
     fn settings_contents(&mut self, ui: &mut egui::Ui) {
         let ctx = ui.ctx().clone();
-        match self.settings_page {
-            crate::settings_window::Page::Focus => {
-                self.timer.panel(ui, Instant::now());
-                return;
-            }
-            crate::settings_window::Page::Reminders => {
-                self.reminders.panel(ui, Instant::now());
-                return;
-            }
-            crate::settings_window::Page::Settings => {}
-        }
         if ui.button("Verlauf öffnen").clicked() {
             self.open_history();
         }
@@ -987,6 +1121,15 @@ impl BuddyApp {
                 }
             });
         });
+        if self.menu_open && self.settings_page.is_card() && self.card_position.is_none() {
+            self.card_position = window.and_then(|window| {
+                crate::window::quick_card_position(
+                    window,
+                    self.size.dimensions(),
+                    self.settings_page.card_size(),
+                )
+            });
+        }
         self.menu(&ctx);
         self.sync_conversation_geometry(&ctx, window);
         ctx.request_repaint_after(self.repaint_delay(now, !self.hidden && !occluded));
@@ -1017,6 +1160,9 @@ impl BuddyApp {
                 }
             }
             Action::Hide => {
+                if self.settings_page.is_card() {
+                    self.menu_open = false;
+                }
                 self.hidden = true;
                 ctx.send_viewport_cmd(egui::ViewportCommand::Visible(false));
             }
@@ -1226,6 +1372,8 @@ mod tests {
             menu_open: false,
             settings_focused: false,
             settings_page: crate::settings_window::Page::default(),
+            card_focus: false,
+            card_position: None,
             speech_draft: "Hallo von den Tests!".into(),
             error: None,
             last_render_error: None,
@@ -1292,8 +1440,10 @@ mod tests {
                 builders.borrow_mut().push(viewport.builder.clone());
                 let mut raw = input.borrow().clone();
                 raw.viewport_id = viewport.ids.this;
-                raw.screen_rect
-                    .get_or_insert(Rect::from_min_size(egui::Pos2::ZERO, size));
+                raw.screen_rect.get_or_insert(Rect::from_min_size(
+                    egui::Pos2::ZERO,
+                    viewport.builder.inner_size.unwrap_or(size),
+                ));
                 let info = raw.viewports.entry(viewport.ids.this).or_default();
                 info.parent = Some(viewport.ids.parent);
                 info.title = Some(title.into());
@@ -2941,7 +3091,7 @@ mod tests {
                     egui::pos2(bounds.x0 as f32, bounds.y0 as f32),
                     egui::pos2(bounds.x1 as f32, bounds.y1 as f32),
                 );
-                assert!(!rect.contains(avatar.center()));
+                assert!(!rect.expand(8.0).intersects(avatar));
                 assert!(rect.width() >= 44.0 && rect.height() >= 44.0);
                 assert!(app.hit_map.contains(rect.center()));
                 regions.push(rect);
@@ -2958,6 +3108,44 @@ mod tests {
             );
             assert_controls_hidden(&output);
             output.drop_without_applying_deltas();
+        }
+    }
+
+    #[test]
+    fn wheel_clearance_holds_for_existing_gestures_at_every_buddy_size() {
+        for size in BuddySize::ALL {
+            let ctx = egui::Context::default();
+            ctx.enable_accesskit();
+            let mut app = app(&ctx);
+            app.size = size;
+            app.message_until = Instant::now();
+            let states = app.engine.animations.keys().cloned().collect::<Vec<_>>();
+            for state in states {
+                for sample in [0.0, 450.0] {
+                    app.player.play(&app.engine, &state, false).unwrap();
+                    app.player.paused = false;
+                    app.player.advance(&app.engine, sample, 1.0).unwrap();
+                    app.player.paused = true;
+                    app.controls_open = true;
+                    let output = frame(&ctx, &mut app, sample, vec![]);
+                    let avatar = avatar_rect(&output, &app);
+                    for action in crate::action_wheel::Action::ALL {
+                        let b = accesskit_node(&output, action.accessible_label(false))
+                            .1
+                            .bounds()
+                            .unwrap();
+                        let rect = Rect::from_min_max(
+                            egui::pos2(b.x0 as f32, b.y0 as f32),
+                            egui::pos2(b.x1 as f32, b.y1 as f32),
+                        );
+                        assert!(
+                            !rect.expand(8.0).intersects(avatar),
+                            "{state}, {size:?}, {sample}"
+                        );
+                    }
+                    output.drop_without_applying_deltas();
+                }
+            }
         }
     }
 
@@ -3174,7 +3362,7 @@ mod tests {
         output.drop_without_applying_deltas();
     }
     #[test]
-    fn avatar_click_toggles_controls_without_replacing_a_status_or_moving_beni() {
+    fn avatar_click_preserves_status_and_restores_the_exact_closed_avatar() {
         let ctx = egui::Context::default();
         let mut app = app(&ctx);
         app.play("daumen", "Build grün");
@@ -3201,7 +3389,16 @@ mod tests {
         ] {
             text_rect(&output, label);
         }
-        assert_eq!(avatar_rect(&output, &app), avatar);
+        assert!(avatar_rect(&output, &app).width() < avatar.width());
+        assert!(
+            !output.viewport_output[&egui::ViewportId::ROOT]
+                .commands
+                .iter()
+                .any(|c| matches!(
+                    c,
+                    egui::ViewportCommand::OuterPosition(_) | egui::ViewportCommand::InnerSize(_)
+                ))
+        );
         text_rect(&output, "Build grün");
         text_rect(&output, "codex-test");
         output.drop_without_applying_deltas();
@@ -4147,5 +4344,182 @@ mod tests {
             )
             .is_err()
         );
+    }
+    fn card_key(key: egui::Key) -> egui::Event {
+        egui::Event::Key {
+            key,
+            physical_key: None,
+            pressed: true,
+            repeat: false,
+            modifiers: Default::default(),
+        }
+    }
+    fn edit_card(
+        ctx: &egui::Context,
+        app: &mut BuddyApp,
+        rig: &NativeSettings,
+        value: &str,
+        time: f64,
+    ) {
+        let mut select = card_key(egui::Key::A);
+        if let egui::Event::Key { modifiers, .. } = &mut select {
+            modifiers.command = true;
+            modifiers.ctrl = true;
+        }
+        rig.input.borrow_mut().events = vec![
+            select,
+            card_key(egui::Key::Backspace),
+            egui::Event::Text(value.into()),
+        ];
+        frame(ctx, app, time, vec![]).drop_without_applying_deltas();
+        rig.input.borrow_mut().events.clear();
+    }
+    #[test]
+    fn compact_focus_card_focuses_input_preserves_draft_on_escape_and_starts_on_enter() {
+        let ctx = egui::Context::default();
+        let rig = NativeSettings::new(&ctx);
+        let mut app = app(&ctx);
+        app.open_page(&ctx, crate::settings_window::Page::Focus);
+        frame(&ctx, &mut app, 0.0, vec![]).drop_without_applying_deltas();
+        let builder = rig.builders.borrow().last().unwrap().clone();
+        assert_eq!(builder.inner_size, Some(egui::vec2(348.0, 332.0)));
+        assert_eq!(builder.decorations, Some(false));
+        assert_eq!(builder.transparent, Some(true));
+        {
+            let child = rig.output.borrow();
+            let child = child.as_ref().unwrap();
+            let (input, node) = accesskit_node(child, "Dauer in Minuten");
+            assert_eq!(node.value(), Some("25"));
+            assert_eq!(
+                child
+                    .platform_output
+                    .accesskit_update
+                    .as_ref()
+                    .unwrap()
+                    .focus,
+                input
+            );
+            let (footer, clip) = child
+                .shapes
+                .iter()
+                .find_map(|shape| {
+                    find_text(&shape.shape, "Läuft lokal. App-Beenden stoppt den Timer.")
+                        .map(|rect| (rect, shape.clip_rect))
+                })
+                .unwrap();
+            assert!(
+                clip.contains_rect(footer),
+                "The session boundary must be readable without scrolling"
+            );
+            for name in [
+                "Dauer in Minuten",
+                "Fokus starten",
+                "Eingabekarte schliessen",
+            ] {
+                let bounds = accesskit_node(child, name).1.bounds().unwrap();
+                assert!(
+                    bounds.x0 >= 0.0
+                        && bounds.y0 >= 0.0
+                        && bounds.x1 <= 348.0
+                        && bounds.y1 <= 332.0,
+                    "{name}: {bounds:?}"
+                );
+            }
+        }
+        edit_card(&ctx, &mut app, &rig, "17", 0.1);
+        rig.input.borrow_mut().events = vec![card_key(egui::Key::Escape)];
+        frame(&ctx, &mut app, 0.2, vec![]).drop_without_applying_deltas();
+        assert!(!app.menu_open && !app.timer.has_session());
+        rig.input.borrow_mut().events.clear();
+        app.open_page(&ctx, crate::settings_window::Page::Focus);
+        frame(&ctx, &mut app, 0.3, vec![]).drop_without_applying_deltas();
+        assert_eq!(
+            accesskit_node(rig.output.borrow().as_ref().unwrap(), "Dauer in Minuten")
+                .1
+                .value(),
+            Some("17")
+        );
+        rig.input.borrow_mut().events = vec![card_key(egui::Key::Enter)];
+        frame(&ctx, &mut app, 0.4, vec![]).drop_without_applying_deltas();
+        assert!(!app.menu_open && app.timer.has_session());
+        let mut storage = TestStorage::default();
+        app.timer.save(&mut storage);
+        let minutes: [u16; 2] = eframe::get_value(&storage, "timer-minutes").unwrap();
+        assert_eq!(minutes, [17, 5]);
+        rig.input.borrow_mut().events.clear();
+        app.open_settings(&ctx);
+        frame(&ctx, &mut app, 0.5, vec![]).drop_without_applying_deltas();
+        let builder = rig.builders.borrow().last().unwrap().clone();
+        assert_eq!(builder.inner_size, Some(egui::vec2(520.0, 680.0)));
+        assert_eq!(builder.decorations, Some(true));
+    }
+    #[test]
+    fn invalid_card_minutes_never_start_a_timer_or_close_the_card() {
+        for invalid in ["", "0", "181", "abc"] {
+            let ctx = egui::Context::default();
+            let rig = NativeSettings::new(&ctx);
+            let mut app = app(&ctx);
+            app.open_page(&ctx, crate::settings_window::Page::Focus);
+            frame(&ctx, &mut app, 0.0, vec![]).drop_without_applying_deltas();
+            edit_card(&ctx, &mut app, &rig, invalid, 0.1);
+            rig.input.borrow_mut().events = vec![card_key(egui::Key::Enter)];
+            frame(&ctx, &mut app, 0.2, vec![]).drop_without_applying_deltas();
+            assert!(app.menu_open && !app.timer.has_session(), "{invalid}");
+        }
+    }
+    #[test]
+    fn reminder_card_preserves_cancelled_text_and_schedules_exactly_once_on_enter() {
+        let ctx = egui::Context::default();
+        let rig = NativeSettings::new(&ctx);
+        let mut app = app(&ctx);
+        app.open_page(&ctx, crate::settings_window::Page::Reminders);
+        frame(&ctx, &mut app, 0.0, vec![]).drop_without_applying_deltas();
+        {
+            let child = rig.output.borrow();
+            let child = child.as_ref().unwrap();
+            assert_eq!(
+                child
+                    .platform_output
+                    .accesskit_update
+                    .as_ref()
+                    .unwrap()
+                    .focus,
+                accesskit_node(child, "Erinnerungstext").0
+            );
+        }
+        edit_card(&ctx, &mut app, &rig, "Wasser trinken", 0.1);
+        rig.input.borrow_mut().events = vec![card_key(egui::Key::Escape)];
+        frame(&ctx, &mut app, 0.2, vec![]).drop_without_applying_deltas();
+        assert!(!app.menu_open && app.reminders.count() == 0);
+        rig.input.borrow_mut().events.clear();
+        app.open_page(&ctx, crate::settings_window::Page::Reminders);
+        frame(&ctx, &mut app, 0.3, vec![]).drop_without_applying_deltas();
+        assert_eq!(
+            accesskit_node(rig.output.borrow().as_ref().unwrap(), "Erinnerungstext")
+                .1
+                .value(),
+            Some("Wasser trinken")
+        );
+        rig.input.borrow_mut().events = vec![card_key(egui::Key::Enter)];
+        frame(&ctx, &mut app, 0.4, vec![]).drop_without_applying_deltas();
+        assert!(!app.menu_open && app.reminders.count() == 1);
+        rig.input.borrow_mut().events.clear();
+        app.open_page(&ctx, crate::settings_window::Page::Reminders);
+        frame(&ctx, &mut app, 0.5, vec![]).drop_without_applying_deltas();
+        rig.input.borrow_mut().events = vec![card_key(egui::Key::Enter)];
+        frame(&ctx, &mut app, 0.6, vec![]).drop_without_applying_deltas();
+        assert!(app.menu_open && app.reminders.count() == 1);
+        rig.input.borrow_mut().events.clear();
+        edit_card(&ctx, &mut app, &rig, "Weiterer Entwurf", 0.7);
+        for index in 0..9 {
+            app.reminders
+                .schedule(&format!("Erinnerung {index}"), 10, Instant::now())
+                .unwrap();
+        }
+        rig.input.borrow_mut().events = vec![card_key(egui::Key::Enter)];
+        frame(&ctx, &mut app, 0.8, vec![]).drop_without_applying_deltas();
+        assert!(app.menu_open && app.reminders.count() == 10);
+        app.handle_tray(Action::Hide, &ctx, None);
+        assert!(!app.menu_open && app.hidden && app.reminders.count() == 10);
     }
 }

@@ -169,3 +169,29 @@ pub fn tray_unavailable(window: &Window) {
             .setActivationPolicy(NSApplicationActivationPolicy::Regular);
     }
 }
+
+pub fn quick_card_position(
+    window: &Window,
+    base: eframe::egui::Vec2,
+    size: eframe::egui::Vec2,
+) -> Option<eframe::egui::Pos2> {
+    let (bounds, screens) = geometry(window)?;
+    #[cfg(target_os = "macos")]
+    let scale = 1.0;
+    #[cfg(not(target_os = "macos"))]
+    let scale = window.scale_factor();
+    let rect = |b: Bounds| {
+        eframe::egui::Rect::from_min_size(
+            eframe::egui::pos2((b.x / scale) as f32, (b.y / scale) as f32),
+            eframe::egui::vec2((b.width / scale) as f32, (b.height / scale) as f32),
+        )
+    };
+    let root = rect(bounds);
+    let anchor =
+        eframe::egui::Rect::from_min_size(root.min + crate::chat::offset(base, root.size()), base);
+    crate::settings_window::card_position(
+        anchor,
+        &screens.into_iter().map(rect).collect::<Vec<_>>(),
+        size,
+    )
+}

@@ -103,28 +103,21 @@ impl Reminders {
         self.pending.pop_front()
     }
     pub fn ui(&mut self, ui: &mut egui::Ui, now: Instant) {
-        self.show(ui, now, false);
-    }
-    pub fn panel(&mut self, ui: &mut egui::Ui, now: Instant) {
-        self.show(ui, now, true);
+        let section = egui::CollapsingHeader::new("Erinnerungen")
+            .id_salt("local-reminders")
+            .show(ui, |ui| self.contents(ui, now, false));
+        if section.body_response.is_none() && self.count() > 0 {
+            ui.small(format!("{} Erinnerungen aktiv", self.count()));
+        }
     }
     pub fn count(&self) -> usize {
         self.scheduled.len() + self.pending.len()
     }
-    fn show(&mut self, ui: &mut egui::Ui, now: Instant, expanded: bool) {
-        if expanded {
-            ui.heading("Erinnerungen");
-            self.contents(ui, now);
-        } else {
-            let section = egui::CollapsingHeader::new("Erinnerungen")
-                .id_salt("local-reminders")
-                .show(ui, |ui| self.contents(ui, now));
-            if section.body_response.is_none() && self.count() > 0 {
-                ui.small(format!("{} Erinnerungen aktiv", self.count()));
-            }
-        }
+    pub fn card(&mut self, ui: &mut egui::Ui, now: Instant, focus: bool) -> bool {
+        ui.label("Woran soll ich dich erinnern?");
+        self.contents(ui, now, focus)
     }
-    fn contents(&mut self, ui: &mut egui::Ui, now: Instant) {
+    fn contents(&mut self, ui: &mut egui::Ui, now: Instant, focus: bool) -> bool {
         let text = ui.add(
             egui::TextEdit::singleline(&mut self.draft)
                 .hint_text("Was soll Beni dir sagen?")
@@ -132,6 +125,12 @@ impl Reminders {
         );
         ui.ctx()
             .accesskit_node_builder(text.id, |node| node.set_label("Erinnerungstext"));
+        if focus {
+            text.request_focus();
+        }
+        let enter = (text.has_focus() || text.lost_focus())
+            && ui.input(|i| i.key_pressed(egui::Key::Enter));
+        let mut submitted = false;
         ui.horizontal(|ui| {
             let label = ui.label("Erinnern in (Minuten)");
             ui.add(egui::DragValue::new(&mut self.minutes).range(1..=MAX_MINUTES))
@@ -142,15 +141,14 @@ impl Reminders {
             .draft
             .chars()
             .any(|c| !c.is_control() && !c.is_whitespace());
-        if ui
-            .add_enabled(capacity && nonempty, egui::Button::new("Erinnerung planen"))
-            .clicked()
-        {
+        let submit = crate::settings_window::primary(ui, "Erinnerung planen", capacity && nonempty);
+        if capacity && nonempty && (submit.clicked() || enter) {
             let draft = self.draft.clone();
             match self.schedule(&draft, self.minutes, now) {
                 Ok(_) => {
                     self.draft.clear();
                     self.error = None;
+                    submitted = true;
                 }
                 Err(error) => self.error = Some(error),
             }
@@ -200,6 +198,7 @@ impl Reminders {
             self.cancel(id);
         }
         ui.small("Nur in dieser Sitzung. App-Beenden verwirft Texte und geplante Erinnerungen.");
+        submitted
     }
 }
 

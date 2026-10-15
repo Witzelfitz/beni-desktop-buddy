@@ -1,0 +1,15 @@
+{
+  "source": "Own native egui/Glow renderer; macOS; isolated Beni test process",
+  "source_commit": "94e5b6403e0d2c7b375bed4e08df28d5f84a07dc",
+  "captured_at": "2026-10-15",
+  "capture": "Only the application framebuffer was read. Temporary capture probes were removed before the normal build. Transparent outer margins trimmed; no UI elements retouched or composited.",
+  "rights": "Beni artwork retains the separate rights in LICENSE.md; no new sprite or animation assets.",
+  "files": {
+    "wheel-small.png": "1ff2807cfb83089800c7a27e89de48b2a6bab757b6ed660759ba0fd92e2a61b8",
+    "wheel-medium.png": "f13c445f043ef09e7048e239829631f3118f7e63403da59e9b037e387e3b9f4c",
+    "wheel-large.png": "2f9cac1a5fb5e2d3891b73b52460f8677831709a9a15af59a06bbc009b53fe07",
+    "focus-card.png": "6c363ce9bca462d649226946e13c907d6db07ed1468fda4db99fb8681b21afe8",
+    "focus-paused.png": "699cea5acb5b5fbd48ef93db27e538320f846711165eed95fb11af32812cc99c",
+    "reminder-card.png": "79a83f478d3afa6ba355167fb3f391a1480768e6568a6c28dc6818d93e63ed88"
+  }
+}

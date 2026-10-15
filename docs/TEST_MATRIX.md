@@ -387,3 +387,17 @@ Menü-Rad aus PR #64 und Web-Vorbereitung aus Beni-Allrounder PR #12 sind gemerg
 | Tatsächliches Nutzerupdate, Alltagserprobung und Hooks nach Update | NOT_RUN; installierte Programme-App und Hook-Definitionen beim Rollout nicht verändert |
 
 Quelle aller drei nativen Pakete ist derselbe oben genannte Commit. Automatische Zwischenmeldungen sind nicht Teil dieses Releases. Physische Windows-/Linux-Geräte, weitere Distributionen und die verbleibenden Update-/Screenreader-Fälle behalten ihre bisherigen offenen Abnahmen.
+
+## Kompakte Eingabekarten und visuelle Korrektur, Entwicklung nach 0.1.6
+
+| Prüfung | Ergebnis |
+| --- | --- |
+| Root-Prüfeinstieg | PASS, fmt, 47 Tests, Clippy, Assets/Integrationen und Release-/Packaging-Prüfungen |
+| Desktop | PASS, 121 Tests, fmt/Clippy und normaler GUI-Build; echter Modelltest NOT_RUN |
+| Eingaben per Tastatur | PASS, native Viewport-Tests: sofortiger Fokus, Escape erhält Fokus-/Erinnerungsentwurf, Enter bestätigt genau einmal; leere/ungültige Minuten und volle Erinnerungslisten bleiben ohne neue Aufgabe offen |
+| Visuelle Geometrie | PASS, Tasten halten zur vollständigen Figur mindestens acht Punkte Abstand; alle drei Grössen und vorhandenen Gesten geprüft. Figur nach Zuklappen exakt wiederhergestellt, keine neue Fenstergrösse/-position fürs Rad |
+| Kartenposition und Grenzen | PASS, negative Bildschirmkoordinaten, Randlagen und ungültige Geometrie; vollständige Einstellungen behalten ihren normalen Rahmen und 520 × 680 Punkte |
+| Eigener nativer macOS-Prozess | PASS, Fokus 348 × 332, Erinnerung 348 × 320 Punkte; Eingabefokus, Typen, Escape/Entwurf, Enter, Timerunterbrechung, vollständige Einstellungen und drei Grössen; Buddy-Geometrie bei Kartennutzung unverändert |
+| Eigene Rendererbilder | PASS, sechs echte Bilder mit SHA-256-Provenienz unter docs/images/compact-ui. Aufnahmehilfen vor normalem Build entfernt; kein zusätzlicher eframe-Patch |
+| Windows/Linux | PR-CI ausstehend; manuelle Hardwareabnahme NOT_RUN |
+| Veröffentlichung und Website-Freischaltung | NOT_RUN; öffentliche Version bleibt 0.1.6. Web-Vorschau wird für den passenden Release vorbereitet |
