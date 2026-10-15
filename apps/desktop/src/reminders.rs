@@ -141,7 +141,7 @@ impl Reminders {
             .draft
             .chars()
             .any(|c| !c.is_control() && !c.is_whitespace());
-        let submit = ui.add_enabled(capacity && nonempty, egui::Button::new("Erinnerung planen"));
+        let submit = crate::settings_window::primary(ui, "Erinnerung planen", capacity && nonempty);
         if capacity && nonempty && (submit.clicked() || enter) {
             let draft = self.draft.clone();
             match self.schedule(&draft, self.minutes, now) {

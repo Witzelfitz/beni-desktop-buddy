@@ -594,19 +594,26 @@ impl BuddyApp {
         };
         let state_rect = Rect::from_center_size(
             egui::pos2(area.center().x, area.bottom() - 19.0),
-            egui::vec2((area.width() - 184.0).clamp(88.0, 164.0), 28.0),
+            egui::vec2((area.width() - 184.0).clamp(88.0, 164.0), 32.0),
         );
         if radial {
             ui.painter()
                 .rect_filled(state_rect, 12, crate::action_wheel::FILL);
-            ui.put(
-                state_rect,
-                egui::Label::new(
-                    egui::RichText::new(state)
-                        .size(11.5)
-                        .color(Color32::from_rgb(239, 247, 242)),
-                )
-                .wrap(),
+            ui.scope_builder(
+                egui::UiBuilder::new()
+                    .max_rect(state_rect.shrink(2.0))
+                    .layout(egui::Layout::top_down(egui::Align::Center)),
+                |ui| {
+                    ui.spacing_mut().item_spacing.y = 0.0;
+                    ui.add(
+                        egui::Label::new(
+                            egui::RichText::new(state.replace(" · Unterbrochen", "\nPausiert"))
+                                .size(11.0)
+                                .color(Color32::from_rgb(239, 247, 242)),
+                        )
+                        .wrap(),
+                    );
+                },
             );
             self.hit_map.add_rect(state_rect, 6.0);
         }
@@ -831,7 +838,11 @@ impl BuddyApp {
                 ui.ctx().send_viewport_cmd(egui::ViewportCommand::StartDrag);
             }
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                let close = ui.add(egui::Button::new("×").min_size(egui::vec2(32.0, 32.0)));
+                let close = ui.add(
+                    egui::Button::new("×")
+                        .frame(false)
+                        .min_size(egui::vec2(32.0, 32.0)),
+                );
                 close.widget_info(|| {
                     egui::WidgetInfo::labeled(
                         egui::WidgetType::Button,
@@ -4387,6 +4398,18 @@ mod tests {
                     .unwrap()
                     .focus,
                 input
+            );
+            let (footer, clip) = child
+                .shapes
+                .iter()
+                .find_map(|shape| {
+                    find_text(&shape.shape, "Läuft lokal. App-Beenden stoppt den Timer.")
+                        .map(|rect| (rect, shape.clip_rect))
+                })
+                .unwrap();
+            assert!(
+                clip.contains_rect(footer),
+                "The session boundary must be readable without scrolling"
             );
             for name in [
                 "Dauer in Minuten",

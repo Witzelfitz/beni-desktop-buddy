@@ -45,7 +45,7 @@ impl Page {
         egui::vec2(
             348.0,
             if self == Self::Reminders {
-                400.0
+                320.0
             } else {
                 332.0
             },
@@ -97,7 +97,7 @@ pub fn style(ui: &mut egui::Ui) {
     style.visuals.override_text_color = Some(egui::Color32::from_rgb(45, 43, 57));
     style.visuals.selection.bg_fill = egui::Color32::from_rgb(214, 230, 224);
     style.visuals.selection.stroke = egui::Stroke::new(1.0, egui::Color32::from_rgb(39, 71, 61));
-    style.spacing.item_spacing = egui::vec2(8.0, 10.0);
+    style.spacing.item_spacing = egui::vec2(8.0, 8.0);
     style.spacing.button_padding = egui::vec2(12.0, 9.0);
 }
 
@@ -166,4 +166,18 @@ mod tests {
         assert!(card_position(screens[0], &[], size).is_none());
         assert!(card_position(screens[0], &screens, egui::vec2(f32::NAN, 20.0)).is_none());
     }
+}
+
+pub fn primary(ui: &mut egui::Ui, label: &str, enabled: bool) -> egui::Response {
+    ui.add_enabled_ui(enabled, |ui| {
+        ui.add_sized(
+            egui::vec2(ui.available_width(), 40.0),
+            egui::Button::new(
+                egui::RichText::new(label).color(egui::Color32::from_rgb(247, 250, 248)),
+            )
+            .fill(egui::Color32::from_rgb(49, 83, 74))
+            .corner_radius(10),
+        )
+    })
+    .inner
 }

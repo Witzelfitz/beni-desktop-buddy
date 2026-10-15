@@ -184,18 +184,22 @@ impl Timer {
             ui.small("Minuten · 1–180");
             ui.horizontal(|ui| {
                 for value in [5, 25, 45] {
-                    if ui.button(format!("{value} Min.")).clicked() {
+                    if ui
+                        .add(egui::Button::new(format!("{value} Min.")).corner_radius(10))
+                        .clicked()
+                    {
                         *draft = value.to_string();
                     }
                 }
             });
-            let submit = ui.add_enabled(
-                minutes.is_some(),
-                egui::Button::new(if self.card_phase == Phase::Focus {
+            let submit = crate::settings_window::primary(
+                ui,
+                if self.card_phase == Phase::Focus {
                     "Fokus starten"
                 } else {
                     "Pause starten"
-                }),
+                },
+                minutes.is_some(),
             );
             if (submit.clicked() || enter)
                 && let Some(minutes) = minutes
