@@ -5,14 +5,14 @@ members = ["crates/buddy-core", "crates/buddy-cli", "crates/buddy-ipc", "crates/
 exclude = ["apps/desktop"]
 
 [workspace.package]
-version = "0.1.6"
+version = "0.1.7"
 edition = "2024"
 rust-version = "1.95"
 publish = false
 
 [workspace.metadata.beni-release]
 # Increase for every published stable or beta build; never reuse a released number.
-build-number = 7
+build-number = 8
 
 [workspace.dependencies]
 serde = { version = "=1.0.229", features = ["derive"] }
