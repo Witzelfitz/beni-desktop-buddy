@@ -103,95 +103,103 @@ impl Reminders {
         self.pending.pop_front()
     }
     pub fn ui(&mut self, ui: &mut egui::Ui, now: Instant) {
-        let section = egui::CollapsingHeader::new("Erinnerungen")
-            .id_salt("local-reminders")
-            .show(ui, |ui| {
-                let text = ui.add(
-                    egui::TextEdit::singleline(&mut self.draft)
-                        .hint_text("Was soll Beni dir sagen?")
-                        .char_limit(MAX_TEXT_CHARS),
-                );
-                ui.ctx()
-                    .accesskit_node_builder(text.id, |node| node.set_label("Erinnerungstext"));
-                ui.horizontal(|ui| {
-                    let label = ui.label("Erinnern in (Minuten)");
-                    ui.add(egui::DragValue::new(&mut self.minutes).range(1..=MAX_MINUTES))
-                        .labelled_by(label.id);
-                });
-                let capacity = self.scheduled.len() + self.pending.len() < MAX_REMINDERS;
-                let nonempty = self
-                    .draft
-                    .chars()
-                    .any(|c| !c.is_control() && !c.is_whitespace());
-                if ui
-                    .add_enabled(capacity && nonempty, egui::Button::new("Erinnerung planen"))
-                    .clicked()
-                {
-                    let draft = self.draft.clone();
-                    match self.schedule(&draft, self.minutes, now) {
-                        Ok(_) => {
-                            self.draft.clear();
-                            self.error = None;
-                        }
-                        Err(error) => self.error = Some(error),
-                    }
-                }
-                if !capacity {
-                    ui.small("Zehn Erinnerungen aktiv. Entferne eine, um Platz zu machen.");
-                }
-                if let Some(error) = self.error {
-                    ui.colored_label(egui::Color32::LIGHT_RED, error);
-                }
-                let mut cancel = None;
-                for (reminder, waiting) in self
-                    .scheduled
-                    .iter()
-                    .map(|r| (r, false))
-                    .chain(self.pending.iter().map(|r| (r, true)))
-                {
-                    ui.push_id(reminder.id, |ui| {
-                        ui.horizontal(|ui| {
-                            ui.vertical(|ui| {
-                                ui.set_width((ui.available_width() - 90.0).max(100.0));
-                                ui.add(egui::Label::new(&reminder.text).wrap());
-                                if waiting {
-                                    ui.small("Fällig · wartet auf Anzeige");
-                                } else {
-                                    let duration = reminder.deadline.saturating_duration_since(now);
-                                    let seconds = duration.as_secs()
-                                        + u64::from(duration.subsec_nanos() != 0);
-                                    ui.small(format!(
-                                        "Noch {:02}:{:02}",
-                                        seconds / 60,
-                                        seconds % 60
-                                    ));
-                                }
-                            });
-                            let remove = ui.button("Entfernen");
-                            remove.widget_info(|| {
-                                egui::WidgetInfo::labeled(
-                                    egui::WidgetType::Button,
-                                    remove.enabled(),
-                                    format!("Erinnerung entfernen: {}", reminder.text),
-                                )
-                            });
-                            if remove.clicked() {
-                                cancel = Some(reminder.id);
-                            }
-                        });
-                    });
-                }
-                if let Some(id) = cancel {
-                    self.cancel(id);
-                }
-                ui.small(
-                    "Nur in dieser Sitzung. App-Beenden verwirft Texte und geplante Erinnerungen.",
-                );
-            });
-        let count = self.scheduled.len() + self.pending.len();
-        if section.body_response.is_none() && count > 0 {
-            ui.small(format!("{count} Erinnerungen aktiv"));
+        self.show(ui, now, false);
+    }
+    pub fn panel(&mut self, ui: &mut egui::Ui, now: Instant) {
+        self.show(ui, now, true);
+    }
+    pub fn count(&self) -> usize {
+        self.scheduled.len() + self.pending.len()
+    }
+    fn show(&mut self, ui: &mut egui::Ui, now: Instant, expanded: bool) {
+        if expanded {
+            ui.heading("Erinnerungen");
+            self.contents(ui, now);
+        } else {
+            let section = egui::CollapsingHeader::new("Erinnerungen")
+                .id_salt("local-reminders")
+                .show(ui, |ui| self.contents(ui, now));
+            if section.body_response.is_none() && self.count() > 0 {
+                ui.small(format!("{} Erinnerungen aktiv", self.count()));
+            }
         }
+    }
+    fn contents(&mut self, ui: &mut egui::Ui, now: Instant) {
+        let text = ui.add(
+            egui::TextEdit::singleline(&mut self.draft)
+                .hint_text("Was soll Beni dir sagen?")
+                .char_limit(MAX_TEXT_CHARS),
+        );
+        ui.ctx()
+            .accesskit_node_builder(text.id, |node| node.set_label("Erinnerungstext"));
+        ui.horizontal(|ui| {
+            let label = ui.label("Erinnern in (Minuten)");
+            ui.add(egui::DragValue::new(&mut self.minutes).range(1..=MAX_MINUTES))
+                .labelled_by(label.id);
+        });
+        let capacity = self.scheduled.len() + self.pending.len() < MAX_REMINDERS;
+        let nonempty = self
+            .draft
+            .chars()
+            .any(|c| !c.is_control() && !c.is_whitespace());
+        if ui
+            .add_enabled(capacity && nonempty, egui::Button::new("Erinnerung planen"))
+            .clicked()
+        {
+            let draft = self.draft.clone();
+            match self.schedule(&draft, self.minutes, now) {
+                Ok(_) => {
+                    self.draft.clear();
+                    self.error = None;
+                }
+                Err(error) => self.error = Some(error),
+            }
+        }
+        if !capacity {
+            ui.small("Zehn Erinnerungen aktiv. Entferne eine, um Platz zu machen.");
+        }
+        if let Some(error) = self.error {
+            ui.colored_label(egui::Color32::LIGHT_RED, error);
+        }
+        let mut cancel = None;
+        for (reminder, waiting) in self
+            .scheduled
+            .iter()
+            .map(|r| (r, false))
+            .chain(self.pending.iter().map(|r| (r, true)))
+        {
+            ui.push_id(reminder.id, |ui| {
+                ui.horizontal(|ui| {
+                    ui.vertical(|ui| {
+                        ui.set_width((ui.available_width() - 90.0).max(100.0));
+                        ui.add(egui::Label::new(&reminder.text).wrap());
+                        if waiting {
+                            ui.small("Fällig · wartet auf Anzeige");
+                        } else {
+                            let duration = reminder.deadline.saturating_duration_since(now);
+                            let seconds =
+                                duration.as_secs() + u64::from(duration.subsec_nanos() != 0);
+                            ui.small(format!("Noch {:02}:{:02}", seconds / 60, seconds % 60));
+                        }
+                    });
+                    let remove = ui.button("Entfernen");
+                    remove.widget_info(|| {
+                        egui::WidgetInfo::labeled(
+                            egui::WidgetType::Button,
+                            remove.enabled(),
+                            format!("Erinnerung entfernen: {}", reminder.text),
+                        )
+                    });
+                    if remove.clicked() {
+                        cancel = Some(reminder.id);
+                    }
+                });
+            });
+        }
+        if let Some(id) = cancel {
+            self.cancel(id);
+        }
+        ui.small("Nur in dieser Sitzung. App-Beenden verwirft Texte und geplante Erinnerungen.");
     }
 }
 

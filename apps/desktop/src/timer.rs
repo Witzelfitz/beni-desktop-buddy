@@ -127,7 +127,13 @@ impl Timer {
         (now.saturating_duration_since(at) < NOTICE_TTL).then_some(phase)
     }
     pub fn ui(&mut self, ui: &mut egui::Ui, now: Instant) {
-        let status = if let Some(session) = &self.session {
+        self.show(ui, now, false);
+    }
+    pub fn panel(&mut self, ui: &mut egui::Ui, now: Instant) {
+        self.show(ui, now, true);
+    }
+    pub fn status(&self, now: Instant) -> String {
+        if let Some(session) = &self.session {
             let remaining = session
                 .deadline
                 .map_or(session.remaining, |d| d.saturating_duration_since(now));
@@ -147,56 +153,65 @@ impl Timer {
             format!("{} beendet", phase.label())
         } else {
             "Kein Timer läuft".into()
-        };
-        egui::CollapsingHeader::new("Fokus & Pause")
-            .id_salt("focus-timer")
-            .show(ui, |ui| {
-                ui.label(&status);
-                if self.session.is_none() {
-                    for phase in [Phase::Focus, Phase::Break] {
-                        ui.horizontal(|ui| {
-                            let label = ui.label(format!("{} (Minuten)", phase.label()));
-                            ui.add(
-                                egui::DragValue::new(&mut self.minutes[phase.index()])
-                                    .range(1..=MAX_MINUTES),
-                            )
-                            .labelled_by(label.id);
-                        });
-                    }
-                    ui.horizontal(|ui| {
-                        if ui.button("Fokus starten").clicked() {
-                            self.start(Phase::Focus, now);
-                        }
-                        if ui.button("Pause starten").clicked() {
-                            self.start(Phase::Break, now);
-                        }
-                    });
-                    if self.finished.is_some() && ui.button("Timer zurücksetzen").clicked() {
-                        self.stop();
-                    }
-                } else {
-                    ui.horizontal(|ui| {
-                        let paused = self.session.as_ref().unwrap().deadline.is_none();
-                        if ui
-                            .button(if paused {
-                                "Timer fortsetzen"
-                            } else {
-                                "Timer unterbrechen"
-                            })
-                            .clicked()
-                        {
-                            self.toggle_pause(now);
-                        }
-                        if ui.button("Timer abbrechen").clicked() {
-                            self.stop();
-                        }
-                    });
-                }
-                ui.small("Läuft lokal. Kein automatischer Wechsel; App-Beenden stoppt den Timer.");
-            });
-        if self.session.is_some() || self.finished.is_some() {
-            ui.small(status);
         }
+    }
+    fn show(&mut self, ui: &mut egui::Ui, now: Instant, expanded: bool) {
+        let status = self.status(now);
+        if expanded {
+            ui.heading("Fokus & Pause");
+            self.contents(ui, now, &status);
+        } else {
+            egui::CollapsingHeader::new("Fokus & Pause")
+                .id_salt("focus-timer")
+                .show(ui, |ui| self.contents(ui, now, &status));
+            if self.session.is_some() || self.finished.is_some() {
+                ui.small(status);
+            }
+        }
+    }
+    fn contents(&mut self, ui: &mut egui::Ui, now: Instant, status: &str) {
+        ui.label(status);
+        if self.session.is_none() {
+            for phase in [Phase::Focus, Phase::Break] {
+                ui.horizontal(|ui| {
+                    let label = ui.label(format!("{} (Minuten)", phase.label()));
+                    ui.add(
+                        egui::DragValue::new(&mut self.minutes[phase.index()])
+                            .range(1..=MAX_MINUTES),
+                    )
+                    .labelled_by(label.id);
+                });
+            }
+            ui.horizontal(|ui| {
+                if ui.button("Fokus starten").clicked() {
+                    self.start(Phase::Focus, now);
+                }
+                if ui.button("Pause starten").clicked() {
+                    self.start(Phase::Break, now);
+                }
+            });
+            if self.finished.is_some() && ui.button("Timer zurücksetzen").clicked() {
+                self.stop();
+            }
+        } else {
+            ui.horizontal(|ui| {
+                let paused = self.session.as_ref().unwrap().deadline.is_none();
+                if ui
+                    .button(if paused {
+                        "Timer fortsetzen"
+                    } else {
+                        "Timer unterbrechen"
+                    })
+                    .clicked()
+                {
+                    self.toggle_pause(now);
+                }
+                if ui.button("Timer abbrechen").clicked() {
+                    self.stop();
+                }
+            });
+        }
+        ui.small("Läuft lokal. Kein automatischer Wechsel; App-Beenden stoppt den Timer.");
     }
 }
 

@@ -344,3 +344,23 @@ PR #58–#62 sind in main gemergt; Quellstand `240589b22edf25981af1be37d521c98a7
 | Echter Modelllauf, neue Installer-/Sparkle-Paketabnahmen und manuelle Windows-/Linux-Gespräche für diese Härtungen | NOT_RUN; bestehende frühere Abnahmen bleiben getrennt dokumentiert |
 
 Die Statuswarteschlangen, TTL, Opt-in-Grenzen, vorhandenen SDK-Gesten und der netzwerkfreie Animationskern bleiben erhalten. Ältere main-Läufe aus den einzelnen Merges werden durch den gemeinsamen Lauf ersetzt und automatisch abgebrochen.
+
+
+## Menü-Rad und Alltagsbedienung, 15. Oktober 2026
+
+Entwicklungsstand nach 0.1.5/Build 6; kein neuer öffentlicher Installer.
+
+| Prüfung | Ergebnis |
+| --- | --- |
+| Lokale Root-/Desktopprüfungen | PASS, 47 Root- und 115 Desktoptests, beide fmt-/Clippy-Prüfungen und separater GUI-Build; echter Modelltest bewusst nicht wiederholt |
+| Reine Radgeometrie für drei Grössen und kurze/lange Sprechblasen | PASS, sechs mindestens 44 Punkte hohe Ziele, innerhalb der Fläche und ohne gegenseitige Überlappung; ungültige/enge Fläche fällt zurück |
+| Bestehende Tastatur-, Accessibility-, Dragging-, Positions-, Chat-, Verlaufs-, Fehler- und Click-through-Prüfungen | PASS, an die neue Bedienung angepasst; keine neuen Fensterpositionen für das Rad |
+| Direkte Fokus-/Erinnerungsansichten | PASS, eigene Titel und sofort sichtbare passende Bedienung im bestehenden Zusatzfenster; Einstellungen und aktive Sprechblase bleiben unabhängig |
+| Radzustand und Ruhe umschalten | PASS, Timerstatus im offenen Rad, reversible Nicht-stören-Aktion ohne Änderung von Timer oder Animationspause |
+| Stark begrenzte Fensterfläche | PASS, scrollbar dargestellte Aktionsliste; sichtbare Fokusaktion weiterhin per Accessibility bedienbar |
+| Native macOS-Abnahme am eigenen isolierten Debug-Prozess | PASS, sechs Ziele innerhalb 340 × 440 Punkten; Fokus starten/unterbrechen, Erinnerungsansicht, Ruhe ein/aus, Verlauf, angehängter Chat; ursprüngliche Geometrie nach Schliessen wiederhergestellt |
+| Eigene Rendererfläche: Klein, Mittel und Gross | PASS, 600 × 720, 680 × 880 und 840 × 1120 Pixel bei Retina; vorhandene Beni-Grafiken, lesbare Aktionen und Zustandsanzeiger geprüft |
+| Windows/Linux CI und native Linux-Proben für diesen PR | NOT_RUN, folgen in der regulären PR-CI; manuelle Hardwareabnahme separat offen |
+| Veröffentlichung, Nutzerinstallation und Website-Deployment | NOT_RUN; Web-PR #12 bereitet Texte/Ablauf vor. Öffentliche Downloadseite bleibt für Installer 0.1.5 korrekt |
+
+Automatische gelegentliche Zwischenmeldungen sind als nächster Schritt geplant; dieses Paket zeigt den Zustand im geöffneten Rad. Keine neuen Animationen, Provider, Schlüssel, Ports oder Zugriffsberechtigungen. Der bestehende App-Sitzungsumfang von Timern/Erinnerungen bleibt erhalten.

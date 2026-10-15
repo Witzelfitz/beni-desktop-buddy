@@ -55,6 +55,7 @@ pub struct BuddyApp {
     controls_open: bool,
     menu_open: bool,
     settings_focused: bool,
+    settings_page: crate::settings_window::Page,
     speech_draft: String,
     error: Option<TransientError>,
     last_render_error: Option<String>,
@@ -137,6 +138,7 @@ impl BuddyApp {
             controls_open: false,
             menu_open: false,
             settings_focused: false,
+            settings_page: crate::settings_window::Page::default(),
             speech_draft: "Schön, dass du da bist!".into(),
             error: None,
             last_render_error: None,
@@ -431,7 +433,7 @@ impl BuddyApp {
         mesh.indices.extend_from_slice(&[0, 1, 2, 0, 2, 3]);
         Ok(mesh)
     }
-    fn paint_avatar(&mut self, ui: &mut egui::Ui, stage: Rect) {
+    fn paint_avatar(&mut self, ui: &mut egui::Ui, stage: Rect, wheel_area: Rect) -> Rect {
         // Register interactions first: a failed draw must never remove the drag/click target.
         let response = ui.interact(stage, ui.id().with("avatar"), Sense::click_and_drag());
         if response.drag_started() {
@@ -447,10 +449,12 @@ impl BuddyApp {
             egui::WidgetInfo::labeled(
                 egui::WidgetType::Button,
                 response.enabled(),
-                if self.controls_open {
-                    "Beni: Bedienleiste zuklappen"
+                if self.history_player.is_some() {
+                    "Beni: Verlauf schliessen"
+                } else if self.controls_open {
+                    "Beni: Menü-Rad schliessen"
                 } else {
-                    "Beni: Bedienleiste aufklappen"
+                    "Beni: Menü-Rad öffnen"
                 },
             )
         });
@@ -460,12 +464,26 @@ impl BuddyApp {
                 node.set_description(format!("Animation: {}", animation.label));
             }
         });
-        response.on_hover_text(if self.controls_open {
-            "Ziehen: verschieben · Klicken: Bedienung zuklappen"
+        response.on_hover_text(if self.history_player.is_some() {
+            "Ziehen: verschieben · Klicken: Verlauf schliessen"
+        } else if self.controls_open {
+            "Ziehen: verschieben · Klicken: Menü-Rad schliessen"
         } else {
-            "Ziehen: verschieben · Klicken: Bedienung aufklappen"
+            "Ziehen: verschieben · Klicken: Menü-Rad öffnen"
         });
-        match self.avatar_mesh(stage) {
+        let mesh = self.avatar_mesh(stage);
+        let avatar = mesh
+            .as_ref()
+            .map(|mesh| Rect::from_points(&mesh.vertices.iter().map(|v| v.pos).collect::<Vec<_>>()))
+            .unwrap_or(stage.shrink(35.0));
+        let wheel = crate::action_wheel::Layout::new(wheel_area, avatar);
+        if self.controls_open
+            && self.history_player.is_none()
+            && let Some(wheel) = &wheel
+        {
+            wheel.paint_backdrop(ui.painter());
+        }
+        match mesh {
             Ok(mesh) => {
                 self.hit_map
                     .add_mesh(&mesh, &self.atlas_alpha, self.engine.image_size[0] as usize);
@@ -493,47 +511,90 @@ impl BuddyApp {
                 );
             }
         }
+        avatar
     }
-    fn controls(&mut self, ui: &mut egui::Ui) {
-        let response = egui::Frame::new()
-            .fill(Color32::from_rgba_unmultiplied(19, 29, 39, 235))
-            .corner_radius(14)
-            .inner_margin(8)
-            .show(ui, |ui| {
-                ui.horizontal(|ui| {
-                    ui.spacing_mut().item_spacing.x = 4.0;
-                    if ui.button("Hallo!").clicked() {
-                        self.play("hallo", "Hallo! Schön, dass du da bist.");
-                    }
-                    let talk = ui.button("Reden").on_hover_text("Mit Beni reden");
-                    talk.widget_info(|| {
-                        egui::WidgetInfo::labeled(
-                            egui::WidgetType::Button,
-                            talk.enabled(),
-                            "Mit Beni reden",
-                        )
+    fn controls(&mut self, ui: &mut egui::Ui, area: Rect, avatar: Rect) {
+        use crate::action_wheel::{Action as Wheel, Layout};
+        let mut selected = None;
+        let layout = Layout::new(area, avatar);
+        let radial = layout.is_some();
+        if let Some(layout) = layout {
+            for (action, rect) in Wheel::ALL.into_iter().zip(layout.buttons) {
+                if crate::action_wheel::button(ui, rect, action, self.do_not_disturb).clicked() {
+                    selected = Some(action);
+                }
+                self.hit_map.add_rect(rect, 14.0);
+            }
+        } else {
+            // A compositor may constrain the viewport below our requested size.
+            // Keep labelled actions reachable in a bounded scrolling fallback.
+            ui.scope_builder(egui::UiBuilder::new().max_rect(area), |ui| {
+                egui::Frame::new()
+                    .fill(Color32::from_rgb(24, 40, 44))
+                    .corner_radius(12)
+                    .show(ui, |ui| {
+                        egui::ScrollArea::vertical()
+                            .max_height((area.height() - 8.0).max(1.0))
+                            .show(ui, |ui| {
+                                for action in Wheel::ALL {
+                                    if ui
+                                        .button(action.accessible_label(self.do_not_disturb))
+                                        .clicked()
+                                    {
+                                        selected = Some(action);
+                                    }
+                                }
+                            });
                     });
-                    if talk.clicked() {
-                        self.open_chat(ui.ctx());
-                    }
-                    let label = if self.player.paused {
-                        "Weiter"
-                    } else {
-                        "Pause"
-                    };
-                    if ui.button(label).clicked() {
-                        self.player.paused = !self.player.paused;
-                    }
-                    if ui.button("Menü").clicked() {
-                        self.open_settings(ui.ctx());
-                    }
-                    if ui.button("Beenden").clicked() {
-                        ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
-                    }
-                });
-            })
-            .response;
-        self.hit_map.add_rect(response.rect, 14.0);
+            });
+            self.hit_map.add_rect(area, 12.0);
+        }
+        let state = if self.timer.has_session() {
+            self.timer.status(Instant::now())
+        } else if self.reminders.has_tasks() {
+            format!(
+                "{} Erinnerung{}",
+                self.reminders.count(),
+                if self.reminders.count() == 1 {
+                    ""
+                } else {
+                    "en"
+                }
+            )
+        } else {
+            "Bereit".into()
+        };
+        let state_rect = Rect::from_center_size(
+            egui::pos2(area.center().x, area.bottom() - 19.0),
+            egui::vec2(88.0, 36.0),
+        );
+        if radial {
+            ui.painter()
+                .rect_filled(state_rect, 10, Color32::from_rgb(24, 40, 44));
+            ui.put(
+                state_rect,
+                egui::Label::new(
+                    egui::RichText::new(state)
+                        .size(11.5)
+                        .color(Color32::from_rgb(239, 247, 242)),
+                )
+                .wrap(),
+            );
+            self.hit_map.add_rect(state_rect, 6.0);
+        }
+        if let Some(action) = selected {
+            self.controls_open = false;
+            match action {
+                Wheel::Focus => self.open_page(ui.ctx(), crate::settings_window::Page::Focus),
+                Wheel::Reminder => {
+                    self.open_page(ui.ctx(), crate::settings_window::Page::Reminders)
+                }
+                Wheel::History => self.open_history(),
+                Wheel::Quiet => self.set_do_not_disturb(!self.do_not_disturb, Instant::now()),
+                Wheel::Chat => self.open_chat(ui.ctx()),
+                Wheel::Settings => self.open_settings(ui.ctx()),
+            }
+        }
     }
     fn open_chat(&mut self, ctx: &egui::Context) {
         self.close_history();
@@ -585,6 +646,10 @@ impl BuddyApp {
         }
     }
     fn open_settings(&mut self, ctx: &egui::Context) {
+        self.open_page(ctx, crate::settings_window::Page::Settings);
+    }
+    fn open_page(&mut self, ctx: &egui::Context, page: crate::settings_window::Page) {
+        self.settings_page = page;
         self.updates_info = false;
         self.close_history();
         if !self.menu_open {
@@ -607,7 +672,7 @@ impl BuddyApp {
             // headless tests. The desktop backend uses the independent window below.
             let mut open = true;
             let available = ctx.content_rect().size() - Vec2::splat(24.0);
-            let response = egui::Window::new("Benis Einstellungen")
+            let response = egui::Window::new(self.settings_page.title())
                 .open(&mut open)
                 .fixed_pos([12.0, 12.0])
                 .fixed_size([available.x, available.y.min(360.0)])
@@ -627,7 +692,7 @@ impl BuddyApp {
         }
         ctx.show_viewport_immediate(
             crate::settings_window::id(),
-            crate::settings_window::builder(),
+            crate::settings_window::builder().with_title(self.settings_page.title()),
             |ui, _| {
                 let child = ui.ctx().clone();
                 let close = child.input(|i| i.viewport().close_requested());
@@ -667,6 +732,17 @@ impl BuddyApp {
     }
     fn settings_contents(&mut self, ui: &mut egui::Ui) {
         let ctx = ui.ctx().clone();
+        match self.settings_page {
+            crate::settings_window::Page::Focus => {
+                self.timer.panel(ui, Instant::now());
+                return;
+            }
+            crate::settings_window::Page::Reminders => {
+                self.reminders.panel(ui, Instant::now());
+                return;
+            }
+            crate::settings_window::Page::Settings => {}
+        }
         if ui.button("Verlauf öffnen").clicked() {
             self.open_history();
         }
@@ -897,12 +973,17 @@ impl BuddyApp {
                 };
                 let stage_height = (ui.available_height() - 52.0 - history_height).max(100.0);
                 let (_, stage) = ui.allocate_space(Vec2::new(ui.available_width(), stage_height));
-                self.paint_avatar(ui, stage);
+                let wheel_area = Rect::from_min_max(
+                    stage.min + egui::vec2(8.0, 0.0),
+                    egui::pos2(stage.max.x - 8.0, buddy.max.y - 8.0),
+                )
+                .intersect(bounds.shrink(8.0));
+                let avatar = self.paint_avatar(ui, stage, wheel_area);
                 if self.history_player.is_some() {
                     self.history_ui(ui, now);
                 }
-                if self.controls_open {
-                    self.controls(ui);
+                if self.controls_open && self.history_player.is_none() {
+                    self.controls(ui, wheel_area, avatar);
                 }
             });
         });
@@ -1144,6 +1225,7 @@ mod tests {
             controls_open: false,
             menu_open: false,
             settings_focused: false,
+            settings_page: crate::settings_window::Page::default(),
             speech_draft: "Hallo von den Tests!".into(),
             error: None,
             last_render_error: None,
@@ -1160,7 +1242,7 @@ mod tests {
         time: f64,
         events: Vec<egui::Event>,
     ) -> egui::FullOutput {
-        ctx.run_ui(
+        let mut output = ctx.run_ui(
             egui::RawInput {
                 screen_rect: Some(Rect::from_min_size(egui::Pos2::ZERO, app.size.dimensions())),
                 time: Some(time),
@@ -1168,7 +1250,9 @@ mod tests {
                 ..Default::default()
             },
             |ui| app.show_ui(ui),
-        )
+        );
+        output.textures_delta.clear();
+        output
     }
     struct NativeSettings {
         input: std::rc::Rc<std::cell::RefCell<egui::RawInput>>,
@@ -1232,7 +1316,7 @@ mod tests {
             app.player.paused = true;
             app.message_until = Instant::now();
             let output = frame(&ctx, &mut app, 0.0, vec![]);
-            let avatar = accesskit_node(&output, "Beni: Bedienleiste aufklappen").0;
+            let avatar = accesskit_node(&output, "Beni: Menü-Rad öffnen").0;
             let original = avatar_rect(&output, &app);
             output.drop_without_applying_deltas();
             let output = frame(&ctx, &mut app, 0.1, vec![accessible_click(avatar)]);
@@ -2125,7 +2209,7 @@ mod tests {
         let mut output = frame(&ctx, &mut app, 18.0, vec![]);
         output.textures_delta.clear();
         assert_eq!(
-            accesskit_node(&output, "Beni: Bedienleiste aufklappen")
+            accesskit_node(&output, "Beni: Menü-Rad öffnen")
                 .1
                 .description(),
             Some("Animation: Denken")
@@ -2401,7 +2485,15 @@ mod tests {
     }
     fn find_text(shape: &egui::Shape, needle: &str) -> Option<Rect> {
         match shape {
-            egui::Shape::Text(text) if text.galley.job.text == needle => {
+            egui::Shape::Text(text)
+                if text
+                    .galley
+                    .job
+                    .text
+                    .strip_prefix('\n')
+                    .unwrap_or(&text.galley.job.text)
+                    == needle =>
+            {
                 Some(text.galley.rect.translate(text.pos.to_vec2()))
             }
             egui::Shape::Vec(shapes) => shapes.iter().find_map(|s| find_text(s, needle)),
@@ -2451,7 +2543,14 @@ mod tests {
         Rect::from_points(&points)
     }
     fn assert_controls_hidden(output: &egui::FullOutput) {
-        for label in ["Hallo!", "Pause", "Weiter", "Menü", "Beenden"] {
+        for label in [
+            "Fokus",
+            "Erinnerung",
+            "Verlauf",
+            "Ruhe",
+            "Reden",
+            "Einstellungen",
+        ] {
             assert!(
                 !output
                     .shapes
@@ -2741,6 +2840,163 @@ mod tests {
         }
     }
     #[test]
+    fn wheel_opens_direct_focus_and_reminder_pages_and_keeps_live_speech_and_pause() {
+        let ctx = egui::Context::default();
+        ctx.enable_accesskit();
+        let rig = NativeSettings::new(&ctx);
+        let mut app = app(&ctx);
+        app.player.paused = true;
+        app.active_status = true;
+        let deadline = app.message_until;
+        for (action, page, required, absent) in [
+            (
+                crate::action_wheel::Action::Focus,
+                crate::settings_window::Page::Focus,
+                "Fokus starten",
+                "Erinnerungstext",
+            ),
+            (
+                crate::action_wheel::Action::Reminder,
+                crate::settings_window::Page::Reminders,
+                "Erinnerungstext",
+                "Fokus starten",
+            ),
+        ] {
+            app.controls_open = true;
+            let output = frame(&ctx, &mut app, 0.0, vec![]);
+            let button = accesskit_node(&output, action.accessible_label(false)).0;
+            output.drop_without_applying_deltas();
+            frame(&ctx, &mut app, 0.1, vec![accessible_click(button)])
+                .drop_without_applying_deltas();
+            assert!(app.menu_open && !app.controls_open && app.player.paused && app.active_status);
+            assert!(app.settings_page == page);
+            assert_eq!(app.message_until, deadline);
+            frame(&ctx, &mut app, 0.2, vec![]).drop_without_applying_deltas();
+            assert_eq!(
+                rig.builders.borrow().last().unwrap().title.as_deref(),
+                Some(page.title())
+            );
+            let child = rig.output.borrow();
+            let output = child.as_ref().unwrap();
+            accesskit_node(output, required);
+            assert!(
+                !output
+                    .shapes
+                    .iter()
+                    .any(|shape| find_text(&shape.shape, absent).is_some())
+            );
+            assert!(!output.shapes.iter().any(|shape| {
+                find_text(&shape.shape, "Welche Animation soll ich zeigen?").is_some()
+            }));
+        }
+    }
+
+    #[test]
+    fn wheel_quiet_toggle_is_reversible_and_never_changes_timer_or_animation_pause() {
+        let ctx = egui::Context::default();
+        ctx.enable_accesskit();
+        let mut app = app(&ctx);
+        app.timer.start(crate::timer::Phase::Focus, Instant::now());
+        app.player.paused = true;
+        for previous in [false, true] {
+            app.controls_open = true;
+            let output = frame(&ctx, &mut app, 0.0, vec![]);
+            let button = accesskit_node(
+                &output,
+                crate::action_wheel::Action::Quiet.accessible_label(previous),
+            )
+            .0;
+            assert!(
+                output
+                    .shapes
+                    .iter()
+                    .any(|shape| matches!(&shape.shape, egui::Shape::Text(text) if text.galley.job.text.starts_with("Fokus · ")) )
+            );
+            output.drop_without_applying_deltas();
+            frame(&ctx, &mut app, 0.1, vec![accessible_click(button)])
+                .drop_without_applying_deltas();
+            assert_eq!(app.do_not_disturb, !previous);
+            assert!(app.timer.has_session() && app.player.paused && !app.controls_open);
+        }
+    }
+
+    #[test]
+    fn wheel_buttons_surround_the_avatar_and_only_their_visible_regions_intercept_clicks() {
+        for size in BuddySize::ALL {
+            let ctx = egui::Context::default();
+            ctx.enable_accesskit();
+            let mut app = app(&ctx);
+            app.size = size;
+            app.player.paused = true;
+            app.controls_open = true;
+            let output = frame(&ctx, &mut app, 0.0, vec![]);
+            let avatar = avatar_rect(&output, &app);
+            let mut regions = vec![];
+            for action in crate::action_wheel::Action::ALL {
+                let bounds = accesskit_node(&output, action.accessible_label(false))
+                    .1
+                    .bounds()
+                    .unwrap();
+                let rect = Rect::from_min_max(
+                    egui::pos2(bounds.x0 as f32, bounds.y0 as f32),
+                    egui::pos2(bounds.x1 as f32, bounds.y1 as f32),
+                );
+                assert!(!rect.contains(avatar.center()));
+                assert!(rect.width() >= 44.0 && rect.height() >= 44.0);
+                assert!(app.hit_map.contains(rect.center()));
+                regions.push(rect);
+            }
+            assert!(regions.iter().any(|r| r.center().x < avatar.left()));
+            assert!(regions.iter().any(|r| r.center().x > avatar.right()));
+            let center = regions[0].center();
+            output.drop_without_applying_deltas();
+            app.controls_open = false;
+            let output = frame(&ctx, &mut app, 0.1, vec![]);
+            assert!(
+                !app.hit_map.contains(center),
+                "closed menu must release its old native input region"
+            );
+            assert_controls_hidden(&output);
+            output.drop_without_applying_deltas();
+        }
+    }
+
+    #[test]
+    fn constrained_viewport_keeps_actions_accessible_in_a_scrolling_fallback() {
+        let ctx = egui::Context::default();
+        ctx.enable_accesskit();
+        let mut app = app(&ctx);
+        app.size = BuddySize::Small;
+        app.controls_open = true;
+        let screen = Rect::from_min_size(egui::Pos2::ZERO, egui::vec2(220.0, 280.0));
+        let mut output = ctx.run_ui(
+            egui::RawInput {
+                screen_rect: Some(screen),
+                ..Default::default()
+            },
+            |ui| app.show_ui(ui),
+        );
+        output.textures_delta.clear();
+        let (button, node) = accesskit_node(&output, "Fokus und Pause öffnen");
+        let rect = node.bounds().unwrap();
+        assert!(rect.x0 >= 0.0 && rect.y0 >= 0.0 && rect.x1 <= 220.0 && rect.y1 <= 280.0);
+        assert!(!app.hit_map.contains(egui::pos2(2.0, 2.0)));
+        output.drop_without_applying_deltas();
+        let mut output = ctx.run_ui(
+            egui::RawInput {
+                screen_rect: Some(screen),
+                events: vec![accessible_click(button)],
+                ..Default::default()
+            },
+            |ui| app.show_ui(ui),
+        );
+        output.textures_delta.clear();
+        assert!(app.menu_open && app.settings_page == crate::settings_window::Page::Focus);
+        assert!(!app.controls_open);
+        output.drop_without_applying_deltas();
+    }
+
+    #[test]
     fn all_sizes_keep_controls_settings_and_input_regions_reachable() {
         let mut previous_area = 0.0;
         for size in BuddySize::ALL {
@@ -2758,7 +3014,15 @@ mod tests {
             previous_area = avatar.area();
             assert!(app.hit_map.contains(avatar.center()));
             assert!(!app.hit_map.contains(egui::pos2(2.0, 2.0)));
-            for label in ["Hallo!", "Weiter", "Menü", "Beenden", "×"] {
+            for label in [
+                "Fokus",
+                "Erinnerung",
+                "Verlauf",
+                "Ruhe",
+                "Reden",
+                "Einstellungen",
+                "×",
+            ] {
                 let rect = text_rect(&output, label);
                 assert!(screen.contains_rect(rect), "{size:?}: {label} {rect:?}");
                 assert!(app.hit_map.contains(rect.center()));
@@ -2791,7 +3055,7 @@ mod tests {
         ctx.enable_accesskit();
         let mut app = app(&ctx);
         let output = frame(&ctx, &mut app, 0.0, vec![]);
-        let (avatar, node) = accesskit_node(&output, "Beni: Bedienleiste aufklappen");
+        let (avatar, node) = accesskit_node(&output, "Beni: Menü-Rad öffnen");
         assert_eq!(node.role(), Role::Button);
         assert_eq!(node.is_expanded(), Some(false));
         assert!(node.supports_action(Action::Focus));
@@ -2804,10 +3068,15 @@ mod tests {
 
         let output = frame(&ctx, &mut app, 0.1, vec![accessible_click(avatar)]);
         assert!(app.controls_open);
-        let (_, node) = accesskit_node(&output, "Beni: Bedienleiste zuklappen");
+        let (_, node) = accesskit_node(&output, "Beni: Menü-Rad schliessen");
         assert_eq!(node.is_expanded(), Some(true));
-        for label in ["Hallo!", "Pause", "Menü", "Beenden"] {
-            assert_eq!(accesskit_node(&output, label).1.role(), Role::Button);
+        for action in crate::action_wheel::Action::ALL {
+            assert_eq!(
+                accesskit_node(&output, action.accessible_label(false))
+                    .1
+                    .role(),
+                Role::Button
+            );
         }
         output.drop_without_applying_deltas();
 
@@ -2816,7 +3085,7 @@ mod tests {
         let output = frame(&ctx, &mut app, 0.3, vec![accessible_click(avatar)]);
         assert!(!app.controls_open);
         assert_eq!(
-            accesskit_node(&output, "Beni: Bedienleiste aufklappen")
+            accesskit_node(&output, "Beni: Menü-Rad öffnen")
                 .1
                 .is_expanded(),
             Some(false)
@@ -2831,7 +3100,7 @@ mod tests {
         let mut app = app(&ctx);
         app.dismiss_speech(Instant::now());
         let output = frame(&ctx, &mut app, 0.0, vec![]);
-        let avatar = accesskit_node(&output, "Beni: Bedienleiste aufklappen").0;
+        let avatar = accesskit_node(&output, "Beni: Menü-Rad öffnen").0;
         output.drop_without_applying_deltas();
         for (i, key) in [egui::Key::Tab, egui::Key::Enter, egui::Key::Space]
             .into_iter()
@@ -2922,7 +3191,14 @@ mod tests {
         click(&ctx, &mut app, avatar.center(), 0.1).drop_without_applying_deltas();
         assert!(app.controls_open);
         let output = frame(&ctx, &mut app, 0.2, vec![]);
-        for label in ["Hallo!", "Weiter", "Menü", "Beenden"] {
+        for label in [
+            "Fokus",
+            "Erinnerung",
+            "Verlauf",
+            "Ruhe",
+            "Reden",
+            "Einstellungen",
+        ] {
             text_rect(&output, label);
         }
         assert_eq!(avatar_rect(&output, &app), avatar);
@@ -2980,7 +3256,7 @@ mod tests {
         output.drop_without_applying_deltas();
         app.controls_open = true;
         let output = frame(&ctx, &mut app, 0.1, vec![]);
-        let pause = text_rect(&output, "Weiter").center();
+        let pause = text_rect(&output, "Einstellungen").center();
         assert!(app.hit_map.contains(pause));
         output.drop_without_applying_deltas();
         app.controls_open = false;
@@ -3006,7 +3282,14 @@ mod tests {
         app.controls_open = true;
         for i in 0..5 {
             let output = frame(&ctx, &mut app, i as f64 * 0.1, vec![]);
-            for label in ["Hallo!", "Pause", "Menü", "Beenden"] {
+            for label in [
+                "Fokus",
+                "Erinnerung",
+                "Verlauf",
+                "Ruhe",
+                "Reden",
+                "Einstellungen",
+            ] {
                 let rect = text_rect(&output, label);
                 assert!(
                     rect.min.x >= 0.0
@@ -3032,7 +3315,7 @@ mod tests {
             app.size = size;
             app.controls_open = true;
             let output = frame(&ctx, &mut app, 0.0, vec![]);
-            let pos = text_rect(&output, "Menü").center();
+            let pos = text_rect(&output, "Einstellungen").center();
             output.drop_without_applying_deltas();
             click(&ctx, &mut app, pos, 0.1).drop_without_applying_deltas();
             assert!(app.menu_open);
@@ -3114,24 +3397,34 @@ mod tests {
         output.drop_without_applying_deltas();
     }
     #[test]
-    fn pause_resume_and_quit_work_through_real_egui_responses() {
+    fn animation_pause_and_quit_remain_reachable_through_tray_and_keyboard() {
         let ctx = egui::Context::default();
         let mut app = app(&ctx);
-        app.controls_open = true;
-        let output = frame(&ctx, &mut app, 0.0, vec![]);
-        let pos = text_rect(&output, "Pause").center();
-        output.drop_without_applying_deltas();
-        click(&ctx, &mut app, pos, 0.1).drop_without_applying_deltas();
+        app.handle_tray(Action::Pause, &ctx, None);
         assert!(app.player.paused);
-        let output = frame(&ctx, &mut app, 0.2, vec![]);
-        let pos = text_rect(&output, "Weiter").center();
-        output.drop_without_applying_deltas();
-        click(&ctx, &mut app, pos, 0.3).drop_without_applying_deltas();
+        app.handle_tray(Action::Pause, &ctx, None);
         assert!(!app.player.paused);
-        let output = frame(&ctx, &mut app, 0.4, vec![]);
-        let pos = text_rect(&output, "Beenden").center();
-        output.drop_without_applying_deltas();
-        let output = click(&ctx, &mut app, pos, 0.5);
+        let output = frame(
+            &ctx,
+            &mut app,
+            0.0,
+            vec![
+                egui::Event::ModifiersChanged(egui::Modifiers {
+                    alt: true,
+                    ..Default::default()
+                }),
+                egui::Event::Key {
+                    key: egui::Key::Q,
+                    physical_key: None,
+                    pressed: true,
+                    repeat: false,
+                    modifiers: egui::Modifiers {
+                        alt: true,
+                        ..Default::default()
+                    },
+                },
+            ],
+        );
         assert!(
             output.viewport_output[&egui::ViewportId::ROOT]
                 .commands
@@ -3223,15 +3516,32 @@ mod tests {
             "fallback avatar must still open controls"
         );
         let output = frame(&ctx, &mut app, 0.6, vec![]);
-        let menu = text_rect(&output, "Menü").center();
+        let menu = text_rect(&output, "Einstellungen").center();
         output.drop_without_applying_deltas();
         click(&ctx, &mut app, menu, 0.7).drop_without_applying_deltas();
         assert!(app.menu_open);
         app.menu_open = false;
-        let output = frame(&ctx, &mut app, 0.8, vec![]);
-        let quit = text_rect(&output, "Beenden").center();
-        output.drop_without_applying_deltas();
-        let output = click(&ctx, &mut app, quit, 0.9);
+        let output = frame(
+            &ctx,
+            &mut app,
+            0.8,
+            vec![
+                egui::Event::ModifiersChanged(egui::Modifiers {
+                    alt: true,
+                    ..Default::default()
+                }),
+                egui::Event::Key {
+                    key: egui::Key::Q,
+                    physical_key: None,
+                    pressed: true,
+                    repeat: false,
+                    modifiers: egui::Modifiers {
+                        alt: true,
+                        ..Default::default()
+                    },
+                },
+            ],
+        );
         assert!(
             output.viewport_output[&egui::ViewportId::ROOT]
                 .commands
@@ -3337,7 +3647,15 @@ mod tests {
             app.message_source = Some("W".repeat(48));
             assert!(app.message_until.duration_since(Instant::now()) > Duration::from_secs(20));
             let output = frame(&ctx, &mut app, 0.0, vec![]);
-            for label in ["Hallo!", "Pause", "Menü", "Beenden", "×"] {
+            for label in [
+                "Fokus",
+                "Erinnerung",
+                "Verlauf",
+                "Ruhe",
+                "Reden",
+                "Einstellungen",
+                "×",
+            ] {
                 let rect = text_rect(&output, label);
                 assert!(
                     rect.min.y >= 0.0 && rect.max.y <= size.dimensions().y,
@@ -3452,13 +3770,7 @@ mod tests {
             app.controls_open = true;
             app.dismiss_speech(Instant::now());
             let output = frame(&ctx, &mut app, 0.3, vec![]);
-            for label in [
-                "Nicht stören ist aktiv",
-                "Hallo!",
-                "Pause",
-                "Menü",
-                "Beenden",
-            ] {
+            for label in ["Nicht stören ist aktiv", "Fokus", "Einstellungen"] {
                 let rect = text_rect(&output, label);
                 assert!(
                     rect.min.y >= 0.0 && rect.max.y <= size.dimensions().y,
@@ -3603,19 +3915,12 @@ mod tests {
             let mut output = frame(&ctx, &mut app, 0.3, vec![]);
             output.textures_delta.clear();
             assert_eq!(
-                accesskit_node(&output, "Beni: Bedienleiste zuklappen")
+                accesskit_node(&output, "Beni: Verlauf schliessen")
                     .1
                     .description(),
                 Some("Animation: Denken")
             );
-            for label in [
-                "Meldungsverlauf (1)",
-                "Leeren",
-                "Hallo!",
-                "Pause",
-                "Menü",
-                "Beenden",
-            ] {
+            for label in ["Meldungsverlauf (1)", "Leeren"] {
                 let rect = text_rect(&output, label);
                 assert!(
                     rect.min.y >= 0.0 && rect.max.y <= size.dimensions().y,

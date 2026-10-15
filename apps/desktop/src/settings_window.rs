@@ -1,5 +1,22 @@
 use eframe::egui;
 
+#[derive(Clone, Copy, Default, PartialEq, Eq)]
+pub enum Page {
+    #[default]
+    Settings,
+    Focus,
+    Reminders,
+}
+impl Page {
+    pub fn title(self) -> &'static str {
+        match self {
+            Self::Settings => "Benis Einstellungen",
+            Self::Focus => "Benis Fokus & Pause",
+            Self::Reminders => "Benis Erinnerungen",
+        }
+    }
+}
+
 pub fn id() -> egui::ViewportId {
     egui::ViewportId::from_hash_of("beni-settings-window")
 }
