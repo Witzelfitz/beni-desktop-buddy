@@ -1,4 +1,4 @@
-> Entwicklung nach 0.1.7: sparsamer Idle mit längeren Ruhephasen. Der öffentliche Installer bleibt vorerst 0.1.7/Build 8. [Veröffentlichte Bedienhilfe](https://github.com/Witzelfitz/beni-desktop-buddy/blob/v0.1.7/docs/USER_GUIDE.md).
+> Seit 0.1.8: längere ruhige Idle-Phasen mit gelegentlichen vorhandenen Gesten. [Aktueller Release](https://github.com/Witzelfitz/beni-desktop-buddy/releases/tag/v0.1.8) · [Bedienung und echte App-Vorschau](COMPACT_UI.md).
 
 # Beni bedienen
 

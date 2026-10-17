@@ -37,3 +37,6 @@ Für neue Produktfunktionen gilt die vom Nutzer bestätigte Reihenfolge:
 4. **Gemeinsam abnehmen:** Download → Installation → erster Fokus/Erinnerung → Zustandsanzeige → Update. Bestehende Einbettungen und ältere unterstützte App-Versionen bleiben gesondert berücksichtigt.
 
 Website-Deployments starten keine Rust-Builds. Ein gemergter Desktop-PR ist noch kein veröffentlichter Installer. Das Menü-Rad ist seit 0.1.6/Build 7 veröffentlicht. 0.1.7/Build 8 ergänzt kompakte Eingabekarten und mehr Abstand zur Figur (Desktop-PR #67/#68). Website-PR #14 zeigt dieselben echten App-Bilder und die passende Hilfe; Katalog und beide Mac-Feeds sind live geprüft. Automatische Zwischenmeldungen aus Schritt 2 sind weiterhin offen.
+
+
+Seit 0.1.8/Build 9 hält Beni zwischen gelegentlichen vorhandenen Gesten eine ruhige Originalpose. Regulärer Sekundentakt in Ruhe, 15 fps für automatische Idle-Gesten und 30 fps für aktive Gesten; Eingaben/IPC wecken weiter direkt. Native Menüwerte und macOS-Klickflächen werden nur bei Änderungen geschrieben/kopiert. Desktop-PR #70/#71 und Website-PR #15 sind gemergt; das Update ist veröffentlicht. Katalog und beide Mac-Feeds stimmen überein. Eine bestimmte Akkuersparnis ist nicht gemessen. Der nächste Produktabschnitt bleibt Schritt 2 mit verständlichen Zwischenständen.
