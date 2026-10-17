@@ -151,11 +151,11 @@ mod macos {
         }
         pub fn update(&self, map: &HitMap, scale: f32, enabled: bool) {
             if let Ok(mut snapshot) = self.snapshot.lock() {
-                *snapshot = Snapshot {
-                    map: map.clone(),
-                    scale,
-                    enabled,
-                };
+                if snapshot.map != *map {
+                    snapshot.map = map.clone();
+                }
+                snapshot.scale = scale;
+                snapshot.enabled = enabled;
             }
             if !enabled {
                 self.passthrough.store(false, Ordering::Relaxed);

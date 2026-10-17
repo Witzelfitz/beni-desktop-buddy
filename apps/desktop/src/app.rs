@@ -190,6 +190,11 @@ impl BuddyApp {
         self.message_until = now;
         self.active_status = false;
     }
+    fn resting(&self) -> bool {
+        self.player.state() == "warten"
+            && self.history_player.is_none()
+            && self.chat_player.is_none()
+    }
     fn repaint_delay(&self, now: Instant, visible: bool) -> Duration {
         // Keep the once-per-second topology check, history ages and reduced-motion
         // one-shots progressing. Input, IPC and tray actions wake the UI directly.
@@ -197,7 +202,10 @@ impl BuddyApp {
         if !visible {
             return housekeeping;
         }
-        let mut delay = if self.motion.reduced(self.settings.reduced_motion) || self.player.paused {
+        let mut delay = if self.motion.reduced(self.settings.reduced_motion)
+            || self.player.paused
+            || self.resting()
+        {
             housekeeping
         } else if self.player.state() == "warten"
             || (self.history_player.is_none() && self.idle.owns(&self.player))
@@ -1025,9 +1033,16 @@ impl BuddyApp {
         let occluded = ctx.input(|i| i.viewport().occluded.unwrap_or(false));
         self.last_tick = now;
         self.expire_error(now);
+        // Hold the original waiting pose between occasional SDK gestures. History
+        // and chat keep their own playback, and pause never changes the held pose.
+        let animation_delta = if self.resting() {
+            0.0
+        } else {
+            delta.min(1000.0)
+        };
         if let Err(e) = self
             .player
-            .advance(&self.engine, delta.min(1000.0), self.settings.speed)
+            .advance(&self.engine, animation_delta, self.settings.speed)
         {
             self.report_error(e.to_string(), Instant::now());
             self.settings = self.settings.clone().sanitize();
@@ -2336,6 +2351,101 @@ mod tests {
         assert!(app.menu_open && app.history.len() == 0);
     }
     #[test]
+    fn idle_rest_keeps_the_original_pose_and_input_region_until_its_next_gesture() {
+        let ctx = egui::Context::default();
+        let mut app = app(&ctx);
+        app.message_until = Instant::now();
+        let stage = Rect::from_min_size(egui::Pos2::ZERO, egui::vec2(300.0, 300.0));
+        let positions = |app: &BuddyApp| {
+            app.avatar_mesh(stage)
+                .unwrap()
+                .vertices
+                .iter()
+                .map(|v| v.pos)
+                .collect::<Vec<_>>()
+        };
+        app.last_tick = Instant::now();
+        frame(&ctx, &mut app, 0.0, vec![]).drop_without_applying_deltas();
+        let resting = positions(&app);
+        let input = app.hit_map.clone();
+        for second in 1..30 {
+            app.last_tick = Instant::now() - Duration::from_secs(1);
+            frame(&ctx, &mut app, f64::from(second), vec![]).drop_without_applying_deltas();
+            assert!(app.resting());
+            assert_eq!(app.player.elapsed_ms(), 0.0);
+            assert_eq!(positions(&app), resting);
+            assert!(app.hit_map == input);
+            assert_eq!(
+                app.repaint_delay(Instant::now(), true),
+                Duration::from_secs(1)
+            );
+            assert_eq!(
+                app.player.pose(&app.engine, &app.settings).unwrap(),
+                app.engine
+                    .pose_at("warten", 0.0, app.settings.energy)
+                    .unwrap()
+            );
+        }
+        app.last_tick = Instant::now() - Duration::from_secs(1);
+        frame(&ctx, &mut app, 30.0, vec![]).drop_without_applying_deltas();
+        assert!(app.idle.owns(&app.player) && !app.resting());
+        assert_eq!(
+            app.repaint_delay(Instant::now(), true),
+            Duration::from_millis(66)
+        );
+        app.last_tick = Instant::now() - Duration::from_millis(537);
+        frame(&ctx, &mut app, 30.537, vec![]).drop_without_applying_deltas();
+        assert_ne!(positions(&app), resting);
+        for second in 31..45 {
+            app.last_tick = Instant::now() - Duration::from_secs(1);
+            frame(&ctx, &mut app, f64::from(second), vec![]).drop_without_applying_deltas();
+        }
+        assert!(app.resting());
+        assert_eq!(positions(&app), resting);
+        assert_eq!(
+            app.repaint_delay(Instant::now(), true),
+            Duration::from_secs(1)
+        );
+    }
+
+    #[test]
+    fn idle_rest_does_not_freeze_history_or_chat_and_preserves_a_paused_pose() {
+        for history in [true, false] {
+            let ctx = egui::Context::default();
+            let mut app = app(&ctx);
+            let saved = Some(Player::default());
+            if history {
+                app.history_player = saved;
+            } else {
+                app.chat_player = saved;
+            }
+            assert!(!app.resting());
+            app.last_tick = Instant::now() - Duration::from_millis(500);
+            frame(&ctx, &mut app, 0.5, vec![]).drop_without_applying_deltas();
+            assert!(app.player.elapsed_ms() >= 500.0);
+            assert_eq!(
+                app.repaint_delay(Instant::now(), true),
+                Duration::from_millis(66)
+            );
+        }
+        let ctx = egui::Context::default();
+        let mut app = app(&ctx);
+        app.player.advance(&app.engine, 537.0, 1.0).unwrap();
+        app.player.paused = true;
+        let pose = app.player.pose(&app.engine, &app.settings).unwrap();
+        app.last_tick = Instant::now() - Duration::from_secs(1);
+        frame(&ctx, &mut app, 1.0, vec![]).drop_without_applying_deltas();
+        assert!(app.player.paused);
+        assert_eq!(app.player.elapsed_ms(), 537.0);
+        assert_eq!(app.player.pose(&app.engine, &app.settings).unwrap(), pose);
+        // Resting must still validate settings rather than bypassing the Player.
+        app.player.paused = false;
+        app.settings.speed = f64::NAN;
+        frame(&ctx, &mut app, 2.0, vec![]).drop_without_applying_deltas();
+        assert!(app.settings.speed.is_finite() && app.error.is_some());
+    }
+
+    #[test]
     fn quiet_idle_reuses_existing_gestures_without_speech_and_yields_to_manual_actions() {
         let ctx = egui::Context::default();
         ctx.enable_accesskit();
@@ -2343,7 +2453,7 @@ mod tests {
         app.message_until = Instant::now();
         let original_message = app.message.clone();
         let deadline = app.message_until;
-        for index in 0..18 {
+        for index in 0..30 {
             app.last_tick = Instant::now() - Duration::from_secs(1);
             frame(&ctx, &mut app, index as f64, vec![]).drop_without_applying_deltas();
         }
@@ -2356,7 +2466,7 @@ mod tests {
         assert_eq!(app.message, original_message);
         assert_eq!(app.message_until, deadline);
         assert!(!app.active_status);
-        let mut output = frame(&ctx, &mut app, 18.0, vec![]);
+        let mut output = frame(&ctx, &mut app, 30.0, vec![]);
         output.textures_delta.clear();
         assert_eq!(
             accesskit_node(&output, "Beni: Menü-Rad öffnen")
@@ -2400,7 +2510,7 @@ mod tests {
                 "error" => app.report_error("Hinweis".into(), Instant::now()),
                 _ => unreachable!(),
             }
-            for index in 0..20 {
+            for index in 0..35 {
                 app.last_tick = Instant::now() - Duration::from_secs(1);
                 frame(&ctx, &mut app, index as f64, vec![]).drop_without_applying_deltas();
             }
@@ -2414,7 +2524,13 @@ mod tests {
         let mut app = app(&ctx);
         app.message_until = Instant::now();
         app.idle
-            .advance(&app.engine, &mut app.player, 18_000.0, 1.0, true)
+            .advance(
+                &app.engine,
+                &mut app.player,
+                crate::idle::REST_MS,
+                1.0,
+                true,
+            )
             .unwrap();
         app.player.advance(&app.engine, 500.0, 1.0).unwrap();
         app.open_history();
@@ -2437,7 +2553,13 @@ mod tests {
             .advance(&app.engine, &mut app.player, 0.0, 1.0, true)
             .unwrap();
         app.idle
-            .advance(&app.engine, &mut app.player, 18_000.0, 1.0, true)
+            .advance(
+                &app.engine,
+                &mut app.player,
+                crate::idle::REST_MS,
+                1.0,
+                true,
+            )
             .unwrap();
         assert_eq!(
             app.player.state(),
@@ -2564,7 +2686,7 @@ mod tests {
         for (reduced, paused, state, expected) in [
             (true, false, "warten", Duration::from_secs(1)),
             (false, true, "denken", Duration::from_secs(1)),
-            (false, false, "warten", Duration::from_millis(66)),
+            (false, false, "warten", Duration::from_secs(1)),
             (false, false, "denken", Duration::from_millis(33)),
         ] {
             let ctx = egui::Context::default();
