@@ -4,7 +4,7 @@ Dein kleiner Begleiter auf dem Desktop: eine native Rust-App mit vertrauten Beni
 
 <img src="docs/images/macos-buddy.png" alt="Beni auf dem macOS-Desktop mit eingeklappter Bedienung" width="340">
 
-**[Herunterladen](https://mini.witzelfitz.io/download)** · [Release 0.1.7](https://github.com/Witzelfitz/beni-desktop-buddy/releases/tag/v0.1.7) · [Bedienung](docs/USER_GUIDE.md)
+**[Herunterladen](https://mini.witzelfitz.io/download)** · [Release 0.1.8](https://github.com/Witzelfitz/beni-desktop-buddy/releases/tag/v0.1.8) · [Bedienung](docs/USER_GUIDE.md)
 
 ## Was Beni mitbringt
 

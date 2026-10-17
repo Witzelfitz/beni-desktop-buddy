@@ -1,6 +1,6 @@
 # Freigabe der Mac-Updatekette
 
-Stand: 15. Oktober 2026. 0.1.7/Build 8 ist für beide Macs und Linux veröffentlicht; die finale native Abnahme, alle öffentlichen Dateien, der Live-Katalog, beide Stable-Feeds und Website-PR #14 sind geprüft. Das tatsächliche Nutzerupdate auf 0.1.7 bleibt separat offen.
+Stand: 17. Oktober 2026. 0.1.8/Build 9 ist für beide Macs und Linux veröffentlicht; finale native Abnahme, alle öffentlichen Dateien, Live-Katalog, beide Stable-Feeds und Website-PR #15 sind geprüft. Das tatsächliche Nutzerupdate auf 0.1.8 bleibt separat offen.
 
 Historischer Ablauf: Website-/Pipeline-PRs und Versions-PR #43 sind gemergt. Version A ([0.1.2/Build 3](https://github.com/Witzelfitz/beni-desktop-buddy/releases/tag/v0.1.2)) ist für beide Mac-Ziele und Linux öffentlich, beide Mac-Feeds sind live. Schritte 1 und 2 sind durchgeführt; die Anleitung bleibt für B wiederverwendbar. Nutzerinstallation A und manuelle Updateprüfung («up to date») sind bestätigt; Version B (0.1.3/Build 4) ist ebenfalls veröffentlicht; der Nutzer hat das tatsächliche Update A → B bestätigt. 0.1.4/Build 5 mit lokalem Ollama-Chat ist veröffentlicht; 0.1.5/Build 6 ergänzt die Gesprächsblase und JSON-Emotionen und ist ebenfalls über die bestehenden Stable-Feeds verfügbar. Nutzerupdate auf 0.1.5 ist noch nicht bestätigt. 0.1.1 bleibt unverändert. Microsofts Firmenprüfung läuft unabhängig weiter.
 

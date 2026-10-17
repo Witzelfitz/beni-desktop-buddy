@@ -433,9 +433,24 @@ PR #67 ist als 327a413cf4babf7d3b26cb3e789dae616e3fbda2 gemergt. Die Version wir
 | Native Zusatzarbeit | Native Tray-Werte nur bei tatsächlicher Abweichung; tatsächlicher Checkboxzustand bleibt massgebend. macOS-Klickflächensnapshot nur bei geänderten Pixeln/Dimensionen kopiert, Skalierung/Aktivierung/Routing weiter aktualisiert; negative Cache-Geometrieprüfung PASS |
 | Kurzer nativer Vergleich | PASS für Prozessstart und sichtbare Fenster an allen Messgrenzen des wiederholten Laufs. CPU-Mittel 7,60 % vorher / 3,72 % nachher; Wakeups 23,85/s / 24,62/s ohne belegte Verbesserung. Interaktive Schwankungen, keine allgemeine Akku-/GPU-/RAM-Sparbehauptung; Rohwerte und verworfene Versuche in PERFORMANCE.md |
 | Plattform-CI / Hardware | PASS, Feature-CI 39008941088 auf Linux/macOS/Windows einschliesslich separater nativer Linux-Proben; manuelle Windows-/Linux-Hardwareabnahme NOT_RUN |
-| Veröffentlichung | NOT_RUN; öffentliche Version bleibt 0.1.7/Build 8. Website-Aussagen bleiben für diesen veröffentlichten Installer korrekt; keine feste Idle-Frequenz dort versprochen |
+| Veröffentlichung | PASS, 0.1.8/Build 9 für beide Macs und Linux; Website-PR #15 live. Neue Release-Abnahme unten |
 
 
 ## Vorbereitung 0.1.8/Build 9
 
 Feature-PR #70 ist als 0a9df86979fb4b76fa71b206bedb96b543ff86ac gemergt; alle vier Feature-CI-Jobs sind grün. Produktmanifeste und beide Lockfiles werden gemeinsam auf 0.1.8/Build 9 erhöht. Fremde Abhängigkeiten bleiben unverändert. Der gemeinsame lokale Prüfeinstieg mit Desktop besteht erneut (47 Root- und 124 Desktoptests, fmt, Clippy, Release-/Packaging-/Assets und separater GUI-Build). Die Versions-CI wird vor dem Merge grün abgewartet; native Mac-/Linux-Installer, Signierung/Notarisierung, finale DMG-Abnahme und Live-Prüfungen folgen vor Veröffentlichung. Windows bleibt bis zur bestätigten Firmenprüfung unveröffentlicht. Die installierte Programme-App und ihre Hooks bleiben beim Rollout unverändert.
+
+
+## Veröffentlichung 0.1.8/Build 9, 17. Oktober 2026
+
+| Prüfung | Ergebnis |
+| --- | --- |
+| Feature-, Versions- und main-CI | PASS, 39008941088, 39011904938 und 39012175890: Linux/macOS/Windows und separate native Linux-Proben |
+| Lokaler Versionsstand | PASS, gemeinsamer Prüfeinstieg: 47 Root- und 124 Desktoptests, fmt, Clippy, Packaging-/Release-/Assetprüfungen und separater GUI-Build; echter Modelltest NOT_RUN |
+| Native Installer | PASS, Mac 39012178145 und Linux 39012187334; Installation, CLI, eigene Fenster und Entfernung; Linux X11/Wayland |
+| Lokale Signierung | PASS, bestehende Developer ID und beni-update-v1; beide Apps/DMGs von Apple akzeptiert, Tickets und Gatekeeper geprüft; keine neuen Schlüssel |
+| Finale native Mac-Abnahme | PASS, 39012980716, beide Architekturen auf macOS 15.7.9, finale DMG-Hashes exakt passend, temporäre Installation/CLI/eigenes Fenster/Entfernung bestanden. Intel zunächst FAIL durch Apple-CloudKit-Transportfehler (Exit 68, URL -1005); nur fehlgeschlagene Intel-Abnahme mit denselben finalen Bytes erneut ausgeführt, danach PASS. ARM und Installer nicht neu gebaut |
+| Entwurf und öffentlicher Release | PASS, Release-ID 415648104, Tag v0.1.8 auf d65b616865321d138a15d4dd793a6052b086f49d; alle 13 Dateien zurückgeladen, bytegleich und authentifiziert; private Kandidatenbelege bleiben lokal |
+| Website und Feeds | PASS, Web-PR #15 live; HTML bytegleich zum geprüften Web-Stand, Katalog und beide signierten Stable-Feeds exakt 0.1.8/Build 9, Beta bleibt 503 |
+| Echter Browserdownload | PASS, Apple Silicon und Linux: echte Downloadbytes, Grösse und SHA-256 stimmen mit dem authentifizierten Manifest überein. Mobilansicht, reduzierte Bewegung, Windows ohne Installer, Studio/Embed ohne Browserfehler |
+| Nutzerupdate / Langzeitverbrauch / Zielgeräte | NOT_RUN, Programme-App und bestehende Hooks beim Rollout nicht verändert. Keine konkrete Akku-/GPU-/RAM-Ersparnis behauptet; Windows bleibt bis zur Firmenfreigabe unveröffentlicht |
