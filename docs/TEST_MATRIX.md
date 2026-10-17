@@ -432,5 +432,10 @@ PR #67 ist als 327a413cf4babf7d3b26cb3e789dae616e3fbda2 gemergt. Die Version wir
 | Unterbrechungen und Grenzen | PASS, manuelle Aktionen, Chat/Verlauf, Pause/Bewegungsreduktion, unsichtbare Fenster, sichtbare Texte, Timer/Erinnerungen und IPC weiterhin geprüft; ungültiges Tempo wird auch während Ruhe validiert und bereinigt |
 | Native Zusatzarbeit | Native Tray-Werte nur bei tatsächlicher Abweichung; tatsächlicher Checkboxzustand bleibt massgebend. macOS-Klickflächensnapshot nur bei geänderten Pixeln/Dimensionen kopiert, Skalierung/Aktivierung/Routing weiter aktualisiert; negative Cache-Geometrieprüfung PASS |
 | Kurzer nativer Vergleich | PASS für Prozessstart und sichtbare Fenster an allen Messgrenzen des wiederholten Laufs. CPU-Mittel 7,60 % vorher / 3,72 % nachher; Wakeups 23,85/s / 24,62/s ohne belegte Verbesserung. Interaktive Schwankungen, keine allgemeine Akku-/GPU-/RAM-Sparbehauptung; Rohwerte und verworfene Versuche in PERFORMANCE.md |
-| Plattform-CI / Hardware | Reguläre PR-CI folgt; manuelle Windows-/Linux-Hardwareabnahme NOT_RUN |
+| Plattform-CI / Hardware | PASS, Feature-CI 39008941088 auf Linux/macOS/Windows einschliesslich separater nativer Linux-Proben; manuelle Windows-/Linux-Hardwareabnahme NOT_RUN |
 | Veröffentlichung | NOT_RUN; öffentliche Version bleibt 0.1.7/Build 8. Website-Aussagen bleiben für diesen veröffentlichten Installer korrekt; keine feste Idle-Frequenz dort versprochen |
+
+
+## Vorbereitung 0.1.8/Build 9
+
+Feature-PR #70 ist als 0a9df86979fb4b76fa71b206bedb96b543ff86ac gemergt; alle vier Feature-CI-Jobs sind grün. Produktmanifeste und beide Lockfiles werden gemeinsam auf 0.1.8/Build 9 erhöht. Fremde Abhängigkeiten bleiben unverändert. Der gemeinsame lokale Prüfeinstieg mit Desktop besteht erneut (47 Root- und 124 Desktoptests, fmt, Clippy, Release-/Packaging-/Assets und separater GUI-Build). Die Versions-CI wird vor dem Merge grün abgewartet; native Mac-/Linux-Installer, Signierung/Notarisierung, finale DMG-Abnahme und Live-Prüfungen folgen vor Veröffentlichung. Windows bleibt bis zur bestätigten Firmenprüfung unveröffentlicht. Die installierte Programme-App und ihre Hooks bleiben beim Rollout unverändert.
