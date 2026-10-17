@@ -100,13 +100,21 @@ impl Tray {
         })
     }
     pub fn set_paused(&self, paused: bool) {
-        self.pause.set_checked(paused);
+        // Read the actual native value: clicking a checkbox may toggle it before
+        // its queued action arrives (or when the bounded action channel is full).
+        if self.pause.is_checked() != paused {
+            self.pause.set_checked(paused);
+        }
     }
     pub fn set_do_not_disturb(&self, quiet: bool) {
-        self.do_not_disturb.set_checked(quiet);
+        if self.do_not_disturb.is_checked() != quiet {
+            self.do_not_disturb.set_checked(quiet);
+        }
     }
     pub fn set_updates_enabled(&self, enabled: bool) {
-        self.updates.set_enabled(enabled);
+        if self.updates.is_enabled() != enabled {
+            self.updates.set_enabled(enabled);
+        }
     }
 }
 fn avatar_icon(engine: &Engine) -> Result<Icon, Box<dyn std::error::Error + Send + Sync>> {

@@ -1,7 +1,7 @@
 //! Quiet scheduling of existing SDK animations; never creates or edits a pose.
 use buddy_core::{BuddyError, Engine, Player};
 
-const REST_MS: f64 = 18_000.0;
+pub const REST_MS: f64 = 30_000.0;
 const GESTURES: [&str; 2] = ["nachdenken", "drehen"];
 
 #[derive(Debug, Default)]

@@ -1,7 +1,7 @@
 //! Input geometry in egui points; independent of native window APIs.
 use eframe::egui::{self, Pos2, Rect};
 
-#[derive(Clone, Default)]
+#[derive(Clone, Default, PartialEq, Eq)]
 pub struct HitMap {
     width: usize,
     height: usize,
@@ -114,6 +114,27 @@ impl HitMap {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn cached_input_snapshot_detects_changed_pixels_and_equal_area_resizes() {
+        let mut old = HitMap::default();
+        old.reset(egui::vec2(40.0, 40.0));
+        let mut next = old.clone();
+        assert!(old == next);
+        next.add_rect(
+            Rect::from_min_size(egui::pos2(5.0, 5.0), egui::vec2(10.0, 10.0)),
+            0.0,
+        );
+        assert!(old != next);
+        assert!(!old.contains(egui::pos2(6.0, 6.0)));
+        assert!(next.contains(egui::pos2(6.0, 6.0)));
+        next.reset(egui::vec2(80.0, 20.0));
+        assert!(
+            old != next,
+            "equal pixel count does not imply equal geometry"
+        );
+        next.reset(egui::vec2(40.0, 40.0));
+        assert!(old == next, "reset also clears a formerly opaque region");
+    }
     #[test]
     fn rounded_ui_regions_leave_corners_and_hidden_controls_clear() {
         let mut map = HitMap::default();
