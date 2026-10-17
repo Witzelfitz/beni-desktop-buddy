@@ -45,3 +45,25 @@ Apple M3 Max, macOS 26.6.2, Retina, Release-Bundle. Vorher: `main` mit PR #14 (`
 Mit reduzierter Bewegung fällt das Mittel der CPU-Messungen von 1,0587 % auf 0,4090 % (rund 61 % weniger), die Interrupt-Wakeups von 5,23 auf 2,08 pro Sekunde (rund 60 % weniger). Das unveränderte animierte Warten liegt in diesen Läufen bei 4,67 % bzw. 5,21 % CPU und rund 20 Wakeups pro Sekunde; dafür ist keine CPU-Einsparung belegt. Pause nutzt denselben getesteten Zeichenpfad, wurde nativ hier aber nicht separat gemessen.
 
 Der Speicherbedarf ist bei reduzierter Bewegung nachher am Ende des zweiten Fensters rund 29 MiB höher. Ursache und längerfristige Entwicklung sind mit diesen Messungen nicht geklärt; eine Speicheroptimierung ist damit nicht belegt. GPU-Auslastung, Akkulaufzeit, ein langer Idle-Lauf und native Windows-/Linux-Werte bleiben **NOT_RUN**.
+
+
+## Vergleich · 17. Oktober 2026, Entwicklung nach 0.1.7
+
+Code des optimierten Laufs: `eaa4c5b885923da0332bb2310f5972b727fda9e1`. Basis: unveränderte Programmlogik des veröffentlichten 0.1.7/Build 8. Apple M3 Max, macOS 26.6.2, Netzbetrieb. Zwei nacheinander gestartete minimale, ad hoc signierte Testbundles mit identischer Bundle-Konfiguration, ohne Sparkle; eigene RON-Dateien unter `/private/tmp/beni-idle-benchmark`. Die Programme-App und ihre Hooks bleiben unverändert. Klein (300 × 360 Punkte), Tempo 1,0, Energie 0,7, Bewegung erlaubt, System-Bewegungsvorgabe für den Vergleich aus, Durchklicken und Vordergrund an, Empfang aus, «Nicht stören» an. Zwölf Sekunden Vorlauf, danach drei Messfenster à zehn Sekunden. Sichtbares eigenes Fenster an jeder Messgrenze geprüft. Keine Builds oder CPU-Profiler während der Messfenster; der Desktop wurde währenddessen weiter benutzt.
+
+| Zustand | Fenster | Dauer, s | CPU, % eines Kerns | Interrupt-Wakeups/s | Speicher am Ende, MiB |
+| --- | --- | --- | --- | --- | --- |
+| 0.1.7 | 1 | 10.005 | 6.8165 | 19.890 | 303.16 |
+| 0.1.7 | 2 | 10.005 | 9.8595 | 32.284 | 273.09 |
+| 0.1.7 | 3 | 10.005 | 6.1278 | 19.390 | 273.09 |
+| Optimierter Idle | 1 | 10.005 | 5.2096 | 27.086 | 303.69 |
+| Optimierter Idle | 2 | 10.005 | 2.5712 | 20.290 | 303.94 |
+| Optimierter Idle | 3 | 10.004 | 3.3750 | 26.489 | 303.97 |
+
+In diesem kurzen interaktiven Lauf beträgt der mittlere CPU-Wert 7.60 % gegenüber 3.72 %. Die Interrupt-Wakeups liegen bei 23.85/s gegenüber 24.62/s; dafür ist **keine Einsparung belegt**. Eingaben und passive Mausereignisse wecken die native App unabhängig vom Animationsbudget. Die starken Schwankungen innerhalb und zwischen den Versuchen erlauben keine allgemeine Prozentangabe für CPU-, GPU- oder Akkuersparnis. Auch eine Speicherersparnis ist nicht belegt.
+
+Der erste Versuch mit zwei 30-Sekunden-Fenstern pro Version wird nicht als gültiger Paarvergleich verwendet: Am Ende des optimierten Laufs war dessen Fenster nicht mehr auf dem sichtbaren Schreibtisch. Ein vorheriger Versuch ohne vollständigen Bundle-Rahmen konnte ebenfalls kein sichtbares Fenster bestätigen und wurde vor der Messung beendet. Diese Werte fliessen nicht in die Tabelle ein.
+
+Die deterministischen UI-Tests bestätigen unabhängig davon: originale Pose und Klickfläche bleiben über die Ruhephase unverändert; reguläre Zeichenanforderung einmal pro Sekunde statt bisher ungefähr 15-mal. Nach 30 Sekunden läuft eine vorhandene Geste mit 15 fps, aktive Nutzer-/Statusgesten behalten 30 fps. Chat/Verlauf und Pause behalten ihre eigene Wiedergabe. Tray-Werte werden nur bei Abweichung geschrieben; unveränderte macOS-Klickflächen werden nicht erneut kopiert.
+
+Native App-Starts und sichtbare Testfenster: **PASS**. Lange ruhige Messung ohne Mausbedienung, GPU-/Akkumessung, manuelle vollständige GUI-Abnahme, Windows-/Linux-Hardware und der neue öffentliche Installer: **NOT_RUN**. Der vorhandene gemeinsame Sekundentakt für Fenster-Rückholung, Timer, Erinnerungen und Systempräferenzen bleibt bewusst erhalten. Nächster Messschritt ist der getrennte Vergleich ohne Mausbewegung und während normaler Mausbedienung.

@@ -420,3 +420,17 @@ PR #67 ist als 327a413cf4babf7d3b26cb3e789dae616e3fbda2 gemergt. Die Version wir
 | Echter Browserdownload | PASS, Mac Apple Silicon und Linux: tatsächliche Downloadbytes, Grösse und SHA-256 entsprechen dem authentifizierten Manifest; mobile Ansicht ohne Überlauf, reduzierte Bewegung, Windows ohne Installer, Studio/Embed ohne Browserfehler |
 | Nutzerinstallation und Hooks danach | NOT_RUN, Programme-App und bestehende Hooks beim Rollout nicht verändert; Update über Menüleistensymbol bereit |
 | Windows-Veröffentlichung / physische Zielgeräte | BLOCKED bis bestätigte Firmenprüfung beziehungsweise NOT_RUN für echte Windows-/Linux-Hardware und weitere Updatefälle; keine unsignierte Windows-Ausgabe |
+
+
+## Sparsamer Idle, Entwicklung nach 0.1.7, 17. Oktober 2026
+
+| Prüfung | Ergebnis |
+| --- | --- |
+| Gemeinsamer lokaler Prüfeinstieg | PASS, Root-/Desktop-fmt, 47 Roottests, Release-/Packaging-/Assetprüfungen, Clippy und separater GUI-Build |
+| Letzte Desktop-Änderung | PASS, erneut 124 Desktoptests, fmt, Clippy und separater optimierter GUI-Build; echter Modelltest NOT_RUN |
+| Ruhige Originalpose | PASS, unveränderte SDK-Pose und Klickfläche über 30 Sekunden; Sekundentakt statt dauerhafter 15-fps-Anforderung, anschliessend vorhandene Geste und Rückkehr zur Ruhe |
+| Unterbrechungen und Grenzen | PASS, manuelle Aktionen, Chat/Verlauf, Pause/Bewegungsreduktion, unsichtbare Fenster, sichtbare Texte, Timer/Erinnerungen und IPC weiterhin geprüft; ungültiges Tempo wird auch während Ruhe validiert und bereinigt |
+| Native Zusatzarbeit | Native Tray-Werte nur bei tatsächlicher Abweichung; tatsächlicher Checkboxzustand bleibt massgebend. macOS-Klickflächensnapshot nur bei geänderten Pixeln/Dimensionen kopiert, Skalierung/Aktivierung/Routing weiter aktualisiert; negative Cache-Geometrieprüfung PASS |
+| Kurzer nativer Vergleich | PASS für Prozessstart und sichtbare Fenster an allen Messgrenzen des wiederholten Laufs. CPU-Mittel 7,60 % vorher / 3,72 % nachher; Wakeups 23,85/s / 24,62/s ohne belegte Verbesserung. Interaktive Schwankungen, keine allgemeine Akku-/GPU-/RAM-Sparbehauptung; Rohwerte und verworfene Versuche in PERFORMANCE.md |
+| Plattform-CI / Hardware | Reguläre PR-CI folgt; manuelle Windows-/Linux-Hardwareabnahme NOT_RUN |
+| Veröffentlichung | NOT_RUN; öffentliche Version bleibt 0.1.7/Build 8. Website-Aussagen bleiben für diesen veröffentlichten Installer korrekt; keine feste Idle-Frequenz dort versprochen |
